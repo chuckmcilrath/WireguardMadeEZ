@@ -6,6 +6,10 @@
 #                                                                                                                                                        #
 ##########################################################################################################################################################
 
-#
-# GLOBAL VARIABLES
-#
+####################
+# GLOBAL VARIABLES #
+####################
+
+resolved_path=/etc/systemd/resolved.conf
+net_int=/etc/network/interfaces
+wg_port_num=/etc/wireguard/
