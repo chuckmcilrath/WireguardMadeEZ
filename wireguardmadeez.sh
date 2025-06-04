@@ -2,7 +2,7 @@
 
 ##########################################################################################################################################################
 #                                                                                                                                                        #
-# wget -O wireguard.sh https://raw.githubusercontent.com/chuckmcilrath/scripts/refs/heads/main/Wireguard_Script && chmod +x wireguard.sh && ./wireguard.sh
+# wget -O wireguard.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && ./wireguard.sh
 #                                                                                                                                                        #
 ##########################################################################################################################################################
 
