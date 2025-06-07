@@ -73,8 +73,17 @@ check_install() {
 
 # Check user input is 256-bit key
 key_check() {
-    local key="$1"
+	local key="$1"
 	
-    [[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]] && return 0
-    return 1
+	[[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]] && return 0
+	return 1
+}
+
+port_num_check() {
+	local num="$1"
+
+	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1  # Ensure it's a positive integer
+	(( num < 1 || num > 65535 )) && return 1   # Ensure it's within the valid port range
+
+	return 0
 }
