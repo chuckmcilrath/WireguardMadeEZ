@@ -1,10 +1,10 @@
 #!/bin/bash
 
-##########################################################################################################################################################
-#                                                                                                                                                        #
-# wget -O wireguard.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && ./wireguard.sh
-#                                                                                                                                                        #
-##########################################################################################################################################################
+#############################################################################################################################################
+#                                                                                                                                           #
+# wget -O wireguard.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && ./wireguard.sh #
+#                                                                                                                                           #
+#############################################################################################################################################
 
 ####################
 # GLOBAL VARIABLES #
@@ -71,7 +71,7 @@ check_install() {
 	fi
 }
 
-# Check user input is 256-bit key
+# Check user input is 256-bit key for Wireguard configuration file.
 key_check() {
 	local key="$1"
 	
@@ -79,11 +79,37 @@ key_check() {
 	return 1
 }
 
+# Check user input is 
 port_num_check() {
 	local num="$1"
 
-	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1  # Ensure it's a positive integer
-	(( num < 1 || num > 65535 )) && return 1   # Ensure it's within the valid port range
+	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
+	(( num < 1 || num > 65535 )) && return 1
 
 	return 0
 }
+
+# STARTING OPTIONS
+main_menu() {
+	echo
+	cat << EOF
+Choose the install type:
+
+1. (OPTIONAL) Set Static IP
+2. Wireguard Server Install and Setup
+3. Wireguard Server Peer Config
+4. Client Peer Install and Setup
+5. Client Peer Config
+6. Troubleshooting and help
+7. Delete and cleanup
+
+Type "exit" to exit the script
+EOF
+
+read -p ": " install_type
+}
+
+###################
+# Start of script #
+###################
+while true; do
