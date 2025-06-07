@@ -113,3 +113,19 @@ read -p ": " install_type
 # Start of script #
 ###################
 while true; do
+	main_menu
+ 	case "$install_type" in
+  		1)
+		;;
+  		2)
+		;;
+  		3)
+		;;
+  		4)
+		;;
+
+  		*)
+			echo "Invalid Option. Please try again."
+   		;;
+	esac
+done
