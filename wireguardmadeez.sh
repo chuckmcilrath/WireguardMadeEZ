@@ -138,7 +138,7 @@ while true; do
 			echo "Are you sure you want to use $cidr_input? (y/n)"
 			read -p ": " cidr_confirm
 			if [[ $cidr_confirm == y ]]; then
-				if grep -q "$static_ip" $net_int; then
+				if grep -q "$static_ip" $net_interf; then
 					sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 					&& echo "Subnet has been added."
 					break 2
