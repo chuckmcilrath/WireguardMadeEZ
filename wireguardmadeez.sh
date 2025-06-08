@@ -89,6 +89,10 @@ port_num_check() {
 	return 0
 }
 
+##################
+# MENU FUNCTIONS #
+##################
+
 # Checked the network config for DHCP. Changes to static if it is.
 main_1_DHCP_check() {
 	echo "Setting up network config file for static deployment"
