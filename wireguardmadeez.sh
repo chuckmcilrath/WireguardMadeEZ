@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#########################################################################################################################################################
-#                                                                                                                                                       #
-# wget -O wireguardmadeez.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && ./wireguardmadeez.sh #
-#                                                                                                                                                       #
-#########################################################################################################################################################
+########################################################################################################################################################################################
+#                                                                                                                                                                                      #
+# wget -O wireguardmadeez.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && chmod +x wireguardmadeez.sh && ./wireguardmadeez.sh #
+#                                                                                                                                                                                      #
+########################################################################################################################################################################################
 
 ####################
 # GLOBAL VARIABLES #
@@ -47,7 +47,7 @@ return 0
 # Check the user's CIDR input to make sure it's within 0-32
 cidr_check() {
 	local cidr=$1
- 
+
 	[[ $cidr =~ ^[0-9]+$ ]] || return 1
 	((cidr >= 0 && cidr <= 32))
 }
@@ -74,7 +74,7 @@ check_install() {
 # Check user input is 256-bit key for Wireguard configuration file.
 key_check() {
 	local key="$1"
-	
+
 	[[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]] && return 0
 	return 1
 }
@@ -89,8 +89,18 @@ port_num_check() {
 	return 0
 }
 
+# Checked the network config for DHCP. Changes to static if it is.
+main_1_DHCP_check() {
+	echo "Setting up network config file for static deployment"
+	if grep -q dhcp $net_int; then
+		sed -i 's/dhcp/static/' $net_int \
+		&& echo -e "        address\n        gateway" >> $net_int
+	fi
+}
+
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
+	echo -e "\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.\n"
 	while true; do
 		read -p $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip
 		if is_valid_ip "$static_ip"; then
@@ -98,8 +108,8 @@ main_1_static_ip_edit() {
 				echo "Are you sure you want to use $static_ip? (y/n)"
 				read -p ": " static_confirm
 				if [[ $static_confirm == y ]]; then
-					if grep -q address $net_int; then
-						sed -i "/address/c\        address "$static_ip" " $net_int \
+					if grep -q address $net_interf; then
+						sed -i "/address/c\        address "$static_ip" " $net_interf \
 						&& echo "Address has been changed."
 						break 2
 					else
@@ -129,7 +139,7 @@ while true; do
 			read -p ": " cidr_confirm
 			if [[ $cidr_confirm == y ]]; then
 				if grep -q "$static_ip" $net_int; then
-					sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_int \
+					sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 					&& echo "Subnet has been added."
 					break 2
 				else
@@ -157,8 +167,8 @@ main_1_gateway_edit() {
 				echo "Are you sure you want to use $static_gw? (y/n)"
 				read -p ": " static_gw_confirm
 				if [[ $static_gw_confirm = y ]]; then
-					if grep -q address $net_int; then
-						sed -i "/gateway/c\        gateway "$static_gw" " $net_int \
+					if grep -q address $net_interf; then
+						sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
 						&& echo "Gateway has been changed."
 						break 2
 					else
@@ -208,6 +218,7 @@ while true; do
 	main_menu
  	case "$install_type" in
   		1)
+			main_1_DHCP_check
 			main_1_static_ip_edit
 			main_1_cidr_edit
    			main_1_gateway_edit
