@@ -90,7 +90,7 @@ port_num_check() {
 }
 
 # Edits the IP (Only the IP)
-main_menu_1_static_ip_edit() {
+main_1_static_ip_edit() {
 	while true; do
 		read -p $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip
 		if is_valid_ip "$static_ip"; then
@@ -120,7 +120,7 @@ main_menu_1_static_ip_edit() {
 }
 
 # Adds the CIDR notation to the end of the user inputed static IP.
-cidr_edit() {
+main_1_cidr_edit() {
 while true; do
 	read -p $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input
 	if cidr_check "$cidr_input"; then
@@ -146,6 +146,39 @@ while true; do
 		echo "Not a valid input. Please choose a number 0-32."
 	fi
 done
+}
+
+# Edits the gateway for static IP
+main_1_gateway_edit() {
+	while true; do
+		read -p $'Input the gateway\n: ' static_gw
+		if is_valid_ip "$static_gw"; then
+			while true; do
+				echo "Are you sure you want to use $static_gw? (y/n)"
+				read -p ": " static_gw_confirm
+				if [[ $static_gw_confirm = y ]]; then
+					if grep -q address $net_int; then
+						sed -i "/gateway/c\        gateway "$static_gw" " $net_int \
+						&& echo "Gateway has been changed."
+						break 2
+					else
+						echo -e "Failed to change Gateway. Please make sure dhcp is on the correct line.\nExiting Script."
+						exit 1
+					fi
+				elif [[ $static_gw_confirm = n ]]; then
+					echo "Please try again."
+				else
+					echo "not a valid answer. Please use \"y\" or \"n\"."
+				fi
+			done
+		else
+			echo "not a valid IP. Please enter a valid IP."
+		fi
+	done
+
+echo -e "Network settings have been updated, and network has been refreshed.\nPlease connect using the new IP.\nExiting script."
+systemctl restart networking
+exit 1
 }
 
 # STARTING OPTIONS
@@ -175,6 +208,9 @@ while true; do
 	main_menu
  	case "$install_type" in
   		1)
+			main_1_static_ip_edit
+			main_1_cidr_edit
+   			main_1_gateway_edit
 		;;
   		2)
 		;;
