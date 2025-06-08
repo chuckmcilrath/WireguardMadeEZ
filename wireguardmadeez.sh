@@ -89,6 +89,65 @@ port_num_check() {
 	return 0
 }
 
+# Edits the IP (Only the IP)
+main_menu_1_static_ip_edit() {
+	while true; do
+		read -p $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip
+		if is_valid_ip "$static_ip"; then
+			while true; do
+				echo "Are you sure you want to use $static_ip? (y/n)"
+				read -p ": " static_confirm
+				if [[ $static_confirm == y ]]; then
+					if grep -q address $net_int; then
+						sed -i "/address/c\        address "$static_ip" " $net_int \
+						&& echo "Address has been changed."
+						break 2
+					else
+						echo -e "Failed to change address. Please make sure dhcp is on the correct line.\nExiting Script."
+						exit 1
+					fi
+				elif [[ $static_confirm == n ]]; then
+					echo "Please try again."
+					break
+				else
+					echo "not a valid answer. Please use \"y\" or \"n\"."
+				fi
+			done
+		else
+			echo "not a valid IP. Please enter a valid IP."
+		fi
+	done
+}
+
+# Adds the CIDR notation to the end of the user inputed static IP.
+cidr_edit() {
+while true; do
+	read -p $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input
+	if cidr_check "$cidr_input"; then
+		while true; do
+			echo "Are you sure you want to use $cidr_input? (y/n)"
+			read -p ": " cidr_confirm
+			if [[ $cidr_confirm == y ]]; then
+				if grep -q "$static_ip" $net_int; then
+					sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_int \
+					&& echo "Subnet has been added."
+					break 2
+				else
+					echo -e "Failed to change subnet. Please make sure dhcp is on the correct line.\nExiting Script."
+					exit 1
+				fi
+			elif [[ $cidr_confirm == n ]]; then
+				echo "Please try again."
+			else
+				echo "not a valid answer. Please use \"y\" or \"n\"."
+			fi
+		done
+	else
+		echo "Not a valid input. Please choose a number 0-32."
+	fi
+done
+}
+
 # STARTING OPTIONS
 main_menu() {
 	echo
