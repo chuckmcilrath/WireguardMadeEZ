@@ -92,9 +92,9 @@ port_num_check() {
 # Checked the network config for DHCP. Changes to static if it is.
 main_1_DHCP_check() {
 	echo "Setting up network config file for static deployment"
-	if grep -q dhcp $net_int; then
-		sed -i 's/dhcp/static/' $net_int \
-		&& echo -e "        address\n        gateway" >> $net_int
+	if grep -q dhcp $net_interf; then
+		sed -i 's/dhcp/static/' $net_interf \
+		&& echo -e "        address\n        gateway" >> $net_interf
 	fi
 }
 
