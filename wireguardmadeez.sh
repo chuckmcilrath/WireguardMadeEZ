@@ -26,6 +26,31 @@ check_root() {
 	fi
 }
 
+run_apt_update() {
+	export DEBIAN_FRONTEND=noninteractive
+ 	apt update &> /dev/null
+  	echo "Apt update has been completed."
+}
+
+# Check to see if an app is installed.
+check_install() {
+	local install_name="$1"
+
+	echo "looking for $install_name..."
+	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+		echo "Installing $install_name..."
+		apt install $install_name -y &> /dev/null
+		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+			echo "$install_name has been successfully installed."
+		else
+			echo "Installation failed. Please clear the error and try again."
+		exit 1
+		fi
+	else
+		echo "$install_name is already installed. Continuing..."
+	fi
+}
+
 # Check if user entered IP is valid
 is_valid_ip() {
 	local ip=$1
@@ -52,25 +77,6 @@ cidr_check() {
 	((cidr >= 0 && cidr <= 32))
 }
 
-# Check to see if an app is installed.
-check_install() {
-	local install_name="$1"
-
-	echo "looking for $install_name..."
-	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
-		echo "Installing $install_name..."
-		apt install $install_name -y &> /dev/null
-		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
-			echo "$install_name has been successfully installed."
-		else
-			echo "Installation failed. Please clear the error and try again."
-		exit 1
-		fi
-	else
-		echo "$install_name is already installed. Continuing..."
-	fi
-}
-
 # Check user input is 256-bit key for Wireguard configuration file.
 key_check() {
 	local key="$1"
@@ -89,9 +95,36 @@ port_num_check() {
 	return 0
 }
 
+# Checks to see if the config file is already there, if it is, it will break.
+config_file_check() {
+	if [ -f /etc/wireguard/*.conf ]; then
+		echo " **WARNING** Wireguard config found, please run the cleanup option if you need to reinstall."
+		continue
+	fi
+}
 ##################
 # MENU FUNCTIONS #
 ##################
+
+# Main menu of the wireguard script.
+main_menu() {
+	echo
+	cat << EOF
+Choose the install type:
+
+1. (OPTIONAL) Set Static IP
+2. Wireguard Server Install and Setup
+3. Wireguard Server Peer Config
+4. Client Peer Install and Setup
+5. Client Peer Config
+6. Troubleshooting and help
+7. Delete and cleanup
+
+Type "exit" to exit the script
+EOF
+
+read -p ": " install_type
+}
 
 # Checked the network config for DHCP. Changes to static if it is.
 main_1_DHCP_check() {
@@ -195,24 +228,25 @@ systemctl restart networking
 exit 1
 }
 
-# STARTING OPTIONS
-main_menu() {
-	echo
-	cat << EOF
-Choose the install type:
-
-1. (OPTIONAL) Set Static IP
-2. Wireguard Server Install and Setup
-3. Wireguard Server Peer Config
-4. Client Peer Install and Setup
-5. Client Peer Config
-6. Troubleshooting and help
-7. Delete and cleanup
-
-Type "exit" to exit the script
-EOF
-
-read -p ": " install_type
+main_2_DNS_input() {
+# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
+	while true; do
+		read -p "Enter a DNS for Resolved to use (input the gateway or firewall here): " ip
+		if is_valid_ip "$ip"; then
+			echo "Valid IP address: $ip"
+			sed -i "/^#\?DNS=/c\DNS=$ip" "$resolved_path"
+			echo "Restarting systemd-resolved and checking DNS connection..."
+   			systemctl restart systemd-resolved.service
+			if ping -q -c 1 -w 1 "$ip" &> /dev/null ; then
+				echo "ping to "$ip" was successful. Continuing with Installation..."
+				break
+			else
+				echo "ping was unsuccessful, please try again."
+			fi
+		else
+			echo "Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255)."
+		fi
+	done
 }
 
 ###################
@@ -228,12 +262,30 @@ while true; do
    			main_1_gateway_edit
 		;;
   		2)
+			config_file_check
+   			check_install "systemd-resolved"
+			main_2_DNS_input
+			check_install "iptables"
+			check_install "openssh-client"
+			check_install "openssh-server"
+			check_install "openssh-sftp-server"
+			check_install "wireguard"
+	  
 		;;
   		3)
 		;;
   		4)
 		;;
-
+		5)
+  		;;
+		6)
+  		;;
+		7)
+  		;;
+		exit)
+  			echo "Exiting Script..."
+	 		break
+		;;
   		*)
 			echo "Invalid Option. Please try again."
    		;;
