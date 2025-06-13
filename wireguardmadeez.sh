@@ -12,7 +12,6 @@
 
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
-wg_port_num=/etc/wireguard/"$wg_interf"
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 
 ####################
@@ -101,6 +100,7 @@ config_file_creation() {
 	echo "Name your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
+   	touch /etc/wireguard/"$wg_port_name"
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
@@ -110,6 +110,7 @@ config_file_check() {
 		continue
 	fi
 }
+
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -236,6 +237,16 @@ systemctl restart networking
 exit 1
 }
 
+# Checks for necesarry programs
+main_2_program_check() {
+	check_install "systemd-resolved"
+	check_install "iptables"
+	check_install "openssh-client"
+	check_install "openssh-server"
+	check_install "openssh-sftp-server"
+	check_install "wireguard"
+}
+
 main_2_DNS_input() {
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
 	while true; do
@@ -272,6 +283,25 @@ main_2_wg_keygen() {
 	echo "export private_key=$private_key" >> ~/.bashrc
 	echo "export public_key=$public_key" >> ~/.bashrc
 }
+
+main_2_server_config() {
+# Checks and makes the config folder
+	if [ ! -f /etc/wireguard/wg0.conf ]; then
+	cat <<EOF > /etc/wireguard/wg0.conf
+[Interface]
+PrivateKey = $private_key
+Address = 10.15.0.1/32
+ListenPort = 51820
+
+# IP forwarding
+PreUp = sysctl -w net.ipv4.ip_forward=1
+
+# This makes the server act as a router on the network.
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
+EOF
+	fi
+ 
 ###################
 # Start of script #
 ###################
@@ -286,13 +316,9 @@ while true; do
 		;;
   		2)
 			config_file_check
-   			check_install "systemd-resolved"
+   			config_file_creation
+   			main_2_program_check
 			main_2_DNS_input
-			check_install "iptables"
-			check_install "openssh-client"
-			check_install "openssh-server"
-			check_install "openssh-sftp-server"
-			check_install "wireguard"
    			main_2_wg_keygen
 	  
 		;;
