@@ -286,8 +286,8 @@ main_2_wg_keygen() {
 
 main_2_server_config() {
 # Checks and makes the config folder
-	if [ ! -f /etc/wireguard/wg0.conf ]; then
-	cat <<EOF > /etc/wireguard/wg0.conf
+	if [ ! -f /etc/wireguard/"$wg_port_name" ]; then
+	cat <<EOF > /etc/wireguard/"$wg_port_name".conf
 [Interface]
 PrivateKey = $private_key
 Address = 10.15.0.1/32
@@ -300,6 +300,7 @@ PreUp = sysctl -w net.ipv4.ip_forward=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
 EOF
+
 	fi
 }
 
@@ -317,10 +318,11 @@ while true; do
 		;;
   		2)
 			config_file_check
-   			config_file_creation
    			main_2_program_check
+	  		config_file_creation
 			main_2_DNS_input
    			main_2_wg_keygen
+	  		main_2_server_config
 	  
 		;;
   		3)
