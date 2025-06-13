@@ -306,6 +306,7 @@ EOF
 ###################
 # Start of script #
 ###################
+
 while true; do
 	main_menu
  	case "$install_type" in
@@ -317,6 +318,7 @@ while true; do
 		;;
   		2)
 			config_file_check
+   			run_apt_update
    			main_2_program_check
 	  		config_file_creation
 			main_2_DNS_input
