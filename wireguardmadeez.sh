@@ -13,6 +13,7 @@
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 wg_port_num=/etc/wireguard/"$wg_interf"
+interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -93,6 +94,13 @@ port_num_check() {
 	(( num < 1 || num > 65535 )) && return 1
 
 	return 0
+}
+
+# User input for config name
+config_file_creation() {
+	echo "Name your Wireguard Port. This will be used for the config file name."
+ 	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
+  	read -p ": " wg_port_name
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
@@ -249,6 +257,21 @@ main_2_DNS_input() {
 	done
 }
 
+main_2_wg_keygen() {
+# checks to see if the private and public keys are generated.
+	if [ ! -f /etc/wireguard/private.key ]; then
+		umask 077 && wg genkey > /etc/wireguard/private.key
+	fi
+	if [ ! -f /etc/wireguard/public.key ]; then
+		wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
+	fi
+# stores the private and public keys in variables for later use.
+	private_key=$(cat /etc/wireguard/private.key)
+	public_key=$(cat /etc/wireguard/public.key)
+# Exports the varibles to be used ouside of the script
+	echo "export private_key=$private_key" >> ~/.bashrc
+	echo "export public_key=$public_key" >> ~/.bashrc
+}
 ###################
 # Start of script #
 ###################
@@ -270,6 +293,7 @@ while true; do
 			check_install "openssh-server"
 			check_install "openssh-sftp-server"
 			check_install "wireguard"
+   			main_2_wg_keygen
 	  
 		;;
   		3)
