@@ -129,7 +129,7 @@ Choose the install type:
 6. Troubleshooting and help
 7. Delete and cleanup
 
-Type "exit" to exit the script
+Type "exit" to exit the script.
 EOF
 
 read -p ": " install_type
@@ -287,7 +287,7 @@ main_2_wg_keygen() {
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ ! -f /etc/wireguard/wg0.conf ]; then
-	cat <<EOF > /etc/wireguard/wg0.conf
+	cat << EOF > /etc/wireguard/wg0.conf
 [Interface]
 PrivateKey = $private_key
 Address = 10.15.0.1/32
@@ -300,8 +300,8 @@ PreUp = sysctl -w net.ipv4.ip_forward=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
 EOF
-	fi
- 
+}
+
 ###################
 # Start of script #
 ###################
