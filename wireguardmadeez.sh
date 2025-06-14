@@ -347,7 +347,7 @@ EOF
 main_2_enable_wg() {
 	systemctl enable wg-quick@"$wg_port_name".service \
 	&& systemctl daemon-reload \
-	&& systemctl start wg-quick@wg0
+	&& systemctl start wg-quick@"$wg_port_name"
 	echo "The Wireguard Server installation has been completed!"
  }
 
