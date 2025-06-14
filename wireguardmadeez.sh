@@ -288,7 +288,7 @@ main_2_wg_keygen() {
 main_2_server_config() {
 # Checks and makes the config folder
 	local 
-	if [ ! -f "$config_path" ]; then
+	if [ -f "$config_path" ]; then
 		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
