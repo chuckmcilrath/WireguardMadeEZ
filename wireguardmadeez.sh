@@ -107,7 +107,7 @@ config_file_creation() {
 # Checks to see if the config file is already there, if it is, it will break.
 config_file_check() {
 	if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
-		echo " **WARNING** Wireguard config found, please run the cleanup option if you need to reinstall."
+		echo " ***WARNING*** Wireguard config found, please run the cleanup option if you need to reinstall."
 		return 1
 	fi
 }
@@ -120,6 +120,10 @@ config_file_check() {
 main_menu() {
 	echo
 	cat << EOF
+###################
+#### MAIN MENU ####
+###################
+
 Choose the install type:
 
 1. (OPTIONAL) Set Static IP
@@ -238,6 +242,35 @@ systemctl restart networking
 exit 1
 }
 
+# user input for server IP and Network
+main_2_server_network() {
+	echo "Please choose the IP the server will use."
+ 	echo "NOTE: this will also be it's network."
+  	echo "Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these."
+ 	while true; do
+   		read -p ": " server_network_input
+     	if is_valid_ip "$server_network_input"; then
+       		break
+	  	else
+    		echo "IP entered is not a valid IP. Please try again."
+       	fi
+	done
+}
+
+# user input for server port
+main_2_server_port() {
+	echo "Please choose the Port number the server will use."
+  	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
+	while true; do
+   		read -p ": " server_port_input
+     	if port_num_check "$server_port_input"; then
+       		break
+	  	else
+    		echo "Port entered is not a valid port number. Please try again."
+       	fi
+	done
+}
+
 # Checks for necesarry programs
 main_2_program_check() {
 	check_install "systemd-resolved"
@@ -287,12 +320,11 @@ main_2_wg_keygen() {
 
 main_2_server_config() {
 # Checks and makes the config folder
-	local 
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
-Address = 10.15.0.1/32
+Address = $server_network_input/32
 ListenPort = 51820
 
 # IP forwarding
@@ -323,6 +355,8 @@ while true; do
    			run_apt_update
    			main_2_program_check
 	  		config_file_creation
+			main_2_server_network
+			main_2_server_port
 			main_2_DNS_input
    			main_2_wg_keygen
 	  		main_2_server_config  
