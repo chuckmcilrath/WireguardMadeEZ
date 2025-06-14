@@ -288,7 +288,7 @@ main_2_server_config() {
 # Checks and makes the config folder
 	local config_path="/etc/wireguard/$wg_port_name.conf"
 	if [ ! -f /etc/wireguard/"$wg_port_name".conf ]; then
-		cat <<EOF
+		server_config=$(cat <<EOF
 
 [Interface]
 PrivateKey = $private_key
@@ -302,6 +302,8 @@ PreUp = sysctl -w net.ipv4.ip_forward=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
 EOF
+)
+		echo "$server_config" > "$config_path"
 	fi
 }
 
