@@ -97,7 +97,7 @@ port_num_check() {
 
 # User input for config name
 config_file_creation() {
-	echo "Name your Wireguard Port. This will be used for the config file name."
+	echo -e "/nName your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
    	touch /etc/wireguard/"$wg_port_name".conf
@@ -369,7 +369,7 @@ while true; do
 			config_file_check || continue
    			run_apt_update
    			main_2_program_check
-      		main_2_DNS_input
+			main_2_DNS_input
 	  		config_file_creation
 			main_2_server_network
 			main_2_server_port
