@@ -359,7 +359,7 @@ while true; do
 			main_2_server_port
 			main_2_DNS_input
    			main_2_wg_keygen
-	  		main_2_server_config  
+	  		main_2_server_config
 		;;
   		3)
 		;;
