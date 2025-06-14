@@ -105,7 +105,7 @@ config_file_creation() {
 
 # Checks to see if the config file is already there, if it is, it will break.
 config_file_check() {
-	if [ -f /etc/wireguard/*.conf ]; then
+	if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
 		echo " **WARNING** Wireguard config found, please run the cleanup option if you need to reinstall."
 		continue
 	fi
@@ -286,10 +286,11 @@ main_2_wg_keygen() {
 
 main_2_server_config() {
 # Checks and makes the config folder
-	if [ ! -f /etc/wireguard/"$wg_port_name" ]; then
-	cat <<EOF > /etc/wireguard/"$wg_port_name".conf
+	if [ ! -f /etc/wireguard/"$wg_port_name".conf ]; then
+		cat <<EOF > /etc/wireguard/"$wg_port_name".conf
+
 [Interface]
-PrivateKey = $private_key
+PrivateKey = "$private_key"
 Address = 10.15.0.1/32
 ListenPort = 51820
 
@@ -297,8 +298,8 @@ ListenPort = 51820
 PreUp = sysctl -w net.ipv4.ip_forward=1
 
 # This makes the server act as a router on the network.
-PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o "$interf" -j MASQUERADE
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o "$interf" -j MASQUERADE
 EOF
 	fi
 }
@@ -323,8 +324,7 @@ while true; do
 	  		config_file_creation
 			main_2_DNS_input
    			main_2_wg_keygen
-	  		main_2_server_config
-	  
+	  		main_2_server_config  
 		;;
   		3)
 		;;
