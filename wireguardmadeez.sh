@@ -101,13 +101,14 @@ config_file_creation() {
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
    	touch /etc/wireguard/"$wg_port_name".conf
+	config_path="/etc/wireguard/$"wg_port_name".conf"
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
 config_file_check() {
 	if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
 		echo " **WARNING** Wireguard config found, please run the cleanup option if you need to reinstall."
-		continue
+		return 1
 	fi
 }
 
@@ -286,10 +287,9 @@ main_2_wg_keygen() {
 
 main_2_server_config() {
 # Checks and makes the config folder
-	local config_path="/etc/wireguard/$wg_port_name.conf"
-	if [ ! -f /etc/wireguard/"$wg_port_name".conf ]; then
-		server_config=$(cat <<EOF
-
+	local 
+	if [ ! -f "$config_path" ]; then
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = 10.15.0.1/32
@@ -321,7 +321,7 @@ while true; do
    			main_1_gateway_edit
 		;;
   		2)
-			config_file_check
+			config_file_check || continue
    			run_apt_update
    			main_2_program_check
 	  		config_file_creation
