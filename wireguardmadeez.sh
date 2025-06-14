@@ -97,7 +97,7 @@ port_num_check() {
 
 # User input for config name
 config_file_creation() {
-	echo -e "/nName your Wireguard Port. This will be used for the config file name."
+	echo -e "\nName your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
    	touch /etc/wireguard/"$wg_port_name".conf
@@ -249,7 +249,7 @@ exit 1
 
 # user input for server IP and Network
 main_2_server_network() {
-	echo -e "/nPlease choose the IP the server will use."
+	echo -e "\nPlease choose the IP the server will use."
  	echo "NOTE: This will also be it's network. Make it different from your other networks."
   	echo "Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these."
  	while true; do
@@ -264,7 +264,7 @@ main_2_server_network() {
 
 # user input for server port
 main_2_server_port() {
-	echo -e "/nPlease choose the Port number the server will use."
+	echo -e "\nPlease choose the Port number the server will use."
   	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
 	while true; do
    		read -p ": " server_port_input
@@ -289,7 +289,7 @@ main_2_program_check() {
 main_2_DNS_input() {
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
 	while true; do
-		echo -e "/nEnter a DNS for Resolved to use (input the gateway or firewall here)"
+		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
   		read -p ": " dns_ip
 		if is_valid_ip "$dns_ip"; then
 			echo "Valid IP address: $dns_ip"
