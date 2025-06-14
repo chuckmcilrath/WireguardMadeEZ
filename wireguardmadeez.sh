@@ -101,7 +101,7 @@ config_file_creation() {
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
    	touch /etc/wireguard/"$wg_port_name".conf
-	config_path="/etc/wireguard/$"wg_port_name".conf"
+	config_path="/etc/wireguard/${wg_port_name}.conf"
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
@@ -302,7 +302,6 @@ PreUp = sysctl -w net.ipv4.ip_forward=1
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
 EOF
-		echo "$server_config" > "$config_path"
 	fi
 }
 
