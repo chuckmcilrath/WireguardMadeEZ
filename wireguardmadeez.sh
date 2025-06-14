@@ -100,7 +100,7 @@ config_file_creation() {
 	echo "Name your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	read -p ": " wg_port_name
-   	touch /etc/wireguard/"$wg_port_name"
+   	touch /etc/wireguard/"$wg_port_name".conf
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
