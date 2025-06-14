@@ -289,14 +289,15 @@ main_2_program_check() {
 main_2_DNS_input() {
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
 	while true; do
-		read -p "Enter a DNS for Resolved to use (input the gateway or firewall here): " ip
-		if is_valid_ip "$ip"; then
-			echo "Valid IP address: $ip"
-			sed -i "/^#\?DNS=/c\DNS=$ip" "$resolved_path"
+		echo -e "/nEnter a DNS for Resolved to use (input the gateway or firewall here)"
+  		read -p ": " dns_ip
+		if is_valid_ip "$dns_ip"; then
+			echo "Valid IP address: $dns_ip"
+			sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
 			echo "Restarting systemd-resolved and checking DNS connection..."
    			systemctl restart systemd-resolved.service
-			if ping -q -c 1 -w 1 "$ip" &> /dev/null ; then
-				echo "ping to "$ip" was successful. Continuing with Installation..."
+			if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
+				echo "ping to "$dns_ip" was successful. Continuing with Installation..."
 				break
 			else
 				echo "ping was unsuccessful, please try again."
