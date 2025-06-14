@@ -112,6 +112,11 @@ config_file_check() {
 	fi
 }
 
+# print the public key for the user to use in clients.
+print_public_key() {
+	echo -e "\nPrinting the Public key\n\n$public_key\n\n"
+	echo "Please copy this key to use for setting up the client"
+}
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -244,8 +249,8 @@ exit 1
 
 # user input for server IP and Network
 main_2_server_network() {
-	echo "Please choose the IP the server will use."
- 	echo "NOTE: this will also be it's network."
+	echo -e "/nPlease choose the IP the server will use."
+ 	echo "NOTE: This will also be it's network. Make it different from your other networks."
   	echo "Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these."
  	while true; do
    		read -p ": " server_network_input
@@ -259,7 +264,7 @@ main_2_server_network() {
 
 # user input for server port
 main_2_server_port() {
-	echo "Please choose the Port number the server will use."
+	echo -e "/nPlease choose the Port number the server will use."
   	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
 	while true; do
    		read -p ": " server_port_input
@@ -337,6 +342,15 @@ EOF
 	fi
 }
 
+# Enables the Wireguard port as a service to start on boot.
+main_2_enable_wg() {
+	systemctl enable wg-quick@"$wg_port_name".service \
+	&& systemctl daemon-reload \
+	&& systemctl start wg-quick@wg0
+	echo "The Wireguard Server installation has been completed!"
+ }
+
+
 ###################
 # Start of script #
 ###################
@@ -354,12 +368,14 @@ while true; do
 			config_file_check || continue
    			run_apt_update
    			main_2_program_check
+      		main_2_DNS_input
 	  		config_file_creation
 			main_2_server_network
 			main_2_server_port
-			main_2_DNS_input
    			main_2_wg_keygen
 	  		main_2_server_config
+			main_2_enable_wg
+   			print_public_key
 		;;
   		3)
 		;;
