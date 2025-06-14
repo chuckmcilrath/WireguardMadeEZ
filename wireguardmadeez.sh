@@ -120,9 +120,9 @@ config_file_check() {
 main_menu() {
 	echo
 	cat << EOF
-###################
-#### MAIN MENU ####
-###################
+              ###################
+              #### MAIN MENU ####
+              ###################
 
 Choose the install type:
 
@@ -321,11 +321,11 @@ main_2_wg_keygen() {
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
-ListenPort = 51820
+ListenPort = $server_port_input
 
 # IP forwarding
 PreUp = sysctl -w net.ipv4.ip_forward=1
