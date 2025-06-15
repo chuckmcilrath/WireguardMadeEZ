@@ -151,7 +151,8 @@ config_file_check2() {
 	fi
 }
 
-wg_keygen() {
+wg_install_wg_keygen() {
+	check_install "wireguard"
 # checks to see if the private and public keys are generated.
 	if [ ! -f /etc/wireguard/private.key ]; then
 		umask 077 && wg genkey > /etc/wireguard/private.key
@@ -163,8 +164,10 @@ wg_keygen() {
 	private_key=$(cat /etc/wireguard/private.key)
 	public_key=$(cat /etc/wireguard/public.key)
 # Exports the varibles to be used ouside of the script
-	echo "export private_key=$private_key" >> ~/.bashrc
-	echo "export public_key=$public_key" >> ~/.bashrc
+	if ! grep -Eq 'public_key|private_key' ~/.bashrc; then
+ 		echo "export private_key=$private_key" >> ~/.bashrc
+		echo "export public_key=$public_key" >> ~/.bashrc
+  	fi
 }
 
 # print the public key for the user to use in clients.
@@ -302,18 +305,13 @@ systemctl restart networking
 exit 1
 }
 
-# Checks for necesarry programs
-main_2_program_check() {
-	check_install "iptables"
+# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
+main_2_DNS_input_program_check() {
+	check_install "systemd-resolved"
+ 	check_install "iptables"
 	check_install "openssh-client"
 	check_install "openssh-server"
 	check_install "openssh-sftp-server"
-	check_install "wireguard"
-}
-
-# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
-main_2_DNS_input() {
-	check_install "systemd-resolved"
  	while true; do
 		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
   		read -p ": " dns_ip
@@ -410,12 +408,11 @@ while true; do
 	  		spinpid=$!
    			run_apt_update
       		kill "$spinpid"
-   			main_2_program_check
-			main_2_DNS_input
+			main_2_DNS_input_program_check
+   			wg_install_wg_keygen
 	  		config_file_creation
 			main_2_server_network
 			main_2_server_port
-   			wg_keygen
 	  		main_2_server_config
 			main_2_enable_wg
    			print_public_key
