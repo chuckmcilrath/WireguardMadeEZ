@@ -408,8 +408,8 @@ while true; do
    			spin &
 	  		spinpid=$!
    			run_apt_update
+      			kill "$spinpid"
    			main_2_program_check
-	  		kill "$spinpid"
 			main_2_DNS_input
 	  		config_file_creation
 			main_2_server_network
