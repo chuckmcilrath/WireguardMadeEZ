@@ -420,8 +420,6 @@ while true; do
    			print_public_key
 		;;
   		3)
-			while true: do
-   				config_file_check2
 
 		;;
   		4)
