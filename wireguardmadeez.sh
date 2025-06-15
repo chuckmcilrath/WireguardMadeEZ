@@ -408,7 +408,7 @@ while true; do
    			spin &
 	  		spinpid=$!
    			run_apt_update
-      			kill "$spinpid"
+      		kill "$spinpid"
    			main_2_program_check
 			main_2_DNS_input
 	  		config_file_creation
