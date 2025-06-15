@@ -341,7 +341,7 @@ main_2_wg_keygen() {
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
