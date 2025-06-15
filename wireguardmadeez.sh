@@ -39,7 +39,7 @@ spin() {
 
 # Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
-	Echo "Starting apt update..."
+	echo "Starting apt update..."
 	export DEBIAN_FRONTEND=noninteractive
  	apt update &> /dev/null
   	echo "Apt update has been completed."
@@ -307,11 +307,11 @@ exit 1
 
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
 main_2_DNS_input_program_check() {
-	check_install "systemd-resolved"
  	check_install "iptables"
 	check_install "openssh-client"
 	check_install "openssh-server"
 	check_install "openssh-sftp-server"
+ 	check_install "systemd-resolved"
  	while true; do
 		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
   		read -p ": " dns_ip
