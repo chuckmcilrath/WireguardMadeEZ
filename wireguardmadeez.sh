@@ -26,6 +26,17 @@ check_root() {
 	fi
 }
 
+# Spinner display
+spin() {
+  local i=0
+  local sp='|/-\\'
+  local n=${#sp}
+  printf ' '
+  while sleep 0.1; do
+    printf '\b%s' "${sp:i++%n:1}"
+  done
+}
+
 # Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
 	export DEBIAN_FRONTEND=noninteractive
@@ -112,6 +123,7 @@ config_file_creation() {
 		if alphanumeric_check "$wg_port_name"; then
    			touch /etc/wireguard/"$wg_port_name".conf
 			config_path="/etc/wireguard/${wg_port_name}.conf"
+   			return 1
    		else
 	 		echo "Not a valid input. Must be one word that can be alphanumeric."
 		fi
@@ -122,8 +134,36 @@ config_file_creation() {
 config_file_check() {
 	if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
 		echo " ***WARNING*** Wireguard config found, please run the cleanup option if you need to reinstall."
-		return 1
 	fi
+}
+
+
+config_file_check2() {
+	if [ ! -f /etc/wireguard/wg0.conf ]; then
+		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
+		break
+	fi
+ 
+	if grep -q '^EndPoint' /etc/wireguard/wg0.conf; then
+		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
+		break
+	fi
+}
+
+wg_keygen() {
+# checks to see if the private and public keys are generated.
+	if [ ! -f /etc/wireguard/private.key ]; then
+		umask 077 && wg genkey > /etc/wireguard/private.key
+	fi
+	if [ ! -f /etc/wireguard/public.key ]; then
+		wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
+	fi
+# stores the private and public keys in variables for later use.
+	private_key=$(cat /etc/wireguard/private.key)
+	public_key=$(cat /etc/wireguard/public.key)
+# Exports the varibles to be used ouside of the script
+	echo "export private_key=$private_key" >> ~/.bashrc
+	echo "export public_key=$public_key" >> ~/.bashrc
 }
 
 # print the public key for the user to use in clients.
@@ -153,7 +193,7 @@ Choose the install type:
 6. Troubleshooting and help
 7. Delete and cleanup
 
-Type "exit" to exit the script.
+Type "exit" (or ctrl + c) to exit the script.
 EOF
 
 read -p ": " install_type
@@ -322,22 +362,6 @@ main_2_server_port() {
 	done
 }
 
-main_2_wg_keygen() {
-# checks to see if the private and public keys are generated.
-	if [ ! -f /etc/wireguard/private.key ]; then
-		umask 077 && wg genkey > /etc/wireguard/private.key
-	fi
-	if [ ! -f /etc/wireguard/public.key ]; then
-		wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
-	fi
-# stores the private and public keys in variables for later use.
-	private_key=$(cat /etc/wireguard/private.key)
-	public_key=$(cat /etc/wireguard/public.key)
-# Exports the varibles to be used ouside of the script
-	echo "export private_key=$private_key" >> ~/.bashrc
-	echo "export public_key=$public_key" >> ~/.bashrc
-}
-
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ -f "$config_path" ]; then
@@ -381,19 +405,23 @@ while true; do
 		;;
   		2)
 			config_file_check || continue
+   			spin &
+	  		spinpid=$!
    			run_apt_update
    			main_2_program_check
+	  		kill "$spinpid"
 			main_2_DNS_input
 	  		config_file_creation
 			main_2_server_network
 			main_2_server_port
-   			main_2_wg_keygen
+   			wg_keygen
 	  		main_2_server_config
 			main_2_enable_wg
    			print_public_key
 		;;
   		3)
-
+			while true: do
+   				config_file_check2
 
 		;;
   		4)
