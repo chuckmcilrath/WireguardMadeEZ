@@ -39,6 +39,7 @@ spin() {
 
 # Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
+	Echo "Starting apt update..."
 	export DEBIAN_FRONTEND=noninteractive
  	apt update &> /dev/null
   	echo "Apt update has been completed."
