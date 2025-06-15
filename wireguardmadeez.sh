@@ -263,7 +263,6 @@ exit 1
 
 # Checks for necesarry programs
 main_2_program_check() {
-	check_install "systemd-resolved"
 	check_install "iptables"
 	check_install "openssh-client"
 	check_install "openssh-server"
@@ -273,7 +272,8 @@ main_2_program_check() {
 
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
 main_2_DNS_input() {
-	while true; do
+	check_install "systemd-resolved"
+ 	while true; do
 		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
   		read -p ": " dns_ip
 		if is_valid_ip "$dns_ip"; then
