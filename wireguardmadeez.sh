@@ -56,7 +56,7 @@ check_install() {
 alphanumeric_check() {
 	local anum="$1"
 
-	[[ $anum =~ ^[A-Za-z0-9]+$ ]] && return 0 || return 1
+	[[ "$anum" =~ ^[A-Za-z0-9]+$ ]] && return 0 || return 1
 }
 
 # Check if user entered IP is valid
