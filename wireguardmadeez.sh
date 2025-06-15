@@ -26,6 +26,7 @@ check_root() {
 	fi
 }
 
+# Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
 	export DEBIAN_FRONTEND=noninteractive
  	apt update &> /dev/null
@@ -49,6 +50,13 @@ check_install() {
 	else
 		echo "$install_name is already installed. Continuing..."
 	fi
+}
+
+# Check for only letters and numbers.
+alphanumeric_check() {
+	local anum="$1"
+
+	[[ $anum =~ ^[A-Za-z0-9]+$ ]] && return 0 || return 1
 }
 
 # Check if user entered IP is valid
@@ -99,9 +107,15 @@ port_num_check() {
 config_file_creation() {
 	echo -e "\nName your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
-  	read -p ": " wg_port_name
-   	touch /etc/wireguard/"$wg_port_name".conf
-	config_path="/etc/wireguard/${wg_port_name}.conf"
+  	while true; do
+		read -p ": " wg_port_name
+		if alphanumeric_check "$wg_port_name"; then
+   			touch /etc/wireguard/"$wg_port_name".conf
+			config_path="/etc/wireguard/${wg_port_name}.conf"
+   		else
+	 		echo "Not a valid input. Must be one word that can be alphanumeric."
+		fi
+  	done
 }
 
 # Checks to see if the config file is already there, if it is, it will break.
@@ -247,6 +261,38 @@ systemctl restart networking
 exit 1
 }
 
+# Checks for necesarry programs
+main_2_program_check() {
+	check_install "systemd-resolved"
+	check_install "iptables"
+	check_install "openssh-client"
+	check_install "openssh-server"
+	check_install "openssh-sftp-server"
+	check_install "wireguard"
+}
+
+# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
+main_2_DNS_input() {
+	while true; do
+		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
+  		read -p ": " dns_ip
+		if is_valid_ip "$dns_ip"; then
+			echo "Valid IP address: $dns_ip"
+			sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
+			echo "Restarting systemd-resolved and checking DNS connection..."
+   			systemctl restart systemd-resolved.service
+			if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
+				echo "ping to "$dns_ip" was successful. Continuing with Installation..."
+				break
+			else
+				echo "ping was unsuccessful, please try again."
+			fi
+		else
+			echo "Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255)."
+		fi
+	done
+}
+
 # user input for server IP and Network
 main_2_server_network() {
 	echo -e "\nPlease choose the IP the server will use."
@@ -276,38 +322,6 @@ main_2_server_port() {
 	done
 }
 
-# Checks for necesarry programs
-main_2_program_check() {
-	check_install "systemd-resolved"
-	check_install "iptables"
-	check_install "openssh-client"
-	check_install "openssh-server"
-	check_install "openssh-sftp-server"
-	check_install "wireguard"
-}
-
-main_2_DNS_input() {
-# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed.
-	while true; do
-		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
-  		read -p ": " dns_ip
-		if is_valid_ip "$dns_ip"; then
-			echo "Valid IP address: $dns_ip"
-			sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
-			echo "Restarting systemd-resolved and checking DNS connection..."
-   			systemctl restart systemd-resolved.service
-			if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
-				echo "ping to "$dns_ip" was successful. Continuing with Installation..."
-				break
-			else
-				echo "ping was unsuccessful, please try again."
-			fi
-		else
-			echo "Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255)."
-		fi
-	done
-}
-
 main_2_wg_keygen() {
 # checks to see if the private and public keys are generated.
 	if [ ! -f /etc/wireguard/private.key ]; then
@@ -327,7 +341,7 @@ main_2_wg_keygen() {
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -379,6 +393,8 @@ while true; do
    			print_public_key
 		;;
   		3)
+
+
 		;;
   		4)
 		;;
