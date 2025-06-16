@@ -186,6 +186,7 @@ print_public_key_set_aliases() {
 	if ! grep -q 'wgstop=' ~/.bashrc; then
     	printf 'alias wgstop="systemctl stop wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
 	fi
+ 	source ~/.bashrc
 }
 ##################
 # MENU FUNCTIONS #
@@ -419,7 +420,7 @@ while true; do
    			spin &
 	  		spinpid=$!
    			run_apt_update
-      		kill "$spinpid"
+			kill "$spinpid"
 			main_2_DNS_input_program_check
    			wg_install_wg_keygen
 	  		config_file_creation
@@ -427,7 +428,7 @@ while true; do
 			main_2_server_port
 	  		main_2_server_config
 			main_2_enable_wg
-   			print_public_key
+   			print_public_key_set_aliases
 		;;
   		3)
 
