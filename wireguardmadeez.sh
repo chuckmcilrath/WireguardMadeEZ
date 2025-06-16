@@ -140,12 +140,12 @@ config_file_check() {
 
 
 config_file_check2() {
-	if [ ! -f /etc/wireguard/wg0.conf ]; then
+	if [ ! -f /etc/wireguard/$wg_port_name.conf ]; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		break
 	fi
  
-	if grep -q '^EndPoint' /etc/wireguard/wg0.conf; then
+	if grep -q '^EndPoint' /etc/wireguard/$wg_port_name.conf; then
 		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
 		break
 	fi
@@ -153,21 +153,34 @@ config_file_check2() {
 
 wg_install_wg_keygen() {
 	check_install "wireguard"
-# checks to see if the private and public keys are generated.
+	# checks to see if the private and public keys are generated.
 	if [ ! -f /etc/wireguard/private.key ]; then
 		umask 077 && wg genkey > /etc/wireguard/private.key
 	fi
 	if [ ! -f /etc/wireguard/public.key ]; then
 		wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
 	fi
-# stores the private and public keys in variables for later use.
+	# stores the private and public keys in variables for later use.
 	private_key=$(cat /etc/wireguard/private.key)
 	public_key=$(cat /etc/wireguard/public.key)
-# Exports the varibles to be used ouside of the script
-	if ! grep -Eq 'public_key|private_key' ~/.bashrc; then
- 		echo "export private_key=$private_key" >> ~/.bashrc
-		echo "export public_key=$public_key" >> ~/.bashrc
-  	fi
+	# Exports the varibles to be used ouside of the script
+	cp ~/.bashrc ~/.bashrc.bak
+
+	if ! grep -q 'private_key=' ~/.bashrc; then
+		printf 'export private_key="%s"\n' "$private_key" >> ~/.bashrc
+	fi
+
+	if ! grep -q 'public_key=' ~/.bashrc; then
+    	printf 'export public_key="%s"\n' "$public_key" >> ~/.bashrc
+	fi
+
+	if ! grep -q 'wgstart=' ~/.bashrc; then
+    	printf 'aliase wgstart="systemctl start wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
+	fi
+
+	if ! grep -q 'wgstop=' ~/.bashrc; then
+    	printf 'aliase wgstop="systemctl stop wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
+	fi
 }
 
 # print the public key for the user to use in clients.
