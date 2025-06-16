@@ -41,7 +41,10 @@ spin() {
 run_apt_update() {
 	echo "Starting apt update..."
 	export DEBIAN_FRONTEND=noninteractive
- 	apt update &> /dev/null
+	spin &
+	spinpid=$!
+	apt update &> /dev/null
+  	kill "$spinpid"
   	echo "Apt update has been completed."
 }
 
@@ -324,11 +327,14 @@ exit 1
 
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
 main_2_DNS_input_program_check() {
- 	check_install "iptables"
+	spin &
+  	spinpid=$!
+  	check_install "iptables"
 	check_install "openssh-client"
 	check_install "openssh-server"
 	check_install "openssh-sftp-server"
  	check_install "systemd-resolved"
+  	kill "$spinpid"
  	while true; do
 		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
   		read -p ": " dns_ip
@@ -421,10 +427,7 @@ while true; do
 		;;
   		2)
 			config_file_check || continue
-   			spin &
-	  		spinpid=$!
    			run_apt_update
-			kill "$spinpid"
 			main_2_DNS_input_program_check
    			wg_install_wg_keygen
 	  		config_file_creation
