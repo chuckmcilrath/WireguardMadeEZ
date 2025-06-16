@@ -32,10 +32,12 @@ spin() {
   local sp='|/-\\'
   local n=${#sp}
   printf ' '
+  trap 'printf "\b \b"; exit' INT TERM EXIT
   while sleep 0.1; do
     printf '\b%s' "${sp:i++%n:1}"
   done
 }
+
 
 # Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
