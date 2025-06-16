@@ -179,6 +179,7 @@ wg_install_wg_keygen() {
 print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key\n\n$public_key\n\n"
 	echo "Please copy this key to use for setting up the client"
+ 	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
  	if ! grep -q 'wgstart=' ~/.bashrc; then
     	printf 'alias wgstart="systemctl start wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
 	fi
@@ -186,7 +187,10 @@ print_public_key_set_aliases() {
 	if ! grep -q 'wgstop=' ~/.bashrc; then
     	printf 'alias wgstop="systemctl stop wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
 	fi
- 	source ~/.bashrc
+
+ 	if ! grep -q 'wgstatus=' ~/.bashrc; then
+  	printf 'alias wgstatus="systemctl status wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
+   	fi
 }
 ##################
 # MENU FUNCTIONS #
