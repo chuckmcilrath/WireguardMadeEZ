@@ -141,14 +141,17 @@ config_file_check() {
 	fi
 }
 
-
+# checks to see if there is a wireguard config, then stops the setup.
 config_file_check2() {
-	if [ ! -f /etc/wireguard/$wg_port_name.conf ]; then
+	if [ ! -f /etc/wireguard/*.conf ]; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		break
 	fi
- 
-	if grep -q '^EndPoint' /etc/wireguard/$wg_port_name.conf; then
+ }
+
+# checks to see if the config file is set up to be a peer. If it is, it will tell the user.
+config_file_check3() {
+	if grep -q '^Endpoint' /etc/wireguard/$wg_port_name.conf; then
 		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
 		break
 	fi
@@ -195,6 +198,7 @@ print_public_key_set_aliases() {
   	printf 'alias wgstatus="systemctl status wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
    	fi
 }
+
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -387,7 +391,7 @@ main_2_server_port() {
 main_2_server_config() {
 # Checks and makes the config folder
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -438,7 +442,8 @@ while true; do
    			print_public_key_set_aliases
 		;;
   		3)
-
+			while true; do
+   				config_file_check2 || config_file_check3
 		;;
   		4)
 		;;
