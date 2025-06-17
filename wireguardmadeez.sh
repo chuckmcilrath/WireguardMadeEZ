@@ -14,6 +14,7 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
+config_files_array=(/etc/wireguard/*.conf)
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -82,7 +83,6 @@ is_valid_ip() {
 	local -a octets=($ip)
 	[[ "${octets[0]}" -eq 127 ]] && return 1
 	[[ ${#octets[@]} -ne 4 ]] && return 1
-	# Check each octet is between 0 and 255
 	for octet in "${octets[@]}"; do
 		[[ ! "$octet" =~ ^[0-9]+$ ]] && return 1
 		((octet < 0 || octet > 255)) && return 1
@@ -115,14 +115,16 @@ port_num_check() {
 
 # User config file choice
 choosing_config() {
-        if [ -f "$config_files" ]; then
-                echo "Listing config files to choose from."
-                for file in "$config_files"; do
-                        echo "$file"
-                done
-        fi
-        echo -e "\nPlease choose your configuration file to edit."
-        read -p ": " config_choice
+        echo "Available config files:"
+		local i=1
+		for file in "${config_files_array[@]}"; do
+			echo "$i) $file"
+			((i++))
+		done
+		echo -e "\nPlease choose a config file to edit by number."
+		while true; do
+			read -p ": " config_choice
+			
 }
 
 
@@ -151,7 +153,7 @@ config_file_check() {
 
 # checks to see if there is a wireguard config, then stops the setup.
 config_file_check2() {
-	if [ ! -f /etc/wireguard/*.conf ]; then
+	if [ ! -e ${config_files_array[0]} ]; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		break
 	fi
