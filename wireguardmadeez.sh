@@ -13,6 +13,7 @@
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
+config_files=/etc/wireguard/*.conf
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -53,7 +54,6 @@ run_apt_update() {
 # Check to see if an app is installed.
 check_install() {
 	local install_name="$1"
-
 	echo "looking for $install_name..."
 	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
 		echo "Installing $install_name..."
@@ -72,7 +72,6 @@ check_install() {
 # Check for only letters and numbers.
 alphanumeric_check() {
 	local anum="$1"
-
 	[[ "$anum" =~ ^[A-Za-z0-9]+$ ]] && return 0 || return 1
 }
 
@@ -81,23 +80,19 @@ is_valid_ip() {
 	local ip=$1
 	local IFS='.'
 	local -a octets=($ip)
-
 	[[ "${octets[0]}" -eq 127 ]] && return 1
 	[[ ${#octets[@]} -ne 4 ]] && return 1
-
 	# Check each octet is between 0 and 255
 	for octet in "${octets[@]}"; do
 		[[ ! "$octet" =~ ^[0-9]+$ ]] && return 1
 		((octet < 0 || octet > 255)) && return 1
 	done
-
 return 0
 }
 
 # Check the user's CIDR input to make sure it's within 0-32
 cidr_check() {
 	local cidr=$1
-
 	[[ $cidr =~ ^[0-9]+$ ]] || return 1
 	((cidr >= 0 && cidr <= 32))
 }
@@ -105,7 +100,6 @@ cidr_check() {
 # Check user input is 256-bit key for Wireguard configuration file.
 key_check() {
 	local key="$1"
-
 	[[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]] && return 0
 	return 1
 }
@@ -113,22 +107,34 @@ key_check() {
 # Check user input is 
 port_num_check() {
 	local num="$1"
-
 	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
 	(( num < 1 || num > 65535 )) && return 1
 
 	return 0
 }
 
+# User config file choice
+choosing_config() {
+        if [ -f "$config_files" ]; then
+                echo "Listing config files to choose from."
+                for file in "$config_files"; do
+                        echo "$file"
+                done
+        fi
+        echo -e "\nPlease choose your configuration file to edit."
+        read -p ": " config_choice
+}
+
+
 # User input for config name
-config_file_creation() {
+config_file_creation_server() {
 	echo -e "\nName your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	while true; do
 		read -p ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
    			touch /etc/wireguard/"$wg_port_name".conf
-			config_path="/etc/wireguard/${wg_port_name}.conf"
+			config_path_server="/etc/wireguard/${wg_port_name}.conf"
    			return 1
    		else
 	 		echo "Not a valid input. Must be one word that can be alphanumeric."
@@ -138,7 +144,7 @@ config_file_creation() {
 
 # Checks to see if the config file is already there, if it is, it will break.
 config_file_check() {
-	if ls /etc/wireguard/*.conf >/dev/null 2>&1; then
+	if ls "$config_files" >/dev/null 2>&1; then
 		echo " ***WARNING*** Wireguard config found, please run the cleanup option if you need to reinstall."
 	fi
 }
@@ -390,18 +396,16 @@ main_2_server_port() {
 	done
 }
 
-main_2_server_config() {
 # Checks and makes the config folder
+main_2_server_config() {
 	if [ -f "$config_path" ]; then
 		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
 ListenPort = $server_port_input
-
 # IP forwarding
 PreUp = sysctl -w net.ipv4.ip_forward=1
-
 # This makes the server act as a router on the network.
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $interf -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $interf -j MASQUERADE
@@ -444,8 +448,8 @@ while true; do
    			print_public_key_set_aliases
 		;;
   		3)
-			while true; do
-   				config_file_check2 || config_file_check3
+			#while true; do
+   				#config_file_check2 || config_file_check3
 		;;
   		4)
 		;;
