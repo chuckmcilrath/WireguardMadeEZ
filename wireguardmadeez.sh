@@ -136,17 +136,17 @@ choosing_config() {
 
 
 # User input for config name
-config_file_creation_server() {
+config_file_creation() {
 	echo -e "\nName your Wireguard Port. This will be used for the config file name."
  	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
   	while true; do
 		read -p ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
    			touch /etc/wireguard/"$wg_port_name".conf
-			config_path_server="/etc/wireguard/${wg_port_name}.conf"
+			config_path="/etc/wireguard/${wg_port_name}.conf"
    			return 1
    		else
-	 		echo "Not a valid input. Must be one word that can be alphanumeric."
+	 		echo "Not a valid input. Must be an alphanumeric input."
 		fi
   	done
 }
