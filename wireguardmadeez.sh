@@ -115,16 +115,23 @@ port_num_check() {
 
 # User config file choice
 choosing_config() {
-        echo "Available config files:"
-		local i=1
-		for file in "${config_files_array[@]}"; do
-			echo "$i) $file"
-			((i++))
-		done
-		echo -e "\nPlease choose a config file to edit by number."
-		while true; do
-			read -p ": " config_choice
-			
+	echo "Available config files:"
+	local i=1
+	for file in "${config_files_array[@]}"; do
+		echo "$i) $file"
+		((i++))
+	done
+	echo -e "\nPlease choose a config file to edit by number."
+	while true; do
+		read -p ": " config_choice
+   		if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && "$choice" -le "${config_files_array[@]}" ]; then
+			config_choice_final"${config_files_array[$((config_choice -1))]}
+			echo "You chose: $config_choice_final"
+			return 1
+		else
+			echo "Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}."
+		fi
+   	done			
 }
 
 
@@ -155,7 +162,7 @@ config_file_check() {
 config_file_check2() {
 	if [ ! -e ${config_files_array[0]} ]; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
-		break
+		return 1
 	fi
  }
 
@@ -450,8 +457,9 @@ while true; do
    			print_public_key_set_aliases
 		;;
   		3)
-			#while true; do
-   				#config_file_check2 || config_file_check3
+			while true; do
+   				config_file_check2 || break
+	   			choosing_config || continue
 		;;
   		4)
 		;;
