@@ -63,7 +63,7 @@ check_install() {
 			echo "$install_name has been successfully installed."
 		else
 			echo "Installation failed. Please clear the error and try again."
-		exit 1
+			exit 1
 		fi
 	else
 		echo "$install_name is already installed. Continuing..."
@@ -124,10 +124,10 @@ choosing_config() {
 	echo -e "\nPlease choose a config file to edit by number."
 	while true; do
 		read -p ": " config_choice
-   		if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && "$choice" -le "${config_files_array[@]}" ]; then
-			config_choice_final="${config_files_array[$((config_choice -1))]}"
+   		if [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
+			config_choice_final="${config_files_array[$config_choice -1]}"
 			echo "You chose: $config_choice_final"
-			return 1
+			break
 		else
 			echo "Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}."
 		fi
@@ -459,7 +459,7 @@ while true; do
   		3)
 			while true; do
    				config_file_check2 || break
-	   			choosing_config || continue
+	   			choosing_config
        			done
 		;;
   		4)
