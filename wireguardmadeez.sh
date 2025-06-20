@@ -125,13 +125,13 @@ choosing_config() {
 	while true; do
 		read -p ": " config_choice
    		if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && "$choice" -le "${config_files_array[@]}" ]; then
-			config_choice_final"${config_files_array[$((config_choice -1))]}
+			config_choice_final="${config_files_array[$((config_choice -1))]}"
 			echo "You chose: $config_choice_final"
 			return 1
 		else
 			echo "Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}."
 		fi
-   	done			
+   	done	
 }
 
 
@@ -408,7 +408,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -460,6 +460,7 @@ while true; do
 			while true; do
    				config_file_check2 || break
 	   			choosing_config || continue
+       			done
 		;;
   		4)
 		;;
