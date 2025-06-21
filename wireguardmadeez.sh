@@ -14,7 +14,6 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
-config_files_array=(/etc/wireguard/*.conf)
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -115,6 +114,7 @@ port_num_check() {
 
 # User config file choice
 choosing_config() {
+	config_files_array=(/etc/wireguard/*.conf)
 	echo "Available config files:"
 	local i=1
 	for file in "${config_files_array[@]}"; do
@@ -168,7 +168,7 @@ config_file_check2() {
 
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check3() {
-	if grep -q '^Endpoint' /etc/wireguard/$config_choice_final.conf; then
+	if grep -q '^Endpoint' $config_choice_final; then
 		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
 		break
 	fi
@@ -219,8 +219,9 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 peer_server_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = |# ' '/#/{name=$2} /AllowedIPs/{print name, $2}' /etc/wireguard/wg0.conf
+	awk -F' = |# ' '/#/{name=$2} /AllowedIPs/{print name, $2}' "$config_choice_final"
 }
+
 ##################
 # MENU FUNCTIONS #
 ##################
