@@ -245,8 +245,9 @@ exit_selection() {
 }
 
 invalid_option() {
-	echo "Invalid option. Please try again.
+	echo "Invalid option. Please try again."
 }
+
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -525,7 +526,8 @@ while true; do
 	  				;;
 	  				4) # Exit
 	   					exit_selection && break
-		 			*) 
+		 			;;
+		 			*)
 	  					invalid_option
 		 			;;
 		 		esac
