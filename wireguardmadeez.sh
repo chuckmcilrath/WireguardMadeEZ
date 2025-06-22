@@ -83,7 +83,7 @@ check_user_input() {
 	  		break
 	 	fi
 	 done
-{
+}
 
 # Check for only letters and numbers.
 alphanumeric_check() {
@@ -119,7 +119,7 @@ key_check() {
 	return 1
 }
 
-# Check user input is 
+# Check user inputted port number
 port_num_check() {
 	local num="$1"
 	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
@@ -148,7 +148,7 @@ choosing_config() {
 		else
 			echo "Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}."
 		fi
-   	done	
+   	done
 }
 
 
@@ -242,7 +242,10 @@ server_peer_show() {
 # Exit to the previous menu
 exit_selection() {
 	echo "Exiting..."
- 	break
+}
+
+invalid_option() {
+	echo "Invalid option. Please try again.
 }
 ##################
 # MENU FUNCTIONS #
@@ -269,7 +272,7 @@ Choose the install type:
 Type "exit" (or ctrl + c) to exit the script.
 EOF
 
-read -p ": " install_type
+	read -p ": " install_type
 }
 
 # Checked the network config for DHCP. Changes to static if it is.
@@ -466,7 +469,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to a server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> /etc/wireguard/wg0.conf
+	cat <<EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -474,7 +477,6 @@ AllowedIPs = $peer_ip/32
 EOF
 	echo "Peer added successfully. Restarting Wireguard..." \
 	&& systemctl restart wg-quick@$config_basename.service
-	break
 }
 
 ###################
@@ -512,13 +514,20 @@ while true; do
 	   			case "$peer_choice" in 
 	   				1) # Add a Peer
 						server_peer_show
+	  					read -p $'\nEnter a name for the peer\n: ' peer_name
 	  					check_user_input $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
-						check_user_input $'Enter the public key fron the client peer\n: ' peer_key key_check
-	  					sub_3.1_peer_config
+						check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check
+	  					sub_3.1_peer_config && break
+					;;
 					2)
+	 				;;
 	 				3)
+	  				;;
 	  				4) # Exit
-	   					exit_selection
+	   					exit_selection && break
+		 			*) 
+	  					invalid_option
+		 			;;
 		 		esac
        		done
 		;;
@@ -531,11 +540,10 @@ while true; do
 		7)
   		;;
 		exit)
-  			echo "Exiting Script..."
-	 		break
+  			exit_selection && break
 		;;
   		*)
-			echo "Invalid Option. Please try again."
+			invalid_option
    		;;
 	esac
 done
