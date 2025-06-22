@@ -69,6 +69,22 @@ check_install() {
 	fi
 }
 
+# Reusable input validation.
+check_user_input() {
+	local prompt="$1"
+ 	local var_name="$2"
+  	local validation_func="$3"
+	while true; do
+ 		read -p "$prompt" user_input
+		if ! "$validation_func" "$user_input"; then
+  			echo "'$input' is not valid"
+	 	else
+   			eval "$var_name=\"\$user_input\""
+	  		break
+	 	fi
+	 done
+{
+
 # Check for only letters and numbers.
 alphanumeric_check() {
 	local anum="$1"
@@ -126,6 +142,7 @@ choosing_config() {
 		read -p ": " config_choice
    		if [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
 			config_choice_final="${config_files_array[$config_choice -1]}"
+   			config_basename="$(basename "$config_choice_final" .conf)"
 			echo "You chose: $config_choice_final"
 			break
 		else
@@ -217,11 +234,16 @@ print_public_key_set_aliases() {
 }
 
 # Shows the Peers that are on the server.
-peer_server_show() {
+server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
 	awk -F' = |# ' '/#/{name=$2} /AllowedIPs/{print name, $2}' "$config_choice_final"
 }
 
+# Exit to the previous menu
+exit_selection() {
+	echo "Exiting..."
+ 	break
+}
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -436,6 +458,24 @@ main_2_enable_wg() {
 	echo "The Wireguard Server installation has been completed!"
  }
 
+# Peer selection menu.
+main_3_selection_submenu() {
+	echo -e "\nServer Peer Configuration"
+	read -p $'\n1. Add a new Peer.\n2. Remove a Peer.\n3. Edit a Peer.\n4. Exit back to the main menu\n: ' peer_choice
+}
+
+# Adds a peer to a server config.
+sub_3.1_peer_config() {
+	cat <<EOF >> /etc/wireguard/wg0.conf
+[Peer]
+# $peer_name
+PublicKey = $peer_key
+AllowedIPs = $peer_ip/32
+EOF
+	echo "Peer added successfully. Restarting Wireguard..." \
+	&& systemctl restart wg-quick@$config_basename.service
+	break
+}
 
 ###################
 # Start of script #
@@ -444,13 +484,13 @@ main_2_enable_wg() {
 while true; do
 	main_menu
  	case "$install_type" in
-  		1)
+  		1)  # Set static IP
 			main_1_DHCP_check
 			main_1_static_ip_edit
 			main_1_cidr_edit
    			main_1_gateway_edit
 		;;
-  		2)
+  		2)  # Server Install
 			config_file_check || continue
    			run_apt_update
 			main_2_DNS_input_program_check
@@ -462,12 +502,23 @@ while true; do
 			main_2_enable_wg
    			print_public_key_set_aliases
 		;;
-  		3)
+  		3)  # Server Peer editing.
 			#while true; do
    				config_file_check2 || break
 	   			choosing_config
 	   			config_file_check3
-	   			peer_server_show
+	   			server_peer_show
+	   			main_3_selection_submenu
+	   			case "$peer_choice" in 
+	   				1) # Add a Peer
+						server_peer_show
+	  					check_user_input $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
+						check_user_input $'Enter the public key fron the client peer\n: ' peer_key key_check
+	  					sub_3.1_peer_config
+					2)
+	 				3)
+	  				4) # Exit
+	   					exit_selection
        			#done
 		;;
   		4)
