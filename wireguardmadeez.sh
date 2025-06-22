@@ -503,7 +503,7 @@ while true; do
    			print_public_key_set_aliases
 		;;
   		3)  # Server Peer editing.
-			#while true; do
+			while true; do
    				config_file_check2 || break
 	   			choosing_config
 	   			config_file_check3
@@ -519,7 +519,8 @@ while true; do
 	 				3)
 	  				4) # Exit
 	   					exit_selection
-       			#done
+		 		esac
+       		done
 		;;
   		4)
 		;;
