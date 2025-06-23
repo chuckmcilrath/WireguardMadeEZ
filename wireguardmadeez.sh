@@ -130,7 +130,12 @@ port_num_check() {
 
 # User config file choice
 choosing_config() {
-	config_files_array=(/etc/wireguard/*.conf)
+	unset config_choice_final
+ 	unset config_basename
+ 	config_files_array=(/etc/wireguard/*.conf)
+	if ! ls $config_files; then
+ 		continue
+   	fi
 	echo "Available config files:"
 	local i=1
 	for file in "${config_files_array[@]}"; do
@@ -168,15 +173,8 @@ config_file_creation() {
   	done
 }
 
-# Checks to see if the config file is already there, if it is, it will break.
-config_file_check() {
-	if ls "$config_files" >/dev/null 2>&1; then
-		echo " ***WARNING*** Wireguard config found, please run the cleanup option if you need to reinstall."
-	fi
-}
-
 # checks to see if there is a wireguard config, then stops the setup.
-config_file_check2() {
+config_file_check() {
 	if [ ! -e ${config_files_array[0]} ]; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		return 1
@@ -184,7 +182,7 @@ config_file_check2() {
  }
 
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
-config_file_check3() {
+config_file_check_peer() {
 	if grep -q '^Endpoint' $config_choice_final; then
 		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
 		break
@@ -440,7 +438,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -470,7 +468,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to a server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> "$config_choice_final"
+	cat <EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -494,7 +492,7 @@ while true; do
    			main_1_gateway_edit
 		;;
   		2)  # Server Install
-			config_file_check || continue
+			
    			run_apt_update
 			main_2_DNS_input_program_check
    			wg_install_wg_keygen
@@ -507,9 +505,8 @@ while true; do
 		;;
   		3)  # Server Peer editing.
 			while true; do
-   				config_file_check2 || break
 	   			choosing_config
-	   			config_file_check3
+	   			config_file_check_peer
 	   			server_peer_show
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in 
