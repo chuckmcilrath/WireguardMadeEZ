@@ -218,17 +218,26 @@ print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key\n\n$public_key\n\n"
 	echo "Please copy this key to use for setting up the client"
  	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
- 	if ! grep -q 'wgstart=' ~/.bashrc; then
-    	printf 'alias wgstart="systemctl start wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
-	fi
+ 	
+	start_name="${wg_port_name}start"
+	start_line="alias ${start_name}=\"systemctl start wg-quick@${wg_port_name}\""
+	sed -i "/^alias ${start_name}=/d" ~/.bashrc
+	printf '%s\n' "$start_line" >> ~/.bashrc
 
-	if ! grep -q 'wgstop=' ~/.bashrc; then
-    	printf 'alias wgstop="systemctl stop wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
-	fi
+	stop_name="${wg_port_name}stop"
+	stop_line="alias ${stop_name}=\"systemctl stop wg-quick@${wg_port_name}\""
+	sed -i "/^alias ${stop_name}=/d" ~/.bashrc
+	printf '%s\n' "$stop_line" >> ~/.bashrc
 
- 	if ! grep -q 'wgstatus=' ~/.bashrc; then
-  	printf 'alias wgstatus="systemctl status wg-quick@%s"\n' "$wg_port_name" >> ~/.bashrc
-   	fi
+ 	status_name="${wg_port_name}status"
+	status_line="alias ${status_name}=\"systemctl status wg-quick@${wg_port_name}\""
+	sed -i "/^alias ${status_name}=/d" ~/.bashrc
+	printf '%s\n' "$status_line" >> ~/.bashrc
+
+	restart_name="${wg_port_name}restart"
+ 	restart_line="alias ${restart_name}=\"systemctl restart wg-quick@${wg_port_name}\""
+  	sed -i "/^alias ${restart_name}=/d" ~/.bashrc
+	printf '%s\n' "$restart_line" >> ~/.bashrc
 }
 
 # Shows the Peers that are on the server.
@@ -438,7 +447,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -468,7 +477,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to a server config.
 sub_3.1_peer_config() {
-	cat <EOF >> "$config_choice_final"
+	cat <<EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
