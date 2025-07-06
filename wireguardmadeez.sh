@@ -133,9 +133,9 @@ choosing_config() {
 	unset config_choice_final
  	unset config_basename
  	config_files_array=(/etc/wireguard/*.conf)
-	if ! ls $config_files; then
- 		continue
-   	fi
+	if ! compgen -G "${config_files}" > /dev/null; then
+	return 1
+	fi
 	echo "Available config files:"
 	local i=1
 	for file in "${config_files_array[@]}"; do
@@ -514,11 +514,11 @@ while true; do
 		;;
   		3)  # Server Peer editing.
 			while true; do
-	   			choosing_config
+	   			choosing_config || continue
 	   			config_file_check_peer
 	   			server_peer_show
 	   			main_3_selection_submenu
-	   			case "$peer_choice" in 
+	   			case "$peer_choice" in
 	   				1) # Add a Peer
 						server_peer_show
 	  					read -p $'\nEnter a name for the peer\n: ' peer_name
