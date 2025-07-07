@@ -133,9 +133,6 @@ choosing_config() {
 	unset config_choice_final
  	unset config_basename
  	config_files_array=(/etc/wireguard/*.conf)
-	if ! compgen -G "${config_files}" > /dev/null; then
-	return 1
-	fi
 	echo "Available config files:"
 	local i=1
 	for file in "${config_files_array[@]}"; do
@@ -151,7 +148,7 @@ choosing_config() {
 			echo "You chose: $config_choice_final"
 			break
 		else
-			echo "Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}."
+			echo "Invalid choice. Please enter a number between 1 and ${#[@]}."
 		fi
    	done
 }
@@ -175,7 +172,7 @@ config_file_creation() {
 
 # checks to see if there is a wireguard config, then stops the setup.
 config_file_check() {
-	if [ ! -e ${config_files_array[0]} ]; then
+	if ! compgen -G "$config_files"; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		return 1
 	fi
@@ -514,7 +511,8 @@ while true; do
 		;;
   		3)  # Server Peer editing.
 			while true; do
-	   			choosing_config || continue
+   				config_file_check || continue
+	   			choosing_config
 	   			config_file_check_peer
 	   			server_peer_show
 	   			main_3_selection_submenu
