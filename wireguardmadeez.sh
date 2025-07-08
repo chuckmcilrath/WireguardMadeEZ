@@ -87,8 +87,7 @@ check_user_input() {
 
 # Check for only letters and numbers.
 alphanumeric_check() {
-	local anum="$1"
-	[[ "$anum" =~ ^[A-Za-z0-9]+$ ]] && return 0 || return 1
+	[[ $1 ~= ^[[:alnum]]+$ ]]
 }
 
 # Check if user entered IP is valid
@@ -186,20 +185,14 @@ config_file_check_peer() {
 	fi
 }
 
-wg_install_wg_keygen() {
-	check_install "wireguard"
-	# checks to see if the private and public keys are generated.
-	if [ ! -f /etc/wireguard/private.key ]; then
-		umask 077 && wg genkey > /etc/wireguard/private.key
-	fi
-	if [ ! -f /etc/wireguard/public.key ]; then
-		wg pubkey < /etc/wireguard/private.key > /etc/wireguard/public.key
-	fi
-	# stores the private and public keys in variables for later use.
-	private_key=$(cat /etc/wireguard/private.key)
-	public_key=$(cat /etc/wireguard/public.key)
-	# Exports the varibles to be used ouside of the script
-	cp ~/.bashrc ~/.bashrc.bak
+wg_keygen() {
+	# 
+	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
+	wg pubkey < /etc/wireguard/private.key > /etc/wireguard/"$wg_port_name"_public.key
+	# 
+	"$wg_port_name"_private_key=$(cat /etc/wireguard/"$wg_port_name"_private.key)
+	"$wg_port_name"_public_key=$(cat /etc/wireguard/"$wg_port_name"_public.key)
+	# 
 
 	if ! grep -q 'private_key=' ~/.bashrc; then
 		printf 'export private_key="%s"\n' "$private_key" >> ~/.bashrc
@@ -386,6 +379,7 @@ exit 1
 main_2_DNS_input_program_check() {
 	spin &
   	spinpid=$!
+	check_install "wireguard"
   	check_install "iptables"
 	check_install "openssh-client"
 	check_install "openssh-server"
@@ -501,8 +495,8 @@ while true; do
 			
    			run_apt_update
 			main_2_DNS_input_program_check
-   			wg_install_wg_keygen
-	  		config_file_creation
+			config_file_creation
+   			# wg_keygen
 			main_2_server_network
 			main_2_server_port
 	  		main_2_server_config
