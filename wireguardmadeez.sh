@@ -188,7 +188,7 @@ config_file_check_peer() {
 wg_keygen() {
 	# 
 	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
-	wg pubkey < /etc/wireguard/private.key > /etc/wireguard/"$wg_port_name"_public.key
+	wg pubkey < /etc/wireguard/"$wg_port_name"_private.key > /etc/wireguard/"$wg_port_name"_public.key
 	# 
 	"$wg_port_name"_private_key=$(cat /etc/wireguard/"$wg_port_name"_private.key)
 	"$wg_port_name"_public_key=$(cat /etc/wireguard/"$wg_port_name"_public.key)
