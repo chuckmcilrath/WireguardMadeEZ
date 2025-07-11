@@ -87,7 +87,7 @@ check_user_input() {
 
 # Check for only letters and numbers.
 alphanumeric_check() {
-	[[ $1 ~= ^[[:alnum:]_]+$ ]]
+	[[ $1 =~ ^[[:alnum:]_]+$ ]]
 }
 
 # Check if user entered IP is valid
