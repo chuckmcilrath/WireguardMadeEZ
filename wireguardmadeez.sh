@@ -186,21 +186,23 @@ config_file_check_peer() {
 }
 
 wg_keygen() {
-	# 
 	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
 	wg pubkey < /etc/wireguard/"$wg_port_name"_private.key > /etc/wireguard/"$wg_port_name"_public.key
-	# 
-	"$wg_port_name"_private_key=$(cat /etc/wireguard/"$wg_port_name"_private.key)
-	"$wg_port_name"_public_key=$(cat /etc/wireguard/"$wg_port_name"_public.key)
-	# 
 
-	if ! grep -q 'private_key=' ~/.bashrc; then
-		printf 'export private_key="%s"\n' "$private_key" >> ~/.bashrc
-	fi
+	unset private_key
+	unset public_key
+	private_key=$(< /etc/wireguard/"$wg_port_name"_private.key)
+	public_key=$(< /etc/wireguard/"$wg_port_name"_public.key)
 
-	if ! grep -q 'public_key=' ~/.bashrc; then
-    	printf 'export public_key="%s"\n' "$public_key" >> ~/.bashrc
-	fi
+	eval "${wg_port_name}_private_key=\"\$private_key\""
+	eval "${wg_port_name}_public_key=\"\$public_key\""
+
+	sed -i "/^export ${wg_port_name}_private_key=/d" ~/.bashrc
+	printf 'export %s="%s"\n' "${wg_port_name}_private_key" "$(cat /etc/wireguard/"$wg_port_name"_private.key)" >> ~/.bashrc
+
+	sed -i "/^export ${wg_port_name}_public_key=/d" ~/.bashrc
+	printf 'export %s="%s"\n' "${wg_port_name}_public_key" "$(cat /etc/wireguard/"$wg_port_name"_public.key)" >> ~/.bashrc
+	 
 }
 
 # print the public key for the user to use in clients.
@@ -496,7 +498,7 @@ while true; do
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
-   			# wg_keygen
+   			wg_keygen
 			main_2_server_network
 			main_2_server_port
 	  		main_2_server_config
