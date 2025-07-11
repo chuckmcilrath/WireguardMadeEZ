@@ -171,7 +171,7 @@ config_file_creation() {
 
 # checks to see if there is a wireguard config, then stops the setup.
 config_file_check() {
-	if ! compgen -G "$config_files"; then
+	if ! compgen -G "$config_files" > /dev/null; then
 		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		return 1
 	fi
