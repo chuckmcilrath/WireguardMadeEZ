@@ -238,6 +238,15 @@ server_peer_show() {
 	awk -F' = |# ' '/#/{name=$2} /AllowedIPs/{print name, $2}' "$config_choice_final"
 }
 
+# Enables the Wireguard port as a service to start on boot.
+enable_wg() {
+	echo "Enabling the port to start on boot..."
+	systemctl enable wg-quick@"$wg_port_name".service \
+	&& systemctl daemon-reload \
+	&& systemctl start wg-quick@"$wg_port_name"
+	echo "The Wireguard installation has been completed!"
+}
+
 # Exit to the previous menu
 exit_selection() {
 	echo "Exiting..."
@@ -377,6 +386,24 @@ systemctl restart networking
 exit 1
 }
 
+main_2_file_check_server() {
+    shopt -s nullglob
+    config_files_array=(/etc/wireguard/*.conf)
+    if ((${#config_files_array[@]} > 0)); then
+        for config_file in "${config_files_array[@]}"; do
+            if grep -q '^ListenPort=' "$config_file"; then
+                echo "There is already a server configuration file configured. Please run Option 3, Server Peer Config"
+                return 1
+            fi
+        done
+    else
+        echo "There are no server configuration files found. Continuing..."
+    fi
+
+	shopt -u nullglob
+}
+
+
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
 main_2_DNS_input_program_check() {
 	spin &
@@ -454,14 +481,6 @@ EOF
 	fi
 }
 
-# Enables the Wireguard port as a service to start on boot.
-main_2_enable_wg() {
-	systemctl enable wg-quick@"$wg_port_name".service \
-	&& systemctl daemon-reload \
-	&& systemctl start wg-quick@"$wg_port_name"
-	echo "The Wireguard Server installation has been completed!"
- }
-
 # Peer selection menu.
 main_3_selection_submenu() {
 	echo -e "\nServer Peer Configuration"
@@ -494,7 +513,7 @@ while true; do
    			main_1_gateway_edit
 		;;
   		2)  # Server Install
-			
+			main_2_file_check_server || continue
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
@@ -502,7 +521,7 @@ while true; do
 			main_2_server_network
 			main_2_server_port
 	  		main_2_server_config
-			main_2_enable_wg
+			enable_wg
    			print_public_key_set_aliases
 		;;
   		3)  # Server Peer editing.
