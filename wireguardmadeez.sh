@@ -470,7 +470,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -490,9 +490,9 @@ main_3_selection_submenu() {
 	read -p $'\n1. Add a new Peer.\n2. Remove a Peer.\n3. Edit a Peer.\n4. Exit back to the main menu\n: ' peer_choice
 }
 
-# Adds a peer to a server config.
+# Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> "$config_choice_final"
+	cat <EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -502,6 +502,19 @@ EOF
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
+# Deletes a peer from the server config.
+sub_3.2_peer_delete() {
+	read -p $'\nWhich user would you like to delete? (case sensitive)\n: ' user_select
+		if grep -q "# $user_select" /etc/wireguard/wg0.conf; then
+			sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
+			sed -i '/^$/N;/^\n$/D' "$config_choice_final"
+			echo "User '$user_select' deleted." \
+			&& systemctl restart wg-quick@${config_basename}.service
+			break
+		else
+			echo -e "${RED}User not found, please try again.${NC}"
+		fi
+}
 ###################
 # Start of script #
 ###################
@@ -542,7 +555,9 @@ while true; do
 						check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check
 	  					sub_3.1_peer_config && break
 					;;
-					2)
+					2) # Delete a Peer
+						server_peer_show
+						sub_3.2_peer_delete
 	 				;;
 	 				3)
 	  				;;
