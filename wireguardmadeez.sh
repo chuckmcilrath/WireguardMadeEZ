@@ -247,7 +247,7 @@ enable_wg() {
 	systemctl enable wg-quick@"$wg_port_name".service \
 	&& systemctl daemon-reload \
 	&& systemctl start wg-quick@"$wg_port_name"
-	echo "The Wireguard installation has been completed!"
+	echo -e "${GREEN}The Wireguard installation has been completed!${NC}"
 }
 
 # Exit to the previous menu
@@ -289,7 +289,7 @@ EOF
 
 # Checked the network config for DHCP. Changes to static if it is.
 main_1_DHCP_check() {
-	echo "Setting up network config file for static deployment"
+	echo "Editing network config file for static deployment"
 	if grep -q dhcp $net_interf; then
 		sed -i 's/dhcp/static/' $net_interf \
 		&& echo -e "        address\n        gateway" >> $net_interf
@@ -298,7 +298,7 @@ main_1_DHCP_check() {
 
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
-	echo -e "\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.\n"
+	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
 	while true; do
 		read -p $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip
 		if is_valid_ip "$static_ip"; then
@@ -341,17 +341,17 @@ while true; do
 					&& echo "Subnet has been added."
 					break 2
 				else
-					echo -e "Failed to change subnet. Please make sure dhcp is on the correct line.\nExiting Script."
+					echo -e "${RED}Failed to change subnet. Please make sure dhcp is on the correct line.\nExiting Script."
 					exit 1
 				fi
 			elif [[ $cidr_confirm == n ]]; then
 				echo "Please try again."
 			else
-				echo "not a valid answer. Please use \"y\" or \"n\"."
+				echo -e "${RED}not a valid answer. Please use \"y\" or \"n\".${NC}"
 			fi
 		done
 	else
-		echo "Not a valid input. Please choose a number 0-32."
+		echo -e "${RED}Not a valid input. Please choose a number 0-32.${NC}"
 	fi
 done
 }
@@ -367,20 +367,20 @@ main_1_gateway_edit() {
 				if [[ $static_gw_confirm = y ]]; then
 					if grep -q address $net_interf; then
 						sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
-						&& echo "Gateway has been changed."
+						&& echo -e "${GREEN}Gateway has been changed.${NC}"
 						break 2
 					else
-						echo -e "Failed to change Gateway. Please make sure dhcp is on the correct line.\nExiting Script."
+						echo -e "${RED}Failed to change Gateway. Something is wrong with your network folder.\nExiting Script.${NC}"
 						exit 1
 					fi
 				elif [[ $static_gw_confirm = n ]]; then
 					echo "Please try again."
 				else
-					echo "not a valid answer. Please use \"y\" or \"n\"."
+					echo -e "${RED}not a valid answer. Please use \"y\" or \"n\".${NC}"
 				fi
 			done
 		else
-			echo "not a valid IP. Please enter a valid IP."
+			echo -e "${RED}not a valid IP. Please enter a valid IP.${NC}"
 		fi
 	done
 
@@ -395,7 +395,7 @@ main_2_file_check_server() {
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
-                echo "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config${NC}"
+                echo -e "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config.${NC}"
                 return 1
             fi
         done
@@ -427,13 +427,13 @@ main_2_DNS_input_program_check() {
 			echo "Restarting systemd-resolved and checking DNS connection..."
    			systemctl restart systemd-resolved.service
 			if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
-				echo "ping to "$dns_ip" was successful. Continuing with Installation..."
+				echo -e "${GREEN}ping to "$dns_ip" was successful. Continuing with Installation...${NC}"
 				break
 			else
-				echo "ping was unsuccessful, please try again."
+				echo -e "${RED}ping was unsuccessful, please try again.${NC}"
 			fi
 		else
-			echo "Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255)."
+			echo -e "${RED}Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255).${NC}"
 		fi
 	done
 }
@@ -448,7 +448,7 @@ main_2_server_network() {
      	if is_valid_ip "$server_network_input"; then
        		break
 	  	else
-    		echo "IP entered is not a valid IP. Please try again."
+    		echo -e "${RED}IP entered is not a valid IP. Please try again.${NC}"
        	fi
 	done
 }
@@ -462,7 +462,7 @@ main_2_server_port() {
      	if port_num_check "$server_port_input"; then
        		break
 	  	else
-    		echo "Port entered is not a valid port number. Please try again."
+    		echo -e "${RED}Port entered is not a valid port number. Please try again.${NC}"
        	fi
 	done
 }
@@ -498,7 +498,7 @@ sub_3.1_peer_config() {
 PublicKey = $peer_key
 AllowedIPs = $peer_ip/32
 EOF
-	echo "Peer added successfully. Restarting Wireguard..." \
+	echo -e "${GREEN}Peer added successfully. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
