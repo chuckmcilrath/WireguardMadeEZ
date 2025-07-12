@@ -14,6 +14,7 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
+NC="\e[0m"
 RED="\e[0;31m"
 GREEN="\e[0;32m"
 
@@ -174,7 +175,7 @@ config_file_creation() {
 # checks to see if there is a wireguard config, then stops the setup.
 config_file_check() {
 	if ! compgen -G "$config_files" > /dev/null; then
-		echo " **WARNING** Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
+		echo -e " ${RED}**WARNING**${NC} Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
 		return 1
 	fi
  }
@@ -182,7 +183,7 @@ config_file_check() {
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -q '^Endpoint' $config_choice_final; then
-		echo -e "\n **WARNING** This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
+		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
 		break
 	fi
 }
@@ -209,7 +210,7 @@ wg_keygen() {
 
 # print the public key for the user to use in clients.
 print_public_key_set_aliases() {
-	echo -e "\nPrinting the Public key\n\n$public_key\n\n"
+	echo -e "\nPrinting the Public key\n\n${GREEN}$public_key${NC}\n\n"
 	echo "Please copy this key to use for setting up the client"
  	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
  	
@@ -394,7 +395,7 @@ main_2_file_check_server() {
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
-                echo "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config"
+                echo "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config${NC}"
                 return 1
             fi
         done
