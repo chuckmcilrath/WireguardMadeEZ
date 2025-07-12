@@ -14,6 +14,8 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
+RED="\e[0;31m"
+GREEN="\e[0;32m"
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -391,8 +393,8 @@ main_2_file_check_server() {
     config_files_array=(/etc/wireguard/*.conf)
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
-            if grep -q '^ListenPort=' "$config_file"; then
-                echo "There is already a server configuration file configured. Please run Option 3, Server Peer Config"
+            if grep -q '^ListenPort' "$config_file"; then
+                echo "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config"
                 return 1
             fi
         done
