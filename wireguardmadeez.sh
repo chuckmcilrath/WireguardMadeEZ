@@ -64,11 +64,11 @@ check_install() {
 		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
 			echo "$install_name has been successfully installed."
 		else
-			echo "Installation failed. Please clear the error and try again."
+			echo -e "${RED}Installation failed. Please clear the error and try again.${NC}"
 			exit 1
 		fi
 	else
-		echo "$install_name is already installed. Continuing..."
+		echo -e "${GREEN}$install_name is already installed. Continuing...${NC}"
 	fi
 }
 
@@ -138,7 +138,7 @@ choosing_config() {
 	echo "Available config files:"
 	local i=1
 	for file in "${config_files_array[@]}"; do
-		echo "$i) $file"
+		echo -e "${GREEN}$i) $file${NC}"
 		((i++))
 	done
 	echo -e "\nPlease choose a config file to edit by number."
@@ -147,10 +147,10 @@ choosing_config() {
    		if [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
 			config_choice_final="${config_files_array[$config_choice -1]}"
    			config_basename="$(basename "$config_choice_final" .conf)"
-			echo "You chose: $config_choice_final"
+			echo -e "${GREEN}You chose: $config_choice_final${NC}"
 			break
 		else
-			echo "Invalid choice. Please enter a number between 1 and ${#[@]}."
+			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#[@]}.${NC}"
 		fi
    	done
 }
@@ -167,7 +167,7 @@ config_file_creation() {
 			config_path="/etc/wireguard/${wg_port_name}.conf"
    			return 1
    		else
-	 		echo "Not a valid input. Must be an alphanumeric input."
+	 		echo -e "${RED}Not a valid input. Must be an alphanumeric input.${NC}"
 		fi
   	done
 }
@@ -256,7 +256,7 @@ exit_selection() {
 }
 
 invalid_option() {
-	echo "Invalid option. Please try again."
+	echo -e "${RED}Invalid option. Please try again.${NC}"
 }
 
 ##################
@@ -400,7 +400,7 @@ main_2_file_check_server() {
             fi
         done
     else
-        echo "There are no server configuration files found. Continuing..."
+        echo -e "${GREEN}There are no server configuration files found. Continuing...${NC}"
     fi
 
 	shopt -u nullglob
