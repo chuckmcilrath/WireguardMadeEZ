@@ -146,7 +146,7 @@ choosing_config() {
 		read -p ": " config_choice
 		if [[ -z "$config_choice" ]]; then
 			echo "Returning to previous menu."
-			return
+			return 1
    		elif [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
 			config_choice_final="${config_files_array[$config_choice -1]}"
    			config_basename="$(basename "$config_choice_final" .conf)"
@@ -473,7 +473,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -495,7 +495,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <EOF >> "$config_choice_final"
+	cat <<EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -549,7 +549,7 @@ while true; do
   		3)  # Server Peer editing.
 			while true; do
    				config_file_check || continue
-	   			choosing_config
+	   			choosing_config || break
 	   			config_file_check_peer
 	   			server_peer_show
 	   			main_3_selection_submenu
@@ -563,7 +563,7 @@ while true; do
 					;;
 					2) # Delete a Peer
 						server_peer_show
-						sub_3.2_peer_delete
+						sub_3.2_peer_delete && break 2
 	 				;;
 	 				3)
 	  				;;
