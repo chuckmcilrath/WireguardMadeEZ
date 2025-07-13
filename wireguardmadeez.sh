@@ -473,7 +473,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <EOF > "$config_path"
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -495,7 +495,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <EOF >> "$config_choice_final"
+	cat <<EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -542,6 +542,13 @@ Type 'Exit' to go back to the previous menu.
 EOF
 
 	read -p ": " setting_select_3_3
+}
+
+sub_3.3.1_change_public_key() {
+	check_user_input $'Please enter the New Public Key you would like to use\n: ' new_public_key key_check \
+	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
+	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
 }
 ###################
 # Start of script #
@@ -594,6 +601,7 @@ while true; do
 							sub_3.3_menu
 							case "$setting_select_3_3" in
 								1)
+									sub_3.3.1_change_public_key && break
 								;;
 								2)
 								;;
