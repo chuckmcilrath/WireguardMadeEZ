@@ -523,11 +523,17 @@ sub_3.2_peer_delete() {
 }
 
 sub_3.3_user_select() {
-	read -p $'\nWhich user would you like to edit? (case sensitive)\n: ' user_select_3_3
-	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
-		echo -e "${RED}User not found. Try again.${NC}"
-		return 1
-	fi
+	while true; do
+		read -p $'\nWhich user would you like to edit? (Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
+		if grep -q "# $user_select_3_3" "$config_choice_final"; then
+			break
+		elif [[ -z "$user_select_3_3" ]]; then
+			break 2
+		else
+			echo -e "${RED}User not found. Try again.${NC}"
+			return 1
+		fi
+	done
 }
 
 sub_3.3_menu() {
