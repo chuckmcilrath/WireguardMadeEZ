@@ -141,15 +141,18 @@ choosing_config() {
 		echo -e "${GREEN}$i) $file${NC}"
 		((i++))
 	done
-	echo -e "\nPlease choose a config file to edit by number."
+	echo -e "\nPlease choose a config file to edit by number. (Press enter to return to main menu.)"
 	while true; do
 		read -p ": " config_choice
-   		if [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
+		if [[ -z "$config_choice" ]]; then
+			echo "Returning to previous menu."
+			return
+   		elif [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
 			config_choice_final="${config_files_array[$config_choice -1]}"
    			config_basename="$(basename "$config_choice_final" .conf)"
 			echo -e "${GREEN}You chose: $config_choice_final${NC}"
 			break
-		else
+		elif
 			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}. ${NC}"
 		fi
    	done
@@ -504,7 +507,7 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_peer_delete() {
-	read -p $'\nWhich user would you like to delete? (case sensitive)\n(Leave blank to return to previous menu)\n: ' user_select
+	read -p $'\nWhich user would you like to delete? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return
