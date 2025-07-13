@@ -607,6 +607,7 @@ while true; do
 								;;
 								exit)
 									exit_selection && break
+								;;
 								*)
 									invalid_option
 								;;
