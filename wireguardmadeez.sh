@@ -473,7 +473,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -495,7 +495,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> "$config_choice_final"
+	cat <EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -511,8 +511,7 @@ sub_3.2_peer_delete() {
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return 1
-	fi
-	if grep -q "# $user_select" "$config_choice_final"; then
+	elif grep -q "# $user_select" "$config_choice_final"; then
 		sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 		sed -i '/^$/N;/^\n$/D' "$config_choice_final"
 		echo -e "${RED}User '$user_select' deleted.${NC}" \
@@ -521,6 +520,28 @@ sub_3.2_peer_delete() {
 		echo -e "${RED}User not found, please try again.${NC}"
 		return 1
 	fi
+}
+
+sub_3.3_user_select() {
+	read -p $'\nWhich user would you like to edit? (case sensitive)\n: ' user_select_3_3
+	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
+		echo -e "${RED}User not found. Try again.${NC}"
+		return 1
+	fi
+}
+
+sub_3.3_menu() {
+	echo
+	cat << EOF
+Which setting would you like to edit?
+
+1. Change the Public Key.
+2. Change the user's IP.
+
+Type 'Exit' to go back to the previous menu.
+EOF
+
+	read -p ": " setting_select_3_3
 }
 ###################
 # Start of script #
@@ -567,6 +588,22 @@ while true; do
 						sub_3.2_peer_delete && break
 	 				;;
 	 				3)
+						server_peer_show
+						while true; do
+							sub_3.3_user_select
+							sub_3.3_menu
+							case "$setting_select_3_3" in
+								1)
+								;;
+								2)
+								;;
+								exit)
+									exit_selection && break
+								*)
+									invalid_option
+								;;
+							esac
+						done
 	  				;;
 	  				4) # Exit
 	   					exit_selection && break
