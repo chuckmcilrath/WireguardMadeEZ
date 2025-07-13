@@ -152,7 +152,7 @@ choosing_config() {
    			config_basename="$(basename "$config_choice_final" .conf)"
 			echo -e "${GREEN}You chose: $config_choice_final${NC}"
 			break
-		elif
+		else
 			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}. ${NC}"
 		fi
    	done
