@@ -241,7 +241,14 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = |# ' '/#/{name=$2} /AllowedIPs/{print name, $2}' "$config_choice_final"
+	awk -F' = |# ' '
+		/#/{name=$2}
+		/PublicKey/{public=$2}
+		/AllowedIPs/{
+			print name, $2
+			print "PublicKey:", public "\n"
+		}
+	' "$config_choice_final"
 }
 
 # Enables the Wireguard port as a service to start on boot.
@@ -523,17 +530,13 @@ sub_3.2_peer_delete() {
 }
 
 sub_3.3_user_select() {
-	while true; do
-		read -p $'\nWhich user would you like to edit? (Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
-		if grep -q "# $user_select_3_3" "$config_choice_final"; then
-			break
-		elif [[ -z "$user_select_3_3" ]]; then
-			break 2
-		else
-			echo -e "${RED}User not found. Try again.${NC}"
-			return 1
-		fi
-	done
+	read -p $'\nWhich user would you like to edit? (Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
+	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
+		echo -e "${RED}User not found. Please try again.${NC}"
+		return 1
+	elif [[ -z "$user_select_3_3" ]]; then
+		return 1
+	fi
 }
 
 sub_3.3_menu() {
@@ -559,8 +562,8 @@ sub_3.3.1_change_public_key() {
 
 sub_3.3.2_change_ip() {
 	check_user_input $'Please enter the new IP you would like to use\n: ' new_ip is_valid_ip \
-	sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
-	echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
+	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 ###################
@@ -610,7 +613,7 @@ while true; do
 	 				3)
 						server_peer_show
 						while true; do
-							sub_3.3_user_select
+							sub_3.3_user_select || break
 							sub_3.3_menu
 							case "$setting_select_3_3" in
 								1)
