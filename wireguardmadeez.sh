@@ -166,9 +166,13 @@ config_file_creation() {
   	while true; do
 		read -p ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
-   			touch /etc/wireguard/"$wg_port_name".conf
 			config_path="/etc/wireguard/${wg_port_name}.conf"
-   			return 1
+			if [[ ! -f "$config_path" ]]; then
+   				touch /etc/wireguard/"$wg_port_name".conf
+   				return 0
+			else
+				echo -e "${RED}File name already in use, please choose another name for the Wireguard Port.${NC}"
+			fi
    		else
 	 		echo -e "${RED}Not a valid input. Must be an alphanumeric input.${NC}"
 		fi
@@ -566,6 +570,23 @@ sub_3.3.2_change_ip() {
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
+
+main_4_peer_config() {
+	if [ -f "$config_path" ]; then   
+		cat <<EOF > /etc/wireguard/wg0.conf
+[Interface]
+PrivateKey = $private_key
+Address = $peer_address/32
+
+[Peer]
+# Wireguard VM server on local Proxmox
+PublicKey = $peer_pk
+AllowedIPs = $allowed_ips_peer/$allowed_ip_cidr
+Endpoint = $endpoint_address:$port_num
+EOF
+	fi
+}
+
 ###################
 # Start of script #
 ###################
@@ -640,7 +661,19 @@ while true; do
 		 		esac
        		done
 		;;
-  		4)
+  		4) # installs a wireguard port.
+			run_apt_update
+			check_install "wireguard"
+			config_file_creation
+			wg_keygen
+			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
+			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
+			check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
+			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
+			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
+			main_4_peer_config
+			print_public_key_set_aliases
+			enable_wg
 		;;
 		5)
   		;;
