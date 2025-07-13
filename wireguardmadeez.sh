@@ -514,7 +514,7 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_peer_delete() {
-	read -p $'\nWhich user would you like to delete? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select
+	read -p $'\n you like to delete? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return 1
@@ -530,7 +530,7 @@ sub_3.2_peer_delete() {
 }
 
 sub_3.3_user_select() {
-	read -p $'\nWhich user would you like to edit? (Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
+	read -p $'\nWhich user would you like to edit? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
 		return 1
