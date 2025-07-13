@@ -171,7 +171,7 @@ config_file_creation() {
    				touch /etc/wireguard/"$wg_port_name".conf
    				return 0
 			else
-				echo -e "${RED}File name already in use, please choose another name for the Wireguard Port.${NC}"
+				echo -e "${RED}File name already in use, please remove file from /etc/wireguard or choose another name for the Wireguard Port.${NC}"
 			fi
    		else
 	 		echo -e "${RED}Not a valid input. Must be an alphanumeric input.${NC}"
