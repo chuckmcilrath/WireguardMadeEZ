@@ -80,7 +80,7 @@ check_user_input() {
 	while true; do
  		read -p "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
-  			echo "'$input' is not valid"
+  			echo -e "${RED}'${user_input}' is not valid${NC}"
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		break
@@ -150,7 +150,7 @@ choosing_config() {
 			echo -e "${GREEN}You chose: $config_choice_final${NC}"
 			break
 		else
-			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#[@]}.${NC}"
+			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}. ${NC}"
 		fi
    	done
 }
@@ -504,16 +504,19 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_peer_delete() {
-	read -p $'\nWhich user would you like to delete? (case sensitive)\n: ' user_select
-		if grep -q "# $user_select" /etc/wireguard/wg0.conf; then
-			sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
-			sed -i '/^$/N;/^\n$/D' "$config_choice_final"
-			echo "User '$user_select' deleted." \
-			&& systemctl restart wg-quick@${config_basename}.service
-			break
-		else
-			echo -e "${RED}User not found, please try again.${NC}"
-		fi
+	read -p $'\nWhich user would you like to delete? (case sensitive)\n(Leave blank to return to previous menu)\n: ' user_select
+	if [[ -z "$user_select" ]]; then
+		echo "Returning to previous menu."
+		return
+	fi
+	if grep -q "# $user_select" "$config_choice_final"; then
+		sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
+		sed -i '/^$/N;/^\n$/D' "$config_choice_final"
+		echo "User '$user_select' deleted." \
+		&& systemctl restart wg-quick@${config_basename}.service
+	else
+		echo -e "${RED}User not found, please try again.${NC}"
+	fi
 }
 ###################
 # Start of script #
@@ -553,7 +556,7 @@ while true; do
 	  					read -p $'\nEnter a name for the peer\n: ' peer_name
 	  					check_user_input $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
 						check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check
-	  					sub_3.1_peer_config && break
+	  					sub_3.1_peer_config && break 2
 					;;
 					2) # Delete a Peer
 						server_peer_show
