@@ -550,6 +550,13 @@ sub_3.3.1_change_public_key() {
 	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
+
+sub_3.3.2_change_ip() {
+	check_user_input $'Please enter the new IP you would like to use\n: ' new_ip is_valid_ip \
+	sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
+	echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
+}
 ###################
 # Start of script #
 ###################
@@ -604,6 +611,7 @@ while true; do
 									sub_3.3.1_change_public_key && break
 								;;
 								2)
+									sub_3.3.2_change_ip && break
 								;;
 								exit)
 									exit_selection && break
