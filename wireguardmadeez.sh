@@ -510,15 +510,16 @@ sub_3.2_peer_delete() {
 	read -p $'\nWhich user would you like to delete? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
-		return
+		return 1
 	fi
 	if grep -q "# $user_select" "$config_choice_final"; then
 		sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 		sed -i '/^$/N;/^\n$/D' "$config_choice_final"
-		echo "User '$user_select' deleted." \
+		echo -e "${RED}User '$user_select' deleted.${NC}" \
 		&& systemctl restart wg-quick@${config_basename}.service
 	else
 		echo -e "${RED}User not found, please try again.${NC}"
+		return 1
 	fi
 }
 ###################
@@ -559,11 +560,11 @@ while true; do
 	  					read -p $'\nEnter a name for the peer\n: ' peer_name
 	  					check_user_input $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
 						check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check
-	  					sub_3.1_peer_config && break 2
+	  					sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer
 						server_peer_show
-						sub_3.2_peer_delete && break 2
+						sub_3.2_peer_delete && break
 	 				;;
 	 				3)
 	  				;;
