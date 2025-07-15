@@ -81,6 +81,9 @@ check_user_input() {
  		read -p "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
   			echo -e "${RED}'${user_input}' is not valid${NC}"
+		elif [[ -z "$config_choice" ]]; then
+			echo "Returning to previous menu."
+			return 1
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		break
@@ -710,6 +713,7 @@ while true; do
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
 			check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
+			check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
 			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
 			main_4_peer_config
