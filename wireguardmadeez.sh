@@ -190,8 +190,16 @@ config_file_check() {
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -q '^Endpoint' $config_choice_final; then
-		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Peer. Please run the \"Client Peer Config\" option instead."
-		break
+		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Peer. Please try again."
+		return 1
+	fi
+}
+
+# Checks to see if the config file is set up to be a server. If it is, it will tell the user.
+config_file_check_server() {
+	if grep -q '^ListenPort' $config_choice_final; then
+		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Server. Please try again."
+		return 1
 	fi
 }
 
@@ -484,7 +492,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -506,7 +514,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> "$config_choice_final"
+	cat <EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -573,7 +581,7 @@ sub_3.3.2_change_ip() {
 
 main_4_peer_config() {
 	if [ -f "$config_path" ]; then   
-		cat <<EOF > /etc/wireguard/wg0.conf
+		cat <EOF > /etc/wireguard/wg0.conf
 [Interface]
 PrivateKey = $private_key
 Address = $peer_address/32
@@ -587,6 +595,21 @@ EOF
 	fi
 }
 
+main_5_menu() {
+	echo
+	cat << EOF
+Which setting would you like to edit?
+
+1. Edit the peer address.
+2. Edit the remote Wireguard Public Key.
+3. Edit Allowed Networks.
+4. Edit the IP and Port of the Endpoint. (The server this peer is connecting to).
+
+Type 'Exit' to go back to the previous menu.
+EOF
+
+	read -p ": " setting_select_5
+}
 ###################
 # Start of script #
 ###################
@@ -675,7 +698,15 @@ while true; do
 			print_public_key_set_aliases
 			enable_wg
 		;;
-		5)
+		5) # Client Peer Config.
+			config_file_check
+			choosing_config
+			config_file_check_server
+			main_5_menu
+			case "$setting_select_5" in
+				1) # Edits the IP Address of the Peer Config.
+				;;
+			esac
   		;;
 		6)
   		;;
