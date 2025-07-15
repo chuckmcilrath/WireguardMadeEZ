@@ -610,6 +610,24 @@ EOF
 
 	read -p ": " setting_select_5
 }
+
+sub_5.1_edit_ip() {
+	echo -e "\nHere is the IP for this connection:"
+	grep '^Address' "$config_choice_final"
+	check_user_input $'\nPlease enter the new IP you would like to use\n: ' new_peer_ip is_valid_ip \
+	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
+	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
+}
+
+sub_5.2_edit_public_key() {
+	echo -e "\nHere is the Public Key for the Remote Wireguard Server:\n"
+	grep '^PublicKey' "$config_choice_final"
+	check_user_input $'\nPlease enter the new Public Key\n: ' new_peer_public_key
+	sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
+	&& echo -e "${GREEN}The Public Key has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
+}
 ###################
 # Start of script #
 ###################
@@ -705,6 +723,12 @@ while true; do
 			main_5_menu
 			case "$setting_select_5" in
 				1) # Edits the IP Address of the Peer Config.
+					sub_5.1_edit_ip
+				;;
+				2) # Edits the Public Key of the Remote Wireguard Server this peer is connecting to.
+					sub_5.2_edit_public_key
+				;;
+				3)
 				;;
 			esac
   		;;
