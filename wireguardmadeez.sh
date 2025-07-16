@@ -79,11 +79,11 @@ check_user_input() {
   	local validation_func="$3"
 	while true; do
  		read -p "$prompt" user_input
-		if ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not valid${NC}"
-		elif [[ -z "$config_choice" ]]; then
+		if [[ -z "$user_input" ]]; then
 			echo "Returning to previous menu."
 			return 1
+		elif ! "$validation_func" "$user_input"; then
+  			echo -e "${RED}'${user_input}' is not valid${NC}"
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		break
