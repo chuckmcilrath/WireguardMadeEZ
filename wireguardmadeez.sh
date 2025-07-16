@@ -91,6 +91,23 @@ check_user_input() {
 	 done
 }
 
+check_user_input_y_N() {
+	local prompt="$1"
+	while true; do
+		read -p "$prompt" user_input
+		user_input="${user_input,,}"  # convert to lowercase
+		if [[ -z "$user_input" || "$user_input" == "n" ]]; then
+			echo "Returning to previous menu."
+			return 1
+		elif [[ "$user_input" == "y" ]]; then
+			break
+		else
+			echo "Invalid input. Please enter 'y' or 'n'."
+		fi
+	done
+}
+
+
 # Check for only letters and numbers.
 alphanumeric_check() {
 	[[ $1 =~ ^[[:alnum:]_]+$ ]]
@@ -582,9 +599,20 @@ sub_3.3.2_change_ip() {
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
+main_4_more_networks() {
+	check_user_input_y_N -p $'Would you like to add more Allowed Networks?' \
+	&& check_user_input  $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip \
+	&& check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check
+	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_choice_final" \
+	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_choice_final" \
+	&& systemctl restart wg-quick@${config_basename}.service
+	echo "Allowed Network has been updated and the Wireguard service has been restarted."
+    break
+}
+
 main_4_peer_config() {
 	if [ -f "$config_path" ]; then   
-		cat <<EOF > /etc/wireguard/wg0.conf
+		cat <<EOF > "$config_choice_final"
 [Interface]
 PrivateKey = $private_key
 Address = $peer_address/32
@@ -712,8 +740,9 @@ while true; do
 			wg_keygen
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
-			check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
+			check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
 			check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
+			main_4_more_networks
 			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
 			main_4_peer_config
