@@ -610,7 +610,7 @@ main_4_more_networks_loop() {
 
 main_4_peer_config() {
 	if [ -f "$config_path" ]; then   
-		cat <<EOF > etc/wireguard/"$wg_port_name".conf
+		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $peer_address/32
