@@ -100,7 +100,7 @@ check_user_input_y_N() {
 			echo "Returning to previous menu."
 			return 1
 		elif [[ "$user_input" == "y" ]]; then
-			break
+			return
 		else
 			echo "Invalid input. Please enter 'y' or 'n'."
 		fi
@@ -599,17 +599,18 @@ sub_3.3.2_change_ip() {
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
-main_4_more_networks() {
-	sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_choice_final"
-	sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_choice_final"
+main_4_more_networks_loop() {
+	echo "Configuration file for "$wg_port_name" has been made."
+	while true; do
+		check_user_input_y_N $' At this time, Would you like to add more Allowed Networks? (y/N)\n: '
+		check_user_input  $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip
+		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check
+ 	done
 }
-
-
-
 
 main_4_peer_config() {
 	if [ -f "$config_path" ]; then   
-		cat <<EOF > "$config_choice_final"
+		cat <<EOF > etc/wireguard/"$wg_port_name"
 [Interface]
 PrivateKey = $private_key
 Address = $peer_address/32
@@ -621,6 +622,11 @@ AllowedIPs = $allowed_ips_peer/$allowed_ip_cidr
 Endpoint = $endpoint_address:$port_num
 EOF
 	fi
+}
+
+main_4_more_networks_sed() {
+	sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_choice_final"
+	sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_choice_final"
 }
 
 main_5_menu() {
@@ -739,13 +745,11 @@ while true; do
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
 			check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
 			check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
-			check_user_input_y_N $'Would you like to add more Allowed Networks?'
-			check_user_input  $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip
-			check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check
 			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
 			main_4_peer_config
-
+			main_4_more_networks_loop
+			main_4_more_networks_sed
 			print_public_key_set_aliases
 			enable_wg
 		;;
