@@ -603,8 +603,10 @@ main_4_more_networks_loop() {
 	echo "Configuration file for "$wg_port_name" has been made."
 	while true; do
 		check_user_input_y_N $' At this time, Would you like to add more Allowed Networks? (y/N)\n: ' || return 1
-		check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip
-		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check
+		check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip \
+		&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_path"
+		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check \
+		&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_path"
  	done
 }
 
@@ -625,8 +627,7 @@ EOF
 }
 
 main_4_more_networks_sed() {
-	sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_path"
-	sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_path"
+	
 }
 
 main_5_menu() {
