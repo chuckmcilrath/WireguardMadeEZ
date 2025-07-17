@@ -137,8 +137,7 @@ cidr_check() {
 # Check user input is 256-bit key for Wireguard configuration file.
 key_check() {
 	local key="$1"
-	[[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]] && return 0
-	return 1
+	[[ "$key" =~ ^[A-Za-z0-9+/]{43}=$ ]]
 }
 
 # Check user inputted port number
@@ -512,7 +511,7 @@ main_2_server_port() {
 # Checks and makes the config folder
 main_2_server_config() {
 	if [ -f "$config_path" ]; then
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
@@ -534,7 +533,7 @@ main_3_selection_submenu() {
 
 # Adds a peer to the server config.
 sub_3.1_peer_config() {
-	cat <<EOF >> "$config_choice_final"
+	cat <EOF >> "$config_choice_final"
 [Peer]
 # $peer_name
 PublicKey = $peer_key
@@ -599,9 +598,21 @@ sub_3.3.2_change_ip() {
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
+main_4_collect_networks_loop() {
+	local ip_list=()
+	while true; do
+		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
+		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
+		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
+		read -p $'Would you like to add another Allowed Network? (y/N): ' another_input
+		check_user_input_y_N another_input || break
+	done
+	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
+}
+
 main_4_peer_config() {
 	if [ -f "$config_path" ]; then   
-		cat <<EOF > "$config_path"
+		cat <EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
 Address = $peer_address/32
@@ -609,23 +620,11 @@ Address = $peer_address/32
 [Peer]
 # Wireguard VM server on local Proxmox
 PublicKey = $peer_pk
-AllowedIPs = $allowed_ips_peer/$allowed_ip_cidr
+AllowedIPs = $collected_ips
 Endpoint = $endpoint_address:$port_num
 EOF
 	fi
 }
-
-main_4_more_networks_loop() {
-	echo "Configuration file for "$wg_port_name" has been made."
-	while true; do
-		check_user_input_y_N $' At this time, Would you like to add more Allowed Networks? (y/N)\n: ' || return 1
-		check_user_input $'Please enter the Allowed Network (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ip_add is_valid_ip \
-		&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_add|" "$config_path"
-		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_cidr_add cidr_check \
-		&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_add|" "$config_path"
- 	done
-}
-
 
 main_5_menu() {
 	echo
@@ -737,23 +736,21 @@ while true; do
   		4) # installs a wireguard port.
 			run_apt_update
 			check_install "wireguard"
-			config_file_creation
+			_creation
 			wg_keygen
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
-			check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
-			check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
+			main_4_collect_networks_loop
 			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
 			main_4_peer_config
-			main_4_more_networks_loop
 			print_public_key_set_aliases
 			enable_wg
 		;;
 		5) # Client Peer Config.
-			config_file_check
+			_check
 			choosing_config
-			config_file_check_server
+			_check_server
 			main_5_menu
 			case "$setting_select_5" in
 				1) # Edits the IP Address of the Peer Config.
