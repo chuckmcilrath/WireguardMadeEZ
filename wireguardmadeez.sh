@@ -607,7 +607,7 @@ main_4_collect_networks_loop() {
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 		read -p $'Would you like to add another Allowed Network? (y/N): ' another_input
-		check_user_input_y_N another_input || break
+		check_user_input_y_N "$another_input" || break
 	done
 	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 }
