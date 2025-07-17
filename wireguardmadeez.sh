@@ -94,7 +94,8 @@ check_user_input() {
 }
 
 check_user_input_y_N() {
-	local prompt="$1"
+	shopt -s compat43
+ 	local prompt="$1"
 	while true; do
 		read -p "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
@@ -107,6 +108,7 @@ check_user_input_y_N() {
 			echo "Invalid input. Please enter 'y' or 'n'."
 		fi
 	done
+	shopt -u compat43
 }
 
 
