@@ -74,6 +74,7 @@ check_install() {
 
 # Reusable input validation.
 check_user_input() {
+	shopt -s compat43
 	local prompt="$1"
  	local var_name="$2"
   	local validation_func="$3"
@@ -81,14 +82,15 @@ check_user_input() {
  		read -p "$prompt" user_input
 		if [[ -z "$user_input" ]]; then
 			echo "Returning to previous menu."
-			return 1
+			continue
 		elif ! "$validation_func" "$user_input"; then
   			echo -e "${RED}'${user_input}' is not valid${NC}"
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		break
 	 	fi
-	 done
+	done
+	shopt -u compat43
 }
 
 check_user_input_y_N() {
@@ -736,7 +738,7 @@ while true; do
   		4) # installs a wireguard port.
 			run_apt_update
 			check_install "wireguard"
-			_creation
+			config_file_creation
 			wg_keygen
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
@@ -748,9 +750,9 @@ while true; do
 			enable_wg
 		;;
 		5) # Client Peer Config.
-			_check
+			#_check
 			choosing_config
-			_check_server
+			config_file_check_server
 			main_5_menu
 			case "$setting_select_5" in
 				1) # Edits the IP Address of the Peer Config.
