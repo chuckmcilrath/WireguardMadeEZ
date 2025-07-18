@@ -74,7 +74,6 @@ check_install() {
 
 # Reusable input validation.
 check_user_input() {
-	shopt -s compat43
 	local prompt="$1"
  	local var_name="$2"
   	local validation_func="$3"
@@ -87,10 +86,9 @@ check_user_input() {
   			echo -e "${RED}'${user_input}' is not valid${NC}"
 	 	else
    			eval "$var_name=\"\$user_input\""
-	  		return
+	  		return 0
 	 	fi
 	done
-	shopt -u compat43
 }
 
 check_user_input_y_N() {
