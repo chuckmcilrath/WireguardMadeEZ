@@ -82,12 +82,12 @@ check_user_input() {
  		read -p "$prompt" user_input
 		if [[ -z "$user_input" ]]; then
 			echo "Returning to previous menu."
-			continue
+			return 1
 		elif ! "$validation_func" "$user_input"; then
   			echo -e "${RED}'${user_input}' is not valid${NC}"
 	 	else
    			eval "$var_name=\"\$user_input\""
-	  		break
+	  		return
 	 	fi
 	done
 	shopt -u compat43
@@ -344,9 +344,8 @@ main_1_DHCP_check() {
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
 	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
-	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip is_valid_ip
-	check_user_input_y_N  $'Are you sure you want to use ${static_ip}? (y/N)' || break
-	grep -q address $net_interf; then
+	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip is_valid_ip || return 1
+	check_user_input_y_N  $'Are you sure you want to use ${static_ip}? (y/N)' || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
 	&& echo "Address has been changed."	
 }
@@ -650,7 +649,7 @@ while true; do
  	case "$install_type" in
   		1)  # Set static IP
 			main_1_DHCP_check
-			main_1_static_ip_edit
+			main_1_static_ip_edit || continue
 			main_1_cidr_edit
    			main_1_gateway_edit
 		;;
