@@ -107,6 +107,21 @@ check_user_input_y_N() {
 	done
 }
 
+check_user_input_Y_n() {
+ 	local prompt="$1"
+	while true; do
+		read -p "$prompt" user_input
+		user_input="${user_input,,}"  # convert to lowercase
+		if [[ -z "$user_input" || "$user_input" == "y" ]]; then
+			echo "Returning to previous menu."
+			return 1
+		elif [[ "$user_input" == "n" ]]; then
+			return
+		else
+			echo "Invalid input. Please enter 'y' or 'n'."
+		fi
+	done
+}
 
 # Check for only letters and numbers.
 alphanumeric_check() {
@@ -341,7 +356,7 @@ main_1_DHCP_check() {
 main_1_static_ip_edit() {
 	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
 	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip is_valid_ip || return 1
-	check_user_input_y_N  "Are you sure you want to use ${static_ip}? (y/N)" || return 1
+	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
 	&& echo "Address has been changed."	
 }
@@ -349,7 +364,7 @@ main_1_static_ip_edit() {
 # Adds the CIDR notation to the end of the user inputed static IP.
 main_1_cidr_edit() {
 	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check || return 1
-	check_user_input_y_N "Are you sure you want to use $cidr_input? (y/N)" || return 1
+	check_user_input_Y_n "Are you sure you want to use $cidr_input? (Y/n)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 	&& echo "Subnet has been added."
 }
@@ -357,7 +372,7 @@ main_1_cidr_edit() {
 # Edits the gateway for static IP
 main_1_gateway_edit() {
 	check_user_input $'Input the gateway\n: ' static_gw is_valid_ip || return 1
-	check_user_input_y_N "Are you sure you want to use $static_gw? (y/N)" || return 1
+	check_user_input_Y_n "Are you sure you want to use $static_gw? (Y/n)" || return 1
 	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
 	&& echo -e "${GREEN}Gateway has been changed.${NC}"
 }
