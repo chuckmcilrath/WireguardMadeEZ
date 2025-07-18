@@ -349,7 +349,7 @@ main_1_static_ip_edit() {
 # Adds the CIDR notation to the end of the user inputed static IP.
 main_1_cidr_edit() {
 	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check || return 1
-	check_user_input_y_N "Are you sure you want to use $cidr_input? (y/n)" || return 1
+	check_user_input_y_N "Are you sure you want to use $cidr_input? (y/N)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 	&& echo "Subnet has been added."
 }
@@ -357,7 +357,7 @@ main_1_cidr_edit() {
 # Edits the gateway for static IP
 main_1_gateway_edit() {
 	check_user_input $'Input the gateway\n: ' static_gw is_valid_ip || return 1
-	check_user_input_y_N "Are you sure you want to use $static_gw? (y/n)" || return 1
+	check_user_input_y_N "Are you sure you want to use $static_gw? (y/N)" || return 1
 	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
 	&& echo -e "${GREEN}Gateway has been changed.${NC}"
 }
@@ -600,10 +600,10 @@ while true; do
  	case "$install_type" in
   		1)  # Set static IP
 			while true; do
-				main_1_DHCP_check
+				main_1_DHCP_check || continue
 				main_1_static_ip_edit || continue
-				main_1_cidr_edit
-   				main_1_gateway_edit
+				main_1_cidr_edit || continue
+   				main_1_gateway_edit || continue
 				break
 			done
 			main_1_apply_network
