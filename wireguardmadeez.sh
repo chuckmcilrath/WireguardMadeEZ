@@ -344,32 +344,11 @@ main_1_DHCP_check() {
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
 	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
-	while true; do
-		read -p $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip
-		if is_valid_ip "$static_ip"; then
-			while true; do
-				echo "Are you sure you want to use $static_ip? (y/n)"
-				read -p ": " static_confirm
-				if [[ $static_confirm == y ]]; then
-					if grep -q address $net_interf; then
-						sed -i "/address/c\        address "$static_ip" " $net_interf \
-						&& echo "Address has been changed."
-						break 2
-					else
-						echo -e "Failed to change address. Please make sure dhcp is on the correct line.\nExiting Script."
-						exit 1
-					fi
-				elif [[ $static_confirm == n ]]; then
-					echo "Please try again."
-					break
-				else
-					echo "not a valid answer. Please use \"y\" or \"n\"."
-				fi
-			done
-		else
-			echo "not a valid IP. Please enter a valid IP."
-		fi
-	done
+	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip is_valid_ip
+	check_user_input_y_N  $'Are you sure you want to use ${static_ip}? (y/N)' || break
+	grep -q address $net_interf; then
+	sed -i "/address/c\        address "$static_ip" " $net_interf \
+	&& echo "Address has been changed."	
 }
 
 # Adds the CIDR notation to the end of the user inputed static IP.
