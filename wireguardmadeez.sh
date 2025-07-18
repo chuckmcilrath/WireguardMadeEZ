@@ -92,7 +92,6 @@ check_user_input() {
 }
 
 check_user_input_y_N() {
-	shopt -s compat43
  	local prompt="$1"
 	while true; do
 		read -p "$prompt" user_input
@@ -106,7 +105,6 @@ check_user_input_y_N() {
 			echo "Invalid input. Please enter 'y' or 'n'."
 		fi
 	done
-	shopt -u compat43
 }
 
 
@@ -350,64 +348,24 @@ main_1_static_ip_edit() {
 
 # Adds the CIDR notation to the end of the user inputed static IP.
 main_1_cidr_edit() {
-while true; do
-	read -p $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input
-	if cidr_check "$cidr_input"; then
-		while true; do
-			echo "Are you sure you want to use $cidr_input? (y/n)"
-			read -p ": " cidr_confirm
-			if [[ $cidr_confirm == y ]]; then
-				if grep -q "$static_ip" $net_interf; then
-					sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
-					&& echo "Subnet has been added."
-					break 2
-				else
-					echo -e "${RED}Failed to change subnet. Please make sure dhcp is on the correct line.\nExiting Script."
-					exit 1
-				fi
-			elif [[ $cidr_confirm == n ]]; then
-				echo "Please try again."
-			else
-				echo -e "${RED}not a valid answer. Please use \"y\" or \"n\".${NC}"
-			fi
-		done
-	else
-		echo -e "${RED}Not a valid input. Please choose a number 0-32.${NC}"
-	fi
-done
+	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check || return 1
+	check_user_input_y_N "Are you sure you want to use $cidr_input? (y/n)" || return 1
+	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
+	&& echo "Subnet has been added."
 }
 
 # Edits the gateway for static IP
 main_1_gateway_edit() {
-	while true; do
-		read -p $'Input the gateway\n: ' static_gw
-		if is_valid_ip "$static_gw"; then
-			while true; do
-				echo "Are you sure you want to use $static_gw? (y/n)"
-				read -p ": " static_gw_confirm
-				if [[ $static_gw_confirm = y ]]; then
-					if grep -q address $net_interf; then
-						sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
-						&& echo -e "${GREEN}Gateway has been changed.${NC}"
-						break 2
-					else
-						echo -e "${RED}Failed to change Gateway. Something is wrong with your network folder.\nExiting Script.${NC}"
-						exit 1
-					fi
-				elif [[ $static_gw_confirm = n ]]; then
-					echo "Please try again."
-				else
-					echo -e "${RED}not a valid answer. Please use \"y\" or \"n\".${NC}"
-				fi
-			done
-		else
-			echo -e "${RED}not a valid IP. Please enter a valid IP.${NC}"
-		fi
-	done
+	check_user_input $'Input the gateway\n: ' static_gw is_valid_ip || return 1
+	check_user_input_y_N "Are you sure you want to use $static_gw? (y/n)" || return 1
+	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
+	&& echo -e "${GREEN}Gateway has been changed.${NC}"
+}
 
-echo -e "Network settings have been updated, and network has been refreshed.\nPlease connect using the new IP.\nExiting script."
-systemctl restart networking
-exit 1
+main_1_apply_network() {
+	echo -e "${GREEN}Network settings have been updated, and network has been refreshed.\nPlease connect using the new IP.\nExiting script.${NC}"
+	systemctl restart networking
+	exit 1
 }
 
 main_2_file_check_server() {
@@ -440,21 +398,16 @@ main_2_DNS_input_program_check() {
  	check_install "systemd-resolved"
   	kill "$spinpid"
  	while true; do
-		echo -e "\nEnter a DNS for Resolved to use (input the gateway or firewall here)"
-  		read -p ": " dns_ip
-		if is_valid_ip "$dns_ip"; then
-			echo "Valid IP address: $dns_ip"
-			sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
-			echo "Restarting systemd-resolved and checking DNS connection..."
-   			systemctl restart systemd-resolved.service
-			if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
-				echo -e "${GREEN}ping to "$dns_ip" was successful. Continuing with Installation...${NC}"
-				break
-			else
-				echo -e "${RED}ping was unsuccessful, please try again.${NC}"
-			fi
+		check_user_input $'\nEnter a DNS for Resolved to use. (The gateway or firewall IP would be best.)\n: ' dns_ip is_valid_ip || break
+		echo "Valid IP address: $dns_ip"
+		sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
+		echo "Restarting systemd-resolved and checking DNS connection..."
+		systemctl restart systemd-resolved.service
+		if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
+			echo -e "${GREEN}ping to "$dns_ip" was successful. Continuing with Installation...${NC}"
+			break
 		else
-			echo -e "${RED}Invalid IP! Please enter a correct IP address (0.0.0.0 - 255.255.255.255).${NC}"
+			echo -e "${RED}ping was unsuccessful, please try again.${NC}"
 		fi
 	done
 }
@@ -653,6 +606,7 @@ while true; do
    				main_1_gateway_edit
 				break
 			done
+			main_1_apply_network
 		;;
   		2)  # Server Install
 			main_2_file_check_server || continue
