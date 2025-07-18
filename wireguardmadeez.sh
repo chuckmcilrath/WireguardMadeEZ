@@ -17,6 +17,7 @@ config_files=/etc/wireguard/*.conf
 NC="\e[0m"
 RED="\e[0;31m"
 GREEN="\e[0;32m"
+YELLOW="\w[0;33m"
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -79,11 +80,26 @@ check_user_input() {
   	local validation_func="$3"
 	while true; do
  		read -p "$prompt" user_input
+		if ! "$validation_func" "$user_input"; then
+  			echo -e "${RED}'${user_input}' is not valid.${NC}Please try again."
+	 	else
+   			eval "$var_name=\"\$user_input\""
+	  		return
+	 	fi
+	done
+}
+
+check_user_input_space() {
+	local prompt="$1"
+ 	local var_name="$2"
+  	local validation_func="$3"
+	while true; do
+ 		read -p "$prompt" user_input
 		if [[ -z "$user_input" ]]; then
 			echo "Returning to previous menu."
 			return 1
 		elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not valid${NC}"
+  			echo -e "${RED}'${user_input}' is not valid.${NC}Please Try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -113,9 +129,9 @@ check_user_input_Y_n() {
 		read -p "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "y" ]]; then
-			return 1
-		elif [[ "$user_input" == "n" ]]; then
 			return
+		elif [[ "$user_input" == "n" ]]; then
+			return 1
 		else
 			echo "Invalid input. Please enter 'y' or 'n'."
 		fi
@@ -429,8 +445,8 @@ main_2_DNS_input_program_check() {
 # user input for server IP and Network
 main_2_server_network() {
 	echo -e "\nPlease choose the IP the server will use."
- 	echo "NOTE: This will also be it's network. Make it different from your other networks."
-  	echo "Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these."
+ 	echo -e "${YELLOW}NOTE: This will also be it's network. Make it different from your other networks.${NC}"
+  	echo "${YELLO}Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these.${NC}"
  	while true; do
    		read -p ": " server_network_input
      	if is_valid_ip "$server_network_input"; then
@@ -645,8 +661,8 @@ while true; do
 	   				1) # Add a Peer
 						server_peer_show
 	  					read -p $'\nEnter a name for the peer\n: ' peer_name
-	  					check_user_input $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
-						check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check
+	  					check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
+						check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
 	  					sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer
