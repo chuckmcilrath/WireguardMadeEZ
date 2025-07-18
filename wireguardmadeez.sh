@@ -646,10 +646,13 @@ while true; do
 	main_menu
  	case "$install_type" in
   		1)  # Set static IP
-			main_1_DHCP_check
-			main_1_static_ip_edit || continue
-			main_1_cidr_edit
-   			main_1_gateway_edit
+			while true; do
+				main_1_DHCP_check
+				main_1_static_ip_edit || continue
+				main_1_cidr_edit
+   				main_1_gateway_edit
+				break
+			done
 		;;
   		2)  # Server Install
 			main_2_file_check_server || continue
