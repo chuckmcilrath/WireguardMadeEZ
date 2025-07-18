@@ -113,7 +113,6 @@ check_user_input_Y_n() {
 		read -p "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "y" ]]; then
-			echo "Returning to previous menu."
 			return 1
 		elif [[ "$user_input" == "n" ]]; then
 			return
