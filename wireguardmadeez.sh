@@ -14,11 +14,11 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
-NC="\e[0m"
-RED="\e[0;31m"
-BLUE="\e[0;34m"
-GREEN="\e[0;32m"
-YELLOW="\e[0;33m"
+NC=$'\e[0m'
+RED=$'\e[0;31m'
+BLUE=$'\e[0;34m'
+GREEN=$'\e[0;32m'
+YELLOW=$'\e[0;33m'
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -314,11 +314,11 @@ print_public_key_set_aliases() {
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
 	awk -F' = |# ' -v blue="$BLUE" -v nc="$NC" '
-	/#/{name=$2}
-	/PublicKey/{public=$2}
-	/AllowedIPs/{
-		print blue name, $2
-		print "PublicKey:", public nc "\n"
+    		/#/{name=$2}
+		/PublicKey/{public=$2}
+		/AllowedIPs/{
+        printf "%s%s%s %s\n", blue, name, nc, $2
+        print "PublicKey:", public "\n"
 	}
 	' "$config_choice_final"
 }
