@@ -149,6 +149,16 @@ check_user_input_Y_n() {
 	done
 }
 
+check_user_input_select() {
+ 	local input_one="$1"
+		if grep -q "# $input_one" "$config_choice_final"; then
+			return
+		else
+			echo -e "${RED}User not found, please try again.${NC}"
+			return 1
+		fi
+}
+
 # Check for only letters and numbers.
 alphanumeric_check() {
 	[[ $1 =~ ^[[:alnum:]_]+$ ]]
@@ -497,8 +507,18 @@ EOF
 
 # Peer selection menu.
 main_3_selection_submenu() {
-	echo -e "\nServer Peer Configuration"
-	read -p $'\n1. Add a new Peer.\n2. Remove a Peer.\n3. Edit a Peer.\n4. Exit back to the main menu\n: ' peer_choice
+	echo
+	cat << EOF
+
+Server Peer Configuration
+
+1. Add a new Peer.
+2. Remove a Peer.
+3. Edit a Peer.
+4. Exit back to the main menu.
+EOF
+
+	read -p ": " peer_choice
 }
 
 # Adds a peer to the server config.
@@ -514,24 +534,23 @@ EOF
 }
 
 # Deletes a peer from the server config.
+sub_3.2_delete_choice() {
+		echo -e "\nWhich user would you like to delete?"
+		echo -e "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)"
+		check_user_input_space ": " user_select_3_2 alphanumeric_check "$alphanumeric_type" || break
+		check_user_input_select user_select_3_2 || continue
+}
+
 sub_3.2_peer_delete() {
-	read -p $'\n Which user would you like to delete? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n: ' user_select
-	if [[ -z "$user_select" ]]; then
-		echo "Returning to previous menu."
-		return 1
-	elif grep -q "# $user_select" "$config_choice_final"; then
-		sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
-		sed -i '/^$/N;/^\n$/D' "$config_choice_final"
-		echo -e "${RED}User '$user_select' deleted.${NC}" \
-		&& systemctl restart wg-quick@${config_basename}.service
-	else
-		echo -e "${RED}User not found, please try again.${NC}"
-		return 1
-	fi
+	sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final" \
+	&& sed -i '/^$/N;/^\n$/D' "$config_choice_final" \
+	&& echo -e "${RED}User '$user_select' deleted.${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 sub_3.3_user_select() {
-	read -p $'\nWhich user would you like to edit? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n: ' user_select_3_3
+	echo -e "Which user would you like to edit? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
+	read -p $': ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
 		return 1
@@ -679,7 +698,10 @@ while true; do
 						sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer
-						server_peer_show
+						while true; do
+							server_peer_show
+							sub_3.2_delete_choice
+						done
 						sub_3.2_peer_delete && break
 	 				;;
 	 				3)
