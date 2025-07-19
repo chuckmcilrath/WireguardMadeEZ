@@ -16,6 +16,7 @@ interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | aw
 config_files=/etc/wireguard/*.conf
 NC="\e[0m"
 RED="\e[0;31m"
+BLUE="\e[0;34m"
 GREEN="\e[0;32m"
 YELLOW="\e[0;33m"
 
@@ -312,13 +313,13 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = |# ' '
-		/#/{name=$2}
-		/PublicKey/{public=$2}
-		/AllowedIPs/{
-			print name, $2
-			print "PublicKey:", public "\n"
-		}
+	awk -F' = |# ' -v blue="$BLUE" -v nc="$NC" '
+	/#/{name=$2}
+	/PublicKey/{public=$2}
+	/AllowedIPs/{
+		print blue name, $2
+		print "PublicKey:", public nc "\n"
+	}
 	' "$config_choice_final"
 }
 
@@ -672,11 +673,11 @@ while true; do
 						while true; do
 							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check
-							unique "$peer_name"
+							unique "$peer_name" || continue
 	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
-							unique "$peer_ip"
+							unique "$peer_ip" || continue
 							check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
-							unique "$peer_key"
+							unique "$peer_key" || continue
 							break
 	  					done
 						sub_3.1_peer_config && break
