@@ -509,7 +509,6 @@ EOF
 main_3_selection_submenu() {
 	echo
 	cat << EOF
-
 Server Peer Configuration
 
 1. Add a new Peer.
