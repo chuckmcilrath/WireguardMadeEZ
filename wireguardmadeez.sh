@@ -707,8 +707,7 @@ while true; do
 					;;
 					2) # Delete a Peer
 						server_peer_show
-						sub_3.2_delete || continue
-						break
+						sub_3.2_delete
 	 				;;
 	 				3)
 						server_peer_show
