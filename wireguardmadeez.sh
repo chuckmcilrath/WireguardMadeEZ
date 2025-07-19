@@ -16,7 +16,7 @@ interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | aw
 config_files=/etc/wireguard/*.conf
 NC=$'\e[0m'
 RED=$'\e[0;31m'
-BLUE=$'\e[0;34m'
+CYAN=$'\e[0;36m'
 GREEN=$'\e[0;32m'
 YELLOW=$'\e[0;33m'
 
@@ -313,11 +313,11 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = |# ' -v blue="$BLUE" -v nc="$NC" '
+	awk -F' = |# ' -v cyan="$CYAN" -v nc="$NC" '
     		/#/{name=$2}
 		/PublicKey/{public=$2}
 		/AllowedIPs/{
-        printf "%s%s%s %s\n", blue, name, nc, $2
+        printf "%s%s%s %s\n", cyan, name, nc, $2
         print "PublicKey:", public "\n"
 	}
 	' "$config_choice_final"
@@ -519,7 +519,7 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_peer_delete() {
-	read -p $'\n you like to delete? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select
+	read -p $'\n Which user would you like to delete? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n: ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return 1
@@ -535,7 +535,7 @@ sub_3.2_peer_delete() {
 }
 
 sub_3.3_user_select() {
-	read -p $'\nWhich user would you like to edit? (Name only. Case sensitive.)\n(Leave blank to return to previous menu)\n: ' user_select_3_3
+	read -p $'\nWhich user would you like to edit? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n: ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
 		return 1
