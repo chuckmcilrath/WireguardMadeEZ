@@ -536,13 +536,13 @@ EOF
 # Deletes a peer from the server config.
 sub_3.2_delete() {
 	echo "Which user would you like to delete?"
-	echo "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
+	echo -e "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
 	read -p $': ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return
 	elif grep -q "# $user_select" "$config_choice_final"; then
-		if check_user_input_Y_n "$user_select" "$config_choice_final"; then
+		if check_user_input_Y_n "Are you sure you want to delete ${user_select}?"; then
 			sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 			sed -i '/^$/N;/^\n$/D' "$config_choice_final"
 			echo -e "${RED}User '$user_select' deleted.${NC}" \
