@@ -557,7 +557,7 @@ sub_3.2_delete() {
 }
 
 sub_3.3_user_select() {
-	echo -e "Which user would you like to edit? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
+	echo -e "Which user would you like to edit?\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)"
 	read -p $': ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
@@ -575,7 +575,7 @@ Which setting would you like to edit?
 1. Change the Public Key.
 2. Change the user's IP.
 
-Type 'Exit' to go back to the previous menu.
+Type 'exit' to go back to the previous menu.
 EOF
 
 	read -p ": " setting_select_3_3
@@ -697,9 +697,9 @@ while true; do
 							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check "$alphanumeric_type"
 							unique "$peer_name" || continue
-	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check "$ip_type"
+	  						check_user_input $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check "$ip_type"
 							unique "$peer_ip" || continue
-							check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check "$key_type"
+							check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check "$key_type"
 							unique "$peer_key" || continue
 							break
 	  					done
