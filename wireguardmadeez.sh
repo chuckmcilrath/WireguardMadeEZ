@@ -252,6 +252,16 @@ config_file_check_server() {
 	fi
 }
 
+# Checks to make sure there isn't another input of the same in the config file.
+unique() {
+	local var_name="$1"
+	if grep -q "$var_name" "$config_choice_final"; then
+		echo -e "${RED}ERROR${NC}"
+		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
+		return 1
+	fi
+}
+
 wg_keygen() {
 	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
 	wg pubkey < /etc/wireguard/"$wg_port_name"_private.key > /etc/wireguard/"$wg_port_name"_public.key
@@ -662,8 +672,11 @@ while true; do
 						while true; do
 							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check
+							unique "$peer_name"
 	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
+							unique "$peer_ip"
 							check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
+							unique "$peer_key"
 							break
 	  					done
 						sub_3.1_peer_config && break
