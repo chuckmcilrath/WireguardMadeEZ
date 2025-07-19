@@ -553,11 +553,11 @@ sub_3.2_delete() {
 }
 
 # sub_3.2_peer_delete() {
-	sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final" \
-	&& sed -i '/^$/N;/^\n$/D' "$config_choice_final" \
-	&& echo -e "${RED}User '$user_select' deleted.${NC}" \
-	&& systemctl restart wg-quick@${config_basename}.service
-}
+#	sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final" \
+#	&& sed -i '/^$/N;/^\n$/D' "$config_choice_final" \
+#	&& echo -e "${RED}User '$user_select' deleted.${NC}" \
+#	&& systemctl restart wg-quick@${config_basename}.service
+#}
 
 sub_3.3_user_select() {
 	echo -e "Which user would you like to edit? (${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
