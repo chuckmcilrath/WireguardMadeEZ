@@ -12,13 +12,21 @@
 
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
-interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
 config_files=/etc/wireguard/*.conf
+
+interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
+
 NC=$'\e[0m'
 RED=$'\e[0;31m'
 CYAN=$'\e[0;36m'
 GREEN=$'\e[0;32m'
 YELLOW=$'\e[0;33m'
+
+alphanumeric_type="input. Only alphanumeric characters allowed."
+ip_type="ip."
+cidr_type="cidr. Only 0-32 allowed."
+key_type="key."
+port_type="port number. Only 49152-65535 may be used."
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -79,10 +87,11 @@ check_user_input() {
 	local prompt="$1"
  	local var_name="$2"
   	local validation_func="$3"
+	local type="$4"
 	while true; do
  		read -p "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not valid.${NC} Please try again."
+  			echo -e "${RED}'${user_input}' is not a valid '${type}'${NC} Please try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -145,7 +154,7 @@ alphanumeric_check() {
 }
 
 # Check if user entered IP is valid
-is_valid_ip() {
+valid_ip_check() {
 	local ip=$1
 	local IFS='.'
 	local -a octets=($ip)
@@ -175,7 +184,7 @@ key_check() {
 port_num_check() {
 	local num="$1"
 	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
-	(( num < 1 || num > 65535 )) && return 1
+	(( num < 49152 || num > 65535 )) && return 1
 
 	return 0
 }
@@ -381,7 +390,7 @@ main_1_DHCP_check() {
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
 	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
-	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip is_valid_ip || return 1
+	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check || return 1
 	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
 	&& echo "Address has been changed."	
@@ -397,7 +406,7 @@ main_1_cidr_edit() {
 
 # Edits the gateway for static IP
 main_1_gateway_edit() {
-	check_user_input $'Input the gateway\n: ' static_gw is_valid_ip || return 1
+	check_user_input $'Input the gateway\n: ' static_gw valid_ip_check || return 1
 	check_user_input_Y_n "Are you sure you want to use $static_gw? (Y/n)" || return 1
 	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
 	&& echo -e "${GREEN}Gateway has been changed.${NC}"
@@ -439,7 +448,7 @@ main_2_DNS_input_program_check() {
  	check_install "systemd-resolved"
   	kill "$spinpid"
  	while true; do
-		check_user_input $'\nEnter a DNS for Resolved to use. (The gateway or firewall IP would be best.)\n: ' dns_ip is_valid_ip || break
+		check_user_input $'\nEnter a DNS for Resolved to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check || break
 		echo "Valid IP address: $dns_ip"
 		sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
 		echo "Restarting systemd-resolved and checking DNS connection..."
@@ -458,28 +467,14 @@ main_2_server_network() {
 	echo -e "\nPlease choose the IP the server will use."
  	echo -e "${YELLOW}NOTE: This will also be it's network. Make it different from your other networks.${NC}"
   	echo "${YELLO}Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these.${NC}"
- 	while true; do
-   		read -p ": " server_network_input
-     	if is_valid_ip "$server_network_input"; then
-       		break
-	  	else
-    		echo -e "${RED}IP entered is not a valid IP. Please try again.${NC}"
-       	fi
-	done
+ 	check_user_input ": " server_network_input valid_ip_check
 }
 
 # user input for server port
 main_2_server_port() {
 	echo -e "\nPlease choose the Port number the server will use."
   	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
-	while true; do
-   		read -p ": " server_port_input
-     	if port_num_check "$server_port_input"; then
-       		break
-	  	else
-    		echo -e "${RED}Port entered is not a valid port number. Please try again.${NC}"
-       	fi
-	done
+	": " server_port_input
 }
 
 # Checks and makes the config folder
@@ -566,7 +561,7 @@ sub_3.3.1_change_public_key() {
 }
 
 sub_3.3.2_change_ip() {
-	check_user_input $'Please enter the new IP you would like to use\n: ' new_ip is_valid_ip \
+	check_user_input $'Please enter the new IP you would like to use\n: ' new_ip valid_ip_check \
 	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -575,7 +570,7 @@ sub_3.3.2_change_ip() {
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer is_valid_ip
+		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer valid_ip_check
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
@@ -618,7 +613,7 @@ EOF
 sub_5.1_edit_ip() {
 	echo -e "\nHere is the IP for this connection:"
 	grep '^Address' "$config_choice_final"
-	check_user_input $'\nPlease enter the new IP you would like to use\n: ' new_peer_ip is_valid_ip \
+	check_user_input $'\nPlease enter the new IP you would like to use\n: ' new_peer_ip valid_ip_check \
 	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -674,7 +669,7 @@ while true; do
 							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check
 							unique "$peer_name" || continue
-	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
+	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check
 							unique "$peer_ip" || continue
 							check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
 							unique "$peer_key" || continue
@@ -721,10 +716,10 @@ while true; do
 			check_install "wireguard"
 			config_file_creation
 			wg_keygen
-			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address is_valid_ip
+			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address valid_ip_check
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check
 			main_4_collect_networks_loop
-			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address is_valid_ip
+			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address valid_ip_check
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check
 			main_4_peer_config
 			print_public_key_set_aliases
