@@ -534,14 +534,25 @@ EOF
 }
 
 # Deletes a peer from the server config.
-sub_3.2_delete_choice() {
-		echo -e "\nWhich user would you like to delete?"
-		echo -e "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)"
-		check_user_input_space ": " user_select_3_2 alphanumeric_check "$alphanumeric_type" || break
-		check_user_input_select user_select_3_2 || continue
+sub_3.2_delete() {
+	echo "Which user would you like to delete?"
+	echo "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
+	read -p $': ' user_select
+	if [[ -z "$user_select" ]]; then
+		echo "Returning to previous menu."
+		break
+	elif grep -q "# $user_select" "$config_choice_final"; then
+		sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
+		sed -i '/^$/N;/^\n$/D' "$config_choice_final"
+		echo -e "${RED}User '$user_select' deleted.${NC}" \
+		&& systemctl restart wg-quick@${config_basename}.service
+	else
+		echo -e "${RED}User not found, please try again.${NC}"
+		return 1
+	fi
 }
 
-sub_3.2_peer_delete() {
+# sub_3.2_peer_delete() {
 	sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final" \
 	&& sed -i '/^$/N;/^\n$/D' "$config_choice_final" \
 	&& echo -e "${RED}User '$user_select' deleted.${NC}" \
@@ -698,11 +709,9 @@ while true; do
 						sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer
-						while true; do
-							server_peer_show
-							sub_3.2_delete_choice
-						done
-						sub_3.2_peer_delete && break
+						server_peer_show
+						sub_3.2_delete
+						# sub_3.2_peer_delete && break
 	 				;;
 	 				3)
 						server_peer_show
