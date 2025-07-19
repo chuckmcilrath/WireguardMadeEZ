@@ -17,7 +17,7 @@ config_files=/etc/wireguard/*.conf
 NC="\e[0m"
 RED="\e[0;31m"
 GREEN="\e[0;32m"
-YELLOW="\w[0;33m"
+YELLOW="\e[0;33m"
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -81,7 +81,7 @@ check_user_input() {
 	while true; do
  		read -p "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not valid.${NC}Please try again."
+  			echo -e "${RED}'${user_input}' is not valid.${NC} Please try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -99,7 +99,7 @@ check_user_input_space() {
 			echo "Returning to previous menu."
 			return 1
 		elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not valid.${NC}Please Try again."
+  			echo -e "${RED}'${user_input}' is not valid.${NC} Please Try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -239,7 +239,7 @@ config_file_check() {
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -q '^Endpoint' $config_choice_final; then
-		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Peer. Please try again."
+		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a Peer. Please try again."
 		return 1
 	fi
 }
@@ -654,16 +654,19 @@ while true; do
 			while true; do
    				config_file_check || continue
 	   			choosing_config || break
-	   			config_file_check_peer
+	   			config_file_check_peer || continue
 	   			server_peer_show
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
 	   				1) # Add a Peer
-						server_peer_show
-	  					read -p $'\nEnter a name for the peer\n: ' peer_name
-	  					check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
-						check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
-	  					sub_3.1_peer_config && break
+						while true; do
+							server_peer_show
+	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check
+	  						check_user_input_space $'Enter the IP for the peer to use\n: ' peer_ip is_valid_ip
+							check_user_input_space $'Enter the public key from the client peer\n: ' peer_key key_check
+							break
+	  					done
+						sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer
 						server_peer_show
