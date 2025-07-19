@@ -91,7 +91,7 @@ check_user_input() {
 	while true; do
  		read -p "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid '${type}'${NC} Please try again."
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -110,7 +110,7 @@ check_user_input_space() {
 			echo "Returning to previous menu."
 			return 1
 		elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid '${type}'${NC} Please Try again."
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please Try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return
@@ -475,7 +475,7 @@ main_2_server_network() {
 main_2_server_port() {
 	echo -e "\nPlease choose the Port number the server will use."
   	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
-	": " server_port_input
+	check_user_input ": " server_port_input port_num_check "$port_type"
 }
 
 # Checks and makes the config folder
