@@ -751,6 +751,24 @@ EOF
 	echo -e "$commands_text"
 }
 
+main_7_delete_menu() {
+	echo
+	cat << EOF
+1. Delete a port's config file and remove its aliases.
+2. Remove Wireguard, delete all config files and aliases.
+EOF
+
+	read -p ": " cleanup_input
+}
+
+sub_7.1_rm_single_config() {
+		check_user_input_y_N $'${RED}***WARNING***${NC} Are you sure you want to delete this config file?\n: ' config_delete_confirm && break
+		rm -f etc/wireguard/${config_basename}*
+		unset "$config_basename"_public_key
+		unset "$config_basename"_private_key
+		sed -i "/^alias ${config_basename}/d" ~/.bashrc
+}
+
 ###################
 # Start of script #
 ###################
@@ -932,7 +950,18 @@ while true; do
 				esac
 			done
   		;;
-		7)
+		7) # Delete and cleanup
+			while true; do
+				main_7_delete_menu
+				case "$cleanup_input" in
+					1) # Deletes a single configuration file and its aliases.
+						choosing_config
+						sub_7.1_rm_single_config
+					;;
+					2) # Deletes Wireguard, all configuration files and removes all aliases.
+					;;
+				esac
+			done
   		;;
 		exit)
   			exit_selection && break
