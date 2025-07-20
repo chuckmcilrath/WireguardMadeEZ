@@ -599,7 +599,7 @@ main_4_collect_networks_loop() {
 		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
-		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' &> /dev/null || break
+		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
 	done
 	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 }
@@ -754,15 +754,19 @@ EOF
 main_7_delete_menu() {
 	echo
 	cat << EOF
+Choose which option you'd like to do:
+
 1. Delete a port's config file and remove its aliases.
 2. Remove Wireguard, delete all config files and aliases.
+
 EOF
 
 	read -p ": " cleanup_input
 }
 
 sub_7.1_rm_single_config() {
-		check_user_input_y_N $'${RED}***WARNING***${NC} Are you sure you want to delete this config file?\n: ' config_delete_confirm && break
+		echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
+		check_user_input_y_N $': ' config_delete_confirm || return 1
 		rm -f etc/wireguard/${config_basename}*
 		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
@@ -956,7 +960,7 @@ while true; do
 				case "$cleanup_input" in
 					1) # Deletes a single configuration file and its aliases.
 						choosing_config
-						sub_7.1_rm_single_config
+						sub_7.1_rm_single_config || break
 					;;
 					2) # Deletes Wireguard, all configuration files and removes all aliases.
 					;;
