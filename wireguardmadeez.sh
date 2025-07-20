@@ -959,7 +959,7 @@ while true; do
 				main_7_delete_menu
 				case "$cleanup_input" in
 					1) # Deletes a single configuration file and its aliases.
-						choosing_config
+						choosing_config || break
 						sub_7.1_rm_single_config || break
 					;;
 					2) # Deletes Wireguard, all configuration files and removes all aliases.
