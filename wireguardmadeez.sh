@@ -699,7 +699,7 @@ sub_5.4_endpoint_edit_menu() {
 3. Exit to the previous menu
 EOF
 
-	reach -p $': ' wan_peer_input
+	read -p $': ' wan_peer_input
 }
 
 sub_5.4.1_change_endpoint() {
@@ -788,7 +788,7 @@ while true; do
 	   			server_peer_show
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
-	   				1) # Add a Peer
+	   				1) # Add a Peer.
 						while true; do
 							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check "$alphanumeric_type"
@@ -801,11 +801,11 @@ while true; do
 	  					done
 						sub_3.1_peer_config && break
 					;;
-					2) # Delete a Peer
+					2) # Delete a Peer.
 						server_peer_show
 						sub_3.2_delete
 	 				;;
-	 				3)
+	 				3) # Edit a Peer.
 						server_peer_show
 						while true; do
 							sub_3.3_user_select || break
@@ -850,63 +850,64 @@ while true; do
 			enable_wg
 		;;
 		5) # Client Peer Config.
-			#_check
-			choosing_config
-			config_file_check_server || continue
-			main_5_menu
-			case "$setting_select_5" in
-				1) # Edits the IP Address of the Peer Config.
-					sub_5.1_edit_ip
-				;;
-				2) # Edits the Public Key of the Remote Wireguard Server this peer is connecting to.
-					sub_5.2_edit_public_key
-				;;
-				3) # Edit the Allowed IP's section. I've named it "Allowed Networks".
-					while true; do
-						sub_5.3_echo
-						sub_5.3_sub_menu
-						case "$allowed_input" in
-							1) # Change the IP.
-								sub_5.3.1_change_ip
-							;;
-							2) # Append a new Allowed Network.
-								sub_5.3.2_append_ip
-							;;
-							3) # Exits the menu
-								exit_selection && break
-							;;
-							*) # all other options are invalid.
-								invalid_option
-							;;
-						esac
-					done
-				;;
-				4) # Edit the Endpoint of the remote Wireguard server this Peer is connecting to
-					while true; do
-	 					sub_5.4_endpoint_edit_menu
-						case "$wan_peer_input" in
-							1) # change the Endpoint for connection.
-								sub_5.4.1_change_endpoint
-							;;
-							2) # Change the port
-								sub_5.4.2_change_port
-							;;
-							3) # Exits the menu
-								exit_selection && break
-							;;
-							4) # All other options are invalid.
-								invalid_option
-							;;
-						esac
-					done
-				;;
-				5) # Exits the menu
-					exit_selection && break
-				;;
-				*) # All other options are invalid.
-					invalid_option
-				;;
-			esac
+			while true; do
+				choosing_config
+				config_file_check_server || continue
+				main_5_menu
+				case "$setting_select_5" in
+					1) # Edits the IP Address of the Peer Config.
+						sub_5.1_edit_ip
+					;;
+					2) # Edits the Public Key of the Remote Wireguard Server this peer is connecting to.
+						sub_5.2_edit_public_key
+					;;
+					3) # Edit the Allowed IP's section. I've named it "Allowed Networks".
+						while true; do
+							sub_5.3_echo
+							sub_5.3_sub_menu
+							case "$allowed_input" in
+								1) # Change the IP.
+									sub_5.3.1_change_ip
+								;;
+								2) # Append a new Allowed Network.
+									sub_5.3.2_append_ip
+								;;
+								3) # Exits the menu
+									exit_selection && break
+								;;
+								*) # all other options are invalid.
+									invalid_option
+								;;
+							esac
+						done
+					;;
+					4) # Edit the Endpoint of the remote Wireguard server this Peer is connecting to
+						while true; do
+	 						sub_5.4_endpoint_edit_menu
+							case "$wan_peer_input" in
+								1) # change the Endpoint for connection.
+									sub_5.4.1_change_endpoint
+								;;
+								2) # Change the port
+									sub_5.4.2_change_port
+								;;
+								3) # Exits the menu
+									exit_selection && break
+								;;
+								4) # All other options are invalid.
+									invalid_option
+								;;
+							esac
+						done
+					;;
+					5) # Exits the menu
+						exit_selection && break
+					;;
+					*) # All other options are invalid.
+						invalid_option
+					;;
+				esac
+			done
   		;;
 		6) # Troubleshooting and help.
 			while true; do
