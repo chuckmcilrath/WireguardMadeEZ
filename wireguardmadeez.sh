@@ -772,7 +772,10 @@ sub_7.1_rm_single_config() {
 			&& unset "$config_basename"_private_key \
 			&& sed -i "/^alias ${config_basename}/d" ~/.bashrc \
 			&& sed -i "/${config_basename}_private_key=/d" ~/.bashrc \
-			&& sed -i "/${config_basename}_public_key=/d" ~/.bashrc
+			&& sed -i "/${config_basename}_public_key=/d" ~/.bashrc \
+			&& modprobe -r wireguard \
+			&& echo -e "${GREEN}Success${NC} Returning to previous menu"
+			return
 		else
 			return 1
 		fi
