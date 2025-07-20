@@ -124,7 +124,6 @@ check_user_input_y_N() {
 		read -p "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "n" ]]; then
-			echo "Returning to previous menu."
 			return 1
 		elif [[ "$user_input" == "y" ]]; then
 			return
@@ -600,7 +599,7 @@ main_4_collect_networks_loop() {
 		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
-		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
+		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' &> /dev/null || break
 	done
 	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 }
