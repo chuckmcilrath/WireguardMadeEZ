@@ -690,6 +690,68 @@ sub_5.3.2_append_ip() {
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
 }
 
+sub_5.4_endpoint_edit_menu() {
+	echo -e "\nHere is the Endpont IP and port of the remote Wireguard Server this peer connects to:"
+	grep '^Endpoint' "$config_choice_final"
+	echo
+	cat << EOF
+1. Change the Remote Endpoint IP (This is the IP used to communicate to the remote Wireguard Server)
+2. Change the port
+3. Exit to the previous menu
+EOF
+
+	reach -p $': ' wan_peer_input
+}
+
+sub_5.4.1_change_endpoint() {
+	check_user_input $'Enter the Remote Server IP for this peer to connect to\n: ' wan_peer_change valid_ip_check "$ip_type" \
+	&& sed -i -E "s/(Endpoint = )[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)/\1$wan_peer_change\2/" "$config_choice_final" \
+	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@$config_basename.service
+}
+
+sub_5.4.2_change_port() {
+	check_user_input $'Enter the new port number of the remote Wireguard Server\n: ' port_peer_change port_num_check "$port_type" \
+	&& sed -i -E "s/(Endpoint = [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:)[0-9]+/\1$port_peer_change/" "$config_choice_final" \
+	&& echo "The port has been changed. Restarting Wireguard..." \
+	&& systemctl restart wg-quick@$config_basename.service
+}
+
+main_6_help_menu() {
+	echo
+	cat << EOF
+Troubleshooting and help. Choose an option:
+1. wg (Command to see peers and public key
+2. Print out the configuration file
+3. Useful Commands
+4. Exit
+EOF
+	read -p ": " help_input
+}
+
+sub_6.3_commands() {
+	commands_text=$(cat <<EOF
+
+${GREEN}wg${NC} (Command for Wireguard to print connections and public key of server)
+${GREEN}systemctl start wg-quick@INTERFACE${NC} (Starts the Wireguard service)
+${GREEN}systemctl stop wg-quick@INTERFACE${NC} (Stops the Wireguard service)
+${GREEN}systemctl restart wg-quick@INTERFACE${NC} (Restarts the Wireguard service)
+${GREEN}systemctl status wg-quick@INTERFACE${NC} (Shows the status of the Wireguard service)
+${GREEN}nano /etc/wireguard/INTERFACE.conf${NC} (Edits the config file)
+${GREEN}cat /etc/wireguard/INTERFACE_public_key${NC} or ${GREEN}echo \$INTERFACE_public_key${NC} (Prints the Public Key of the server)
+${GREEN}cat /etc/wireguard/INTERFACE_private_key${NC} or ${GREEN}echo \$INTERFACE_private_key${NC} (Prints the Private Key of the server)
+
+After configuring a wireguard port, run '~/.bashrc source' to load in aliases:
+${GREEN}INTERFACEstart${NC} will execute the same as ${GREEN}systemctl start wg-quick@INTERFACE${NC}
+${GREEN}INTERFACEstop${NC} will execute the same as ${GREEN}systemctl stop wg-quick@INTERFACE${NC}
+${GREEN}INTERFACErestart${NC} will execute the same as ${GREEN}systemctl restart wg-quick@INTERFACE${NC}
+${GREEN}INTERFACEstatus${NC} will execute the same as ${GREEN}systemctl status wg-quick@INTERFACE${NC}
+EOF
+)
+
+	echo -e "$commands_text"
+}
+
 ###################
 # Start of script #
 ###################
@@ -811,18 +873,61 @@ while true; do
 							2) # Append a new Allowed Network.
 								sub_5.3.2_append_ip
 							;;
-							3)
+							3) # Exits the menu
 								exit_selection && break
 							;;
-							*)
+							*) # all other options are invalid.
+								invalid_option
+							;;
+						esac
+					done
+				4) # Edit the Endpoint of the remote Wireguard server this Peer is connecting to
+					while true; do
+	 					sub_5.4_endpoint_edit_menu
+						case "$wan_peer_input" in
+							1) # change the Endpoint for connection.
+								sub_5.4.1_change_endpoint
+							;;
+							2) # Change the port
+								sub_5.4.2_change_port
+							;;
+							3) # Exits the menu
+								exit_selection && break
+							;;
+							4) # All other options are invalid.
 								invalid_option
 							;;
 						esac
 					done
 				;;
+				5) # Exits the menu
+					exit_selection && break
+				;;
+				*) # All other options are invalid.
+					invalid_option
+				;;
 			esac
   		;;
-		6)
+		6) # Troubleshooting and help.
+			while true; do
+			main_6_help_menu
+			case "$help_input" in
+				1) # Wireguard command to print connections and public key(s).
+					wg
+				;;
+				2) # Prints the config file
+					choosing_config
+					cat "$config_choic_final"
+				;;
+				3) # Prints useful commands
+					sub_6.3_commands
+				;;
+				4) # Exits the menu
+					exit_selection && break
+				;;
+				*)
+					invalid_option
+				;;
   		;;
 		7)
   		;;
