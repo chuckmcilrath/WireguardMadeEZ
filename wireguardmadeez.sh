@@ -881,6 +881,7 @@ while true; do
 							;;
 						esac
 					done
+				;;
 				4) # Edit the Endpoint of the remote Wireguard server this Peer is connecting to
 					while true; do
 	 					sub_5.4_endpoint_edit_menu
@@ -910,24 +911,26 @@ while true; do
   		;;
 		6) # Troubleshooting and help.
 			while true; do
-			main_6_help_menu
-			case "$help_input" in
-				1) # Wireguard command to print connections and public key(s).
-					wg
-				;;
-				2) # Prints the config file
-					choosing_config
-					cat "$config_choic_final"
-				;;
-				3) # Prints useful commands
-					sub_6.3_commands
-				;;
-				4) # Exits the menu
-					exit_selection && break
-				;;
-				*)
-					invalid_option
-				;;
+				main_6_help_menu
+				case "$help_input" in
+					1) # Wireguard command to print connections and public key(s).
+						wg
+					;;
+					2) # Prints the config file
+						choosing_config
+						cat "$config_choic_final"
+					;;
+					3) # Prints useful commands
+						sub_6.3_commands
+					;;
+					4) # Exits the menu
+						exit_selection && break
+					;;
+					*)
+						invalid_option
+					;;
+				esac
+			done
   		;;
 		7)
   		;;
