@@ -655,14 +655,39 @@ sub_5.2_edit_public_key() {
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
+sub_5.3_echo() {
+	echo -e "\nHere is a list of the networks that are allowed for this Peer (0.0.0.0/0 is default and means a full tunnel connection):\n"
+	grep '^AllowedIPs' "$config_choice_final"
+	echo -e "\n${YELLOW}NOTE:${NC} Please use a 0 in the 4th octet"
+}
+
 sub_5.3_sub_menu() {
 	echo
 	cat << EOF
 1. Change the network of AllowedIPs (This will change the line back to one network allowed.)
 2. Append a new network to end of the AllowedIP list
 3. Exit to the previous menu
+EOF
 
 	read -p $'\n: ' allowed_input
+}
+
+sub_5.3.1_change_ip() {
+	check_user_input $'Enter the IP network you would like to use\n: ' allowed_ip_input valid_ip_check "$ip_type" \
+	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
+	check_user_input $'Enter the CIDR notation (like /24 or /0)\n: ' allowed_cidr_input cidr_check "$cidr_type" \
+	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final" \
+	&& systemctl restart wg-quick@$config_basename.service \
+	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+}
+
+sub_5.3.2_append_ip() {
+	check_user_input $'Enter the IP network you would like for Wireguard to be able to access\n: ' allowed_ip_input2 valid_ip_check "$ip_type" \
+	sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
+	check_user_input $'Enter the CIDR notation for that network (like /24 or /0)\n: ' allowed_cidr_input2 cidr_check "$cidr_type" \
+	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
+	&& systemctl restart wg-quick@$config_basename.service \
+	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
 }
 
 ###################
@@ -777,26 +802,14 @@ while true; do
 				;;
 				3) # Edit the Allowed IP's section. I've named it "Allowed Networks".
 					while true; do
-						echo -e "\nHere is a list of the networks that are allowed for this Peer (0.0.0.0/0 is default and means a full tunnel connection):\n"
-						grep '^AllowedIPs' /etc/wireguard/wg0.conf
-                        echo -e "\n${YELLO}NOTE${NC}: Please use a 0 in the 4th octet"
+						sub_5.3_echo
 						sub_5.3_sub_menu
 						case "$allowed_input" in
 							1) # Change the IP.
-								check_user_input $'Enter the IP network you would like to use\n: ' allowed_ip_input valid_ip_check "$ip_type" \
-								&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
-								check_user_input $'Enter the CIDR notation (like /24 or /0)\n: ' allowed_cidr_input cidr_check "$cidr_type" \
-								&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" /etc/wireguard/wg0.conf \
-                                && systemctl restart wg-quick@wg0.service \
-								&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+								sub_5.3.1_change_ip
 							;;
 							2) # Append a new Allowed Network.
-								check_user_input $'Enter the IP network you would like for Wireguard to be able to access\n: ' allowed_ip_input2 valid_ip_check "$ip_type" \
-								sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
-								check_user_input $'Enter the CIDR notation for that network (like /24 or /0)\n: ' allowed_cidr_input2 valid_ip_check "$ip_type" \
-								&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" /etc/wireguard/wg0.conf \
-        						&& systemctl restart wg-quick@wg0.service \
-                    			&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+								sub_5.3.2_append_ip
 							;;
 							3)
 								exit_selection && break
