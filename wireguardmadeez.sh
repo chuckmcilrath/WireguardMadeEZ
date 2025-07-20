@@ -631,7 +631,7 @@ Which setting would you like to edit?
 3. Edit Allowed Networks.
 4. Edit the IP and Port of the Endpoint. (The server this peer is connecting to).
 
-Type 'Exit' to go back to the previous menu.
+Type 'exit' to go back to the previous menu.
 EOF
 
 	read -p ": " setting_select_5
@@ -649,11 +649,22 @@ sub_5.1_edit_ip() {
 sub_5.2_edit_public_key() {
 	echo -e "\nHere is the Public Key for the Remote Wireguard Server:\n"
 	grep '^PublicKey' "$config_choice_final"
-	check_user_input $'\nPlease enter the new Public Key\n: ' new_peer_public_key "$key_type"
-	sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
+	check_user_input $'\nPlease enter the new Public Key\n: ' new_peer_public_key key_check "$key_type" \
+	&& sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
 	&& echo -e "${GREEN}The Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
+
+sub_5.3_sub_menu() {
+	echo
+	cat << EOF
+1. Change the network of AllowedIPs (This will change the line back to one network allowed.)
+2. Append a new network to end of the AllowedIP list
+3. Exit to the previous menu
+
+	read -p $'\n: ' allowed_input
+}
+
 ###################
 # Start of script #
 ###################
@@ -755,7 +766,7 @@ while true; do
 		5) # Client Peer Config.
 			#_check
 			choosing_config
-			config_file_check_server
+			config_file_check_server || continue
 			main_5_menu
 			case "$setting_select_5" in
 				1) # Edits the IP Address of the Peer Config.
@@ -764,7 +775,37 @@ while true; do
 				2) # Edits the Public Key of the Remote Wireguard Server this peer is connecting to.
 					sub_5.2_edit_public_key
 				;;
-				3)
+				3) # Edit the Allowed IP's section. I've named it "Allowed Networks".
+					while true; do
+						echo -e "\nHere is a list of the networks that are allowed for this Peer (0.0.0.0/0 is default and means a full tunnel connection):\n"
+						grep '^AllowedIPs' /etc/wireguard/wg0.conf
+                        echo -e "\n${YELLO}NOTE${NC}: Please use a 0 in the 4th octet"
+						sub_5.3_sub_menu
+						case "$allowed_input" in
+							1) # Change the IP.
+								check_user_input $'Enter the IP network you would like to use\n: ' allowed_ip_input valid_ip_check "$ip_type" \
+								&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
+								check_user_input $'Enter the CIDR notation (like /24 or /0)\n: ' allowed_cidr_input cidr_check "$cidr_type" \
+								&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" /etc/wireguard/wg0.conf \
+                                && systemctl restart wg-quick@wg0.service \
+								&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+							;;
+							2) # Append a new Allowed Network.
+								check_user_input $'Enter the IP network you would like for Wireguard to be able to access\n: ' allowed_ip_input2 valid_ip_check "$ip_type" \
+								sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
+								check_user_input $'Enter the CIDR notation for that network (like /24 or /0)\n: ' allowed_cidr_input2 valid_ip_check "$ip_type" \
+								&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" /etc/wireguard/wg0.conf \
+        						&& systemctl restart wg-quick@wg0.service \
+                    			&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+							;;
+							3)
+								exit_selection && break
+							;;
+							*)
+								invalid_option
+							;;
+						esac
+					done
 				;;
 			esac
   		;;
