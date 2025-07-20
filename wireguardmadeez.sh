@@ -766,11 +766,14 @@ EOF
 
 sub_7.1_rm_single_config() {
 		echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
-		check_user_input_y_N $': ' config_delete_confirm \
-		&& rm -f etc/wireguard/${config_basename}* \
-		&& unset "$config_basename"_public_key \
-		&& unset "$config_basename"_private_key \
-		&& sed -i "/^alias ${config_basename}/d" ~/.bashrc || return 1
+		if check_user_input_y_N $': ' config_delete_confirm; then
+			rm -f ${config_basename}* \
+			&& unset "$config_basename"_public_key \
+			&& unset "$config_basename"_private_key \
+			&& sed -i "/^alias ${config_basename}/d" ~/.bashrc
+		else
+			return 1
+		fi
 }
 
 ###################
