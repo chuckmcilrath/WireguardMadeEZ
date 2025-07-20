@@ -767,10 +767,12 @@ EOF
 sub_7.1_rm_single_config() {
 		echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
 		if check_user_input_y_N $': ' config_delete_confirm; then
-			rm -f ${config_basename}* \
+			rm -f "${config_choice_final%.*}"* \
 			&& unset "$config_basename"_public_key \
 			&& unset "$config_basename"_private_key \
-			&& sed -i "/^alias ${config_basename}/d" ~/.bashrc
+			&& sed -i "/^alias ${config_basename}/d" ~/.bashrc \
+			&& sed -i "/${config_basename}_private_key=/d" ~/.bashrc \
+			&& sed -i "/${config_basename}_public_key=/d" ~/.bashrc
 		else
 			return 1
 		fi
@@ -943,7 +945,7 @@ while true; do
 					;;
 					2) # Prints the config file
 						choosing_config
-						cat "$config_choic_final"
+						cat "$config_choice_final"
 					;;
 					3) # Prints useful commands
 						sub_6.3_commands
