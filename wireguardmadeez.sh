@@ -683,7 +683,7 @@ sub_5.3.1_change_ip() {
 
 sub_5.3.2_append_ip() {
 	check_user_input $'Enter the IP network you would like for Wireguard to be able to access\n: ' allowed_ip_input2 valid_ip_check "$ip_type" \
-	sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
+	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
 	check_user_input $'Enter the CIDR notation for that network (like /24 or /0)\n: ' allowed_cidr_input2 cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
