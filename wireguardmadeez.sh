@@ -765,19 +765,31 @@ EOF
 }
 
 sub_7.1_rm_single_config() {
-		echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
-		if check_user_input_y_N $': ' config_delete_confirm; then
-			rm -f "${config_choice_final%.*}"*
-			unset "$config_basename"_public_key 
-			unset "$config_basename"_private_key
-			sed -i "/^alias ${config_basename}/d" ~/.bashrc
-			sed -i "/${config_basename}_private_key=/d" ~/.bashrc
-			sed -i "/${config_basename}_public_key=/d" ~/.bashrc
-			modprobe -r wireguard
-			echo -e "${GREEN}Success${NC} Returning to previous menu"
-		else
-			return 1
-		fi
+	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
+	if check_user_input_y_N $': '; then
+		rm -f "${config_choice_final%.*}"*
+		unset "$config_basename"_public_key 
+		unset "$config_basename"_private_key
+		sed -i "/^alias ${config_basename}/d" ~/.bashrc
+		sed -i "/${config_basename}_private_key=/d" ~/.bashrc
+		sed -i "/${config_basename}_public_key=/d" ~/.bashrc
+		modprobe -r wireguard
+		echo -e "${GREEN}Success${NC} Returning to previous menu"
+	else
+		return 1
+	fi
+}
+
+sub_7.2._rm_wireguard() {
+	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete wireguard and all of it's configurations? (y/N)\n"
+	if check_user_input_y_N $': '; then
+		rm -r /etc/wireguard/
+		sed -i "/^alias ${config_basename}/d" ~/.bashrc
+		sed -i "/${config_basename}_private_key=/d" ~/.bashrc
+		sed -i "/${config_basename}_public_key=/d" ~/.bashrc
+		apt-get remove --purge wireguard wireguard-tools -y \
+		&& apt autoremove -y \
+		&& modprobe -r wireguard
 }
 
 ###################
