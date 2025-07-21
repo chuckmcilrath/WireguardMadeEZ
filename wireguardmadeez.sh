@@ -986,6 +986,12 @@ while true; do
 					2) # Deletes Wireguard, all configuration files and removes all aliases.
 						sub_7.2_rm_wireguard
 					;;
+					3) # Exits the menu
+						exit_selection && break
+					;;
+					*) # All other options are invalid.
+						invalid_option
+					;;
 				esac
 			done
   		;;
