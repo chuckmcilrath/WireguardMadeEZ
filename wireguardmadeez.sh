@@ -780,7 +780,7 @@ sub_7.1_rm_single_config() {
 	fi
 }
 
-sub_7.2._rm_wireguard() {
+sub_7.2_rm_wireguard() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete wireguard and all of it's configurations? (y/N)\n"
 	if check_user_input_y_N $': '; then
 		rm -r /etc/wireguard/
@@ -892,7 +892,7 @@ while true; do
 		;;
 		5) # Client Peer Config.
 			while true; do
-				choosing_config
+				choosing_config || break
 				config_file_check_server || continue
 				main_5_menu
 				case "$setting_select_5" in
@@ -983,6 +983,7 @@ while true; do
 						break
 					;;
 					2) # Deletes Wireguard, all configuration files and removes all aliases.
+						sub_7.2_rm_wireguard
 					;;
 				esac
 			done
