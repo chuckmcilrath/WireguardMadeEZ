@@ -790,6 +790,7 @@ sub_7.2_rm_wireguard() {
 		apt-get remove --purge wireguard wireguard-tools -y \
 		&& apt autoremove -y \
 		&& modprobe -r wireguard
+	fi
 }
 
 ###################
