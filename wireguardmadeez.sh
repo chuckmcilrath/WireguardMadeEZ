@@ -14,7 +14,7 @@ resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 config_files=/etc/wireguard/*.conf
 
-interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+static' /etc/network/interfaces | awk '{print $2}')
+interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+\(static\|dhcp\)' /etc/network/interfaces | awk '{print $2}')
 
 NC=$'\e[0m'
 RED=$'\e[0;31m'
