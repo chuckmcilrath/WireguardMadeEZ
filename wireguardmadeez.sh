@@ -758,6 +758,7 @@ Choose which option you'd like to do:
 
 1. Delete a port's config file and remove its aliases.
 2. Remove Wireguard, delete all config files and aliases.
+3. Return to the previous menu.
 
 EOF
 
