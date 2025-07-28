@@ -27,6 +27,7 @@ ip_type="ip."
 cidr_type="cidr. Only 0-32 allowed."
 key_type="key."
 port_type="port number. Only 49152-65535 may be used."
+multi_type="ip or ddns."
 
 ####################
 # GLOBAL FUNCTIONS #
@@ -99,24 +100,25 @@ check_user_input() {
 	done
 }
 
-check_user_input_space() {
+check_user_input_multi() {
 	local prompt="$1"
- 	local var_name="$2"
-  	local validation_func="$3"
-	local type="$4"
+	local var_name="$2"
+	local validation_func="$3"
+	local validation_func_2="$4"
+	local type="$5"
+
 	while true; do
- 		read -p "$prompt" user_input
-		if [[ -z "$user_input" ]]; then
-			echo "Returning to previous menu."
-			return 1
-		elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please Try again."
-	 	else
-   			eval "$var_name=\"\$user_input\""
-	  		return
-	 	fi
+		read -p "$prompt" user_input
+
+		if ! "$validation_func" "$user_input" || ! "$validation_func_2" "$user_input"; then
+			echo -e "${RED}'${user_input}' is not a valid ${type}.${NC} Please try again."
+		else
+			eval "$var_name=\"\$user_input\""
+			return
+		fi
 	done
 }
+
 
 check_user_input_y_N() {
  	local prompt="$1"
@@ -168,6 +170,7 @@ valid_ip_check() {
 	local ip=$1
 	local IFS='.'
 	local -a octets=($ip)
+	[[ ! "$ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 1
 	[[ "${octets[0]}" -eq 127 ]] && return 1
 	[[ ${#octets[@]} -ne 4 ]] && return 1
 	for octet in "${octets[@]}"; do
@@ -196,6 +199,19 @@ port_num_check() {
 	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
 	(( num < 49152 || num > 65535 )) && return 1
 
+	return 0
+}
+
+valid_ddns_check() {
+	local name=$1
+	[[ "$name" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 1
+	(( ${#name} > 253 )) && return 1
+	IFS='.' read -ra labels <<< "$name"
+	for label in "${labels[@]}"; do
+		[[ -z "$label" ]] && return 1
+		(( ${#label} > 63 )) && return 1
+		[[ ! "$label" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$ ]] && return 1
+	done
 	return 0
 }
 
