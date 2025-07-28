@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################################################################################################################################
-#                                                                                                                                                                                      #
+# Copy the line below to download and run:                                                                                                                                            #
 # wget -O wireguardmadeez.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && chmod +x wireguardmadeez.sh && ./wireguardmadeez.sh #
 #                                                                                                                                                                                      #
 ########################################################################################################################################################################################
@@ -10,18 +10,22 @@
 # GLOBAL VARIABLES #
 ####################
 
+# paths to folders.
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 config_files=/etc/wireguard/*.conf
 
+# finds the interface for use in a config file.
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+\(static\|dhcp\)' /etc/network/interfaces | awk '{print $2}')
 
+# ANSI color codes.
 NC=$'\e[0m'
 RED=$'\e[0;31m'
 CYAN=$'\e[0;36m'
 GREEN=$'\e[0;32m'
 YELLOW=$'\e[0;33m'
 
+# Used in functions to specify what failed.
 alphanumeric_type="input. Only alphanumeric characters allowed."
 ip_type="ip."
 cidr_type="cidr. Only 0-32 allowed."
@@ -52,7 +56,6 @@ spin() {
     printf '\b%s' "${sp:i++%n:1}"
   done
 }
-
 
 # Runs an apt update on the system to pull the latest applications.
 run_apt_update() {
@@ -106,10 +109,8 @@ check_user_input_multi() {
 	local validation_func="$3"
 	local validation_func_2="$4"
 	local type="$5"
-
 	while true; do
 		read -p "$prompt" user_input
-
 		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
 			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 		else
@@ -315,7 +316,6 @@ wg_keygen() {
 
 	sed -i "/^export ${wg_port_name}_public_key=/d" ~/.bashrc
 	printf 'export %s="%s"\n' "${wg_port_name}_public_key" "$(cat /etc/wireguard/"$wg_port_name"_public.key)" >> ~/.bashrc
-	 
 }
 
 # print the public key for the user to use in clients.
@@ -323,7 +323,7 @@ print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key\n\n${GREEN}$public_key${NC}\n\n"
 	echo "Please copy this key to use for setting up the client"
  	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
- 	
+
 	start_name="${wg_port_name}start"
 	start_line="alias ${start_name}=\"systemctl start wg-quick@${wg_port_name}\""
 	sed -i "/^alias ${start_name}=/d" ~/.bashrc
@@ -419,7 +419,7 @@ main_1_static_ip_edit() {
 	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check "$ip_type"
 	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
-	&& echo "Address has been changed."	
+	&& echo "Address has been changed."
 }
 
 # Adds the CIDR notation to the end of the user inputed static IP.
@@ -621,7 +621,7 @@ main_4_collect_networks_loop() {
 }
 
 main_4_peer_config() {
-	if [ -f "$config_path" ]; then   
+	if [ -f "$config_path" ]; then
 		cat <<EOF > "$config_path"
 [Interface]
 PrivateKey = $private_key
@@ -785,7 +785,7 @@ sub_7.1_rm_single_config() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
 	if check_user_input_y_N $': '; then
 		rm -f "${config_choice_final%.*}"*
-		unset "$config_basename"_public_key 
+		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
 		sed -i "/^alias ${config_basename}/d" ~/.bashrc
 		sed -i "/${config_basename}_private_key=/d" ~/.bashrc
