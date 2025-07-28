@@ -110,8 +110,8 @@ check_user_input_multi() {
 	while true; do
 		read -p "$prompt" user_input
 
-		if ! "$validation_func" "$user_input" || ! "$validation_func_2" "$user_input"; then
-			echo -e "${RED}'${user_input}' is not a valid ${type}.${NC} Please try again."
+		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
+			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 		else
 			eval "$var_name=\"\$user_input\""
 			return
@@ -1002,6 +1002,7 @@ while true; do
 					;;
 					2) # Deletes Wireguard, all configuration files and removes all aliases.
 						sub_7.2_rm_wireguard
+						break
 					;;
 					3) # Exits the menu
 						exit_selection && break
