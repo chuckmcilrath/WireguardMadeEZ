@@ -902,7 +902,7 @@ while true; do
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address valid_ip_check "$ip_type"
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check "$key_type"
 			main_4_collect_networks_loop
-			check_user_input $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address valid_ip_check "$ip_type"
+			check_user_input_multi $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check "$port_type"
 			main_4_peer_config
 			print_public_key_set_aliases
