@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ########################################################################################################################################################################################
-# Copy the line below to download and run:                                                                                                                                            #
+# Copy the line below to download and run:                                                                                                                                             #
 # wget -O wireguardmadeez.sh https://raw.githubusercontent.com/chuckmcilrath/WireguardMadeEZ/refs/heads/main/wireguardmadeez.sh && chmod +x wireguardmadeez.sh && ./wireguardmadeez.sh #
 #                                                                                                                                                                                      #
 ########################################################################################################################################################################################
@@ -632,6 +632,7 @@ Address = $peer_address/32
 PublicKey = $peer_pk
 AllowedIPs = $collected_ips
 Endpoint = $endpoint_address:$port_num
+PersistentKeepalive = 25
 EOF
 	fi
 }
