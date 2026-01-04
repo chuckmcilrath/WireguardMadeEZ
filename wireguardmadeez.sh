@@ -390,7 +390,7 @@ main_menu() {
 
 Choose the install type:
 
-1. (OPTIONAL) Set Static IP
+1. (OPTIONAL) Set Static IP (Recommended for Option #2)
 2. Wireguard Server Install and Setup
 3. Wireguard Server Peer Config
 4. Client Peer Install and Setup
