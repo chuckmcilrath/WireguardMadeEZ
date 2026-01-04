@@ -419,7 +419,7 @@ main_1_static_ip_edit() {
 	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check "$ip_type"
 	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
-	&& echo "${GREEN}Address has been changed.${NC}"
+	&& echo -e "\n${GREEN}Address has been updated.${NC}\n"
 }
 
 # Adds the CIDR notation to the end of the user inputed static IP.
@@ -427,7 +427,7 @@ main_1_cidr_edit() {
 	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check "$cidr_type"
 	check_user_input_Y_n "Are you sure you want to use $cidr_input? (Y/n)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
-	&& echo "${GREEN}Subnet has been added.${NC}"
+	&& echo -e "\n${GREEN}Subnet has been updated.${NC}\n"
 }
 
 # Edits the gateway for static IP
@@ -435,11 +435,11 @@ main_1_gateway_edit() {
 	check_user_input $'Input the gateway\n: ' static_gw valid_ip_check "$ip_type"
 	check_user_input_Y_n "Are you sure you want to use $static_gw? (Y/n)" || return 1
 	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
-	&& echo -e "${GREEN}Gateway has been changed.${NC}"
+	&& echo -e "\n${GREEN}Gateway has been changed.${NC}\n"
 }
 
 main_1_apply_network() {
-	echo -e "${GREEN}Network settings have been updated, and network has been refreshed.\nPlease connect using the new IP.\nExiting script.${NC}"
+	echo -e "${GREEN}Network settings have been updated, and network has been refreshed.\nPlease connect using the new IP.\n${RED}Exiting script.${NC}"
 	systemctl restart networking
 	exit 1
 }
