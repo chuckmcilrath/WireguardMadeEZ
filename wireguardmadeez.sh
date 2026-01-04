@@ -415,11 +415,11 @@ main_1_DHCP_check() {
 
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
-	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you WILL be disconnected.\nYou will need to re-connect using the correct IP.${NC}\n"
+	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you MAY be disconnected.\nIf that happens, you will need to re-connect using the correct IP.${NC}\n"
 	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check "$ip_type"
 	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
-	&& echo "Address has been changed."
+	&& echo "${GREEN}Address has been changed.${NC}"
 }
 
 # Adds the CIDR notation to the end of the user inputed static IP.
@@ -427,7 +427,7 @@ main_1_cidr_edit() {
 	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check "$cidr_type"
 	check_user_input_Y_n "Are you sure you want to use $cidr_input? (Y/n)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
-	&& echo "Subnet has been added."
+	&& echo "${GREEN}Subnet has been added.${NC}"
 }
 
 # Edits the gateway for static IP
