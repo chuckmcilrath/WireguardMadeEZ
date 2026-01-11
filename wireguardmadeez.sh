@@ -462,7 +462,7 @@ main_2_file_check_server() {
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
                 echo -e "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config.${NC}"
-				break
+				return 1
             fi
         done
     else
@@ -840,7 +840,7 @@ while true; do
 			main_1_apply_network
 		;;
   		2)  # Server Install
-			main_2_file_check_server
+			main_2_file_check_server || break
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
