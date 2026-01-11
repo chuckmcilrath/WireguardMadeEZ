@@ -273,9 +273,9 @@ choosing_config() {
 
 # User input for config name
 config_file_creation() {
-	echo -e "\nName your Wireguard Port. This will be used for the config file name."
- 	echo -e "${$YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}\n"
   	while true; do
+		echo -e "\nName your Wireguard Port. This will be used for the config file name."
+ 		echo -e "${YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}"
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
 			config_path="/etc/wireguard/${wg_port_name}.conf"
