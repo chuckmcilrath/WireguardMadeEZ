@@ -172,7 +172,7 @@ DNS_check() {
 		echo -e "${GREEN}\nDNS is resolving, continuing with installation...${NC}\n"
 	else
 		echo -e "${RED}\nDNS is not resolving.\n${NC}"
-		if check_user_input_Y_n "${RED}WARNING${NC}This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n)"; then
+		if check_user_input_Y_n "${RED}WARNING!\n${NC} This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n):"; then
 			while true; do
 				check_user_input $'\nEnter a DNS IP to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type"
 				echo "Valid IP address: $dns_ip. Updating DNS..."
