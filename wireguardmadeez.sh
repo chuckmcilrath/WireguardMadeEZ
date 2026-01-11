@@ -64,27 +64,61 @@ run_apt_update() {
 	spin &
 	spinpid=$!
 	apt update &> /dev/null
-  	kill "$spinpid"
+  	kill "$spinpid" 2>/dev/null
+  	wait "$spinpid" 2>/dev/null
+  	printf '\r \r'  # Clear the spinner
   	echo "Apt update has been completed."
 }
+
+#run_apt_update() {
+#	echo "Starting apt update..."
+#	export DEBIAN_FRONTEND=noninteractive
+#	spin &
+#	spinpid=$!
+#	apt update &> /dev/null
+# 	kill "$spinpid"
+#  	echo "Apt update has been completed."
+#}
 
 # Check to see if an app is installed.
 check_install() {
 	local install_name="$1"
+	printf '\r \r'  # Clear any spinner character
 	echo "looking for $install_name..."
 	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+		printf '\r \r'  # Clear spinner before printing
 		echo "Installing $install_name..."
 		apt install $install_name -y &> /dev/null
 		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+			printf '\r \r'  # Clear spinner before printing
 			echo "$install_name has been successfully installed."
 		else
+			printf '\r \r'  # Clear spinner before printing
 			echo -e "${RED}Installation failed. Please clear the error and try again.${NC}"
 			exit 1
 		fi
 	else
+		printf '\r \r'  # Clear spinner before printing
 		echo -e "${GREEN}$install_name is already installed. Continuing...${NC}"
 	fi
 }
+
+#check_install() {
+#	local install_name="$1"
+#	echo "looking for $install_name..."
+#	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+#		echo "Installing $install_name..."
+#		apt install $install_name -y &> /dev/null
+#		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
+#			echo "$install_name has been successfully installed."
+#		else
+#			echo -e "${RED}Installation failed. Please clear the error and try again.${NC}"
+#			exit 1
+#		fi
+#	else
+#		echo -e "${GREEN}$install_name is already installed. Continuing...${NC}"
+#	fi
+#}
 
 # Reusable input validation.
 check_user_input() {
