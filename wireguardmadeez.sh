@@ -166,6 +166,17 @@ alphanumeric_check() {
 	[[ $1 =~ ^[[:alnum:]_]+$ ]]
 }
 
+# DNS Check
+DNS_check() {
+	if ping -q -c 1 -w 1 google.com &> /dev/null ; then
+		echo -e "${GREEN}\nDNS is resolving, continuing with installation...${NC}\n"
+		break
+	else
+		echo -e "${RED}\nDNS is not resolving.\n${NC}"
+		read -p  check_user_input_Y_n  "This script will change your DNS entry in your /etc/resolv.conf file. Proceed? (Y/n)" || return 1
+	fi
+}
+
 # Check if user entered IP is valid
 valid_ip_check() {
 	local ip=$1
@@ -451,7 +462,7 @@ main_2_file_check_server() {
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
                 echo -e "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config.${NC}"
-                return 1
+				break
             fi
         done
     else
@@ -483,7 +494,7 @@ main_2_DNS_input_program_check() {
 			echo -e "${GREEN}ping to "$dns_ip" was successful. Continuing with Installation...${NC}"
 			break
 		else
-			echo -e "${RED}ping was unsuccessful, please try again.${NC}"
+			echo -e "${RED}ping was unsuccessful, please try again. You may need to edit /etc/resolv.conf manually.${NC}"
 		fi
 	done
 }
@@ -829,7 +840,7 @@ while true; do
 			main_1_apply_network
 		;;
   		2)  # Server Install
-			main_2_file_check_server || continue
+			main_2_file_check_server
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
