@@ -50,10 +50,10 @@ spin() {
   local i=0
   local sp='|/-\\'
   local n=${#sp}
-  printf ' '
-  trap 'printf "\b \b"; exit' INT TERM EXIT
-  while sleep 0.1; do
-    printf '\b%s' "${sp:i++%n:1}"
+  
+  while true; do
+    printf '\r%s ' "${sp:i++%n:1}"  # Use \r instead of \b
+    sleep 0.1
   done
 }
 
@@ -498,7 +498,9 @@ main_2_program_check() {
 	check_install "openssh-server"
 	check_install "openssh-sftp-server"
  	check_install "openresolv"
-  	kill "$spinpid"
+  	kill "$spinpid" 2>/dev/null
+  	wait "$spinpid" 2>/dev/null
+  	printf '\r \r'  # Clear the spinner line completely
 }
 
 # user input for server IP and Network
