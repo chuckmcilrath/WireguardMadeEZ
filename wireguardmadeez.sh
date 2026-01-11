@@ -168,12 +168,26 @@ alphanumeric_check() {
 
 # DNS Check
 DNS_check() {
-	if ping -q -c 1 -w 1 google.com &> /dev/null ; then
+	if ping -q -c 1 -w 1 google.com &> /dev/null; then
 		echo -e "${GREEN}\nDNS is resolving, continuing with installation...${NC}\n"
-		break
 	else
 		echo -e "${RED}\nDNS is not resolving.\n${NC}"
-		read -p  check_user_input_Y_n  "This script will change your DNS entry in your /etc/resolv.conf file. Proceed? (Y/n)" || return 1
+		if read -p  check_user_input_Y_n  "${RED}WARNING${NC}This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n)"; then
+			while true; do
+				check_user_input $'\nEnter a DNS IP to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type"
+				echo "Valid IP address: $dns_ip. Updating DNS..."
+				echo "nameserver $dns_ip" > /etc/resolv.conf
+				if ping -q -c 1 -w 1 google.com &> /dev/null; then
+					echo -e "${GREEN}DNS has been resolved${NC}, continuing with script..."
+					return 1
+				else
+					echo -e "${RED}DNS update failed. retrying...${NC}"
+				fi
+			done
+		else
+			echo -e "${RED}\nExiting script. You will need to resolve your DNS before running the script again.${NC}\n"
+			exit
+		fi
 	fi
 }
 
@@ -841,6 +855,7 @@ while true; do
 		;;
   		2)  # Server Install
 			main_2_file_check_server || continue
+			DNS_check
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
