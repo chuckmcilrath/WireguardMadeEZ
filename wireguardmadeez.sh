@@ -840,7 +840,7 @@ while true; do
 			main_1_apply_network
 		;;
   		2)  # Server Install
-			main_2_file_check_server || break
+			main_2_file_check_server || continue
    			run_apt_update
 			main_2_DNS_input_program_check
 			config_file_creation
