@@ -274,7 +274,7 @@ choosing_config() {
 # User input for config name
 config_file_creation() {
 	echo -e "\nName your Wireguard Port. This will be used for the config file name."
- 	echo "EXAMPLE: server, wg0, wg1, wg2, etc."
+ 	echo -e "\nEXAMPLE: server, wg0, wg1, wg2, etc.\n"
   	while true; do
 		read -p ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
@@ -516,11 +516,11 @@ main_2_server_port() {
 	while true; do
 		read -p ": " port_input
 		if [[ -z "$port_input" ]]; then
-			$server_port_input="51820"
+			server_port_input="51820"
 			return 1
-		else
+		elif [[ ! -z "$port_input" ]]; then
 			check_user_input "$port_input" server_port_input port_num_check "$port_type"
-			return 1
+			break
 		fi
 	done
 }
