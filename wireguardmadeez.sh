@@ -172,7 +172,7 @@ DNS_check() {
 		echo -e "${GREEN}\nDNS is resolving, continuing with installation...${NC}\n"
 	else
 		echo -e "${RED}\nDNS is not resolving.\n${NC}"
-		if read -p  check_user_input_Y_n  "${RED}WARNING${NC}This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n)"; then
+		if check_user_input_Y_n "${RED}WARNING${NC}This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n)"; then
 			while true; do
 				check_user_input $'\nEnter a DNS IP to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type"
 				echo "Valid IP address: $dns_ip. Updating DNS..."
@@ -488,7 +488,7 @@ main_2_file_check_server() {
 
 
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
-main_2_DNS_input_program_check() {
+main_2_program_check() {
 	spin &
   	spinpid=$!
 	check_install "wireguard"
@@ -496,21 +496,8 @@ main_2_DNS_input_program_check() {
 	check_install "openssh-client"
 	check_install "openssh-server"
 	check_install "openssh-sftp-server"
- 	check_install "systemd-resolved"
+ 	check_install "openresolv"
   	kill "$spinpid"
- 	while true; do
-		check_user_input $'\nEnter a DNS for Resolved to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type" || break
-		echo "Valid IP address: $dns_ip"
-		sed -i "/^#\?DNS=/c\DNS=$dns_ip" "$resolved_path"
-		echo "Restarting systemd-resolved and checking DNS connection..."
-		systemctl restart systemd-resolved.service
-		if ping -q -c 1 -w 1 "$dns_ip" &> /dev/null ; then
-			echo -e "${GREEN}ping to "$dns_ip" was successful. Continuing with Installation...${NC}"
-			break
-		else
-			echo -e "${RED}ping was unsuccessful, please try again. You may need to edit /etc/resolv.conf manually.${NC}"
-		fi
-	done
 }
 
 # user input for server IP and Network
@@ -857,7 +844,7 @@ while true; do
 			main_2_file_check_server || continue
 			DNS_check
    			run_apt_update
-			main_2_DNS_input_program_check
+			main_2_program_check
 			config_file_creation
    			wg_keygen
 			main_2_server_network
@@ -921,9 +908,11 @@ while true; do
 		 		esac
        		done
 		;;
-  		4) # installs a wireguard port.
+  		4) # installs a wireguard peer.
+			DNS_check
 			run_apt_update
 			check_install "wireguard"
+			check_install "openresolv"
 			config_file_creation
 			wg_keygen
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address valid_ip_check "$ip_type"
