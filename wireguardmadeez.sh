@@ -503,7 +503,7 @@ main_2_program_check() {
 
 # user input for server IP and Network
 main_2_server_network() {
-	echo -e "\nPlease choose the IP the server will use."
+	echo -e "\nPlease choose the IP the server will use. This will act as a gateway."
  	echo -e "${YELLOW}NOTE: This will also be it's network. Make it different from your other networks.${NC}"
   	echo "${YELLO}Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these.${NC}"
  	check_user_input ": " server_network_input valid_ip_check "$ip_type"
@@ -512,8 +512,17 @@ main_2_server_network() {
 # user input for server port
 main_2_server_port() {
 	echo -e "\nPlease choose the Port number the server will use."
-  	echo "NOTE: 51820 is what wireguard recommends. Use this if you are not sure."
-	check_user_input ": " server_port_input port_num_check "$port_type"
+  	echo "NOTE: 51820 is the default port. Press ENTER to use 51820."
+	while true; do
+		read -p ": " port_input
+		if [[ -z "$port_input" ]]; then
+			$server_port_input="51820"
+			return 1
+		else
+			check_user_input "$port_input" server_port_input port_num_check "$port_type"
+			return 1
+		fi
+	done
 }
 
 # Checks and makes the config folder
