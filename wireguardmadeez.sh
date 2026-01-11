@@ -93,7 +93,7 @@ check_user_input() {
   	local validation_func="$3"
 	local type="$4"
 	while true; do
- 		read -p "$prompt" user_input
+ 		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
   			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 	 	else
@@ -110,7 +110,7 @@ check_user_input_multi() {
 	local validation_func_2="$4"
 	local type="$5"
 	while true; do
-		read -p "$prompt" user_input
+		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
 			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 		else
@@ -124,7 +124,7 @@ check_user_input_multi() {
 check_user_input_y_N() {
  	local prompt="$1"
 	while true; do
-		read -p "$prompt" user_input
+		read -rp "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "n" ]]; then
 			return 1
@@ -139,7 +139,7 @@ check_user_input_y_N() {
 check_user_input_Y_n() {
  	local prompt="$1"
 	while true; do
-		read -p "$prompt" user_input
+		read -rp "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "y" ]]; then
 			return
@@ -255,7 +255,7 @@ choosing_config() {
 	done
 	echo -e "\nPlease choose a config file to edit by number. (Press enter to return to main menu.)"
 	while true; do
-		read -p ": " config_choice
+		read -rp ": " config_choice
 		if [[ -z "$config_choice" ]]; then
 			echo "Returning to previous menu."
 			return 1
@@ -274,9 +274,9 @@ choosing_config() {
 # User input for config name
 config_file_creation() {
 	echo -e "\nName your Wireguard Port. This will be used for the config file name."
- 	echo -e "\nEXAMPLE: server, wg0, wg1, wg2, etc.\n"
+ 	echo -e "${$YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}\n"
   	while true; do
-		read -p ": " wg_port_name
+		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
 			config_path="/etc/wireguard/${wg_port_name}.conf"
 			if [[ ! -f "$config_path" ]]; then
@@ -427,7 +427,7 @@ Choose the install type:
 Type "exit" (or ctrl + c) to exit the script.
 EOF
 
-	read -p ": " install_type
+	read -rp ": " install_type
 }
 
 # Checked the network config for DHCP. Changes to static if it is.
@@ -512,15 +512,19 @@ main_2_server_network() {
 # user input for server port
 main_2_server_port() {
 	echo -e "\nPlease choose the Port number the server will use."
-  	echo "NOTE: 51820 is the default port. Press ENTER to use 51820."
+  	echo -e "${YELLOW}NOTE: 51820 is the default port.${NC} Press ENTER to use 51820."
 	while true; do
-		read -p ": " port_input
+		read -rp ": " port_input
 		if [[ -z "$port_input" ]]; then
 			server_port_input="51820"
-			return 1
-		elif [[ ! -z "$port_input" ]]; then
-			check_user_input "$port_input" server_port_input port_num_check "$port_type"
-			break
+			return 0
+		elif [[ -n "$port_input" ]]; then
+    		if port_num_check "$port_input"; then
+				server_port_input="$port_input"
+				return 0
+    		else
+        		echo -e "${RED}'${port_input}' is not a valid ${port_type}${NC} Please try again."
+    		fi
 		fi
 	done
 }
@@ -554,7 +558,7 @@ Server Peer Configuration
 4. Exit back to the main menu.
 EOF
 
-	read -p ": " peer_choice
+	read -rp ": " peer_choice
 }
 
 # Adds a peer to the server config.
@@ -573,7 +577,7 @@ EOF
 sub_3.2_delete() {
 	echo "Which user would you like to delete?"
 	echo -e "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
-	read -p $': ' user_select
+	read -rp $': ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
 		return
@@ -594,7 +598,7 @@ sub_3.2_delete() {
 
 sub_3.3_user_select() {
 	echo -e "Which user would you like to edit?\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)"
-	read -p $': ' user_select_3_3
+	read -rp $': ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
 		return 1
@@ -614,7 +618,7 @@ Which setting would you like to edit?
 Type 'exit' to go back to the previous menu.
 EOF
 
-	read -p ": " setting_select_3_3
+	read -rp ": " setting_select_3_3
 }
 
 sub_3.3.1_change_public_key() {
@@ -672,7 +676,7 @@ Which setting would you like to edit?
 Type 'exit' to go back to the previous menu.
 EOF
 
-	read -p ": " setting_select_5
+	read -rp ": " setting_select_5
 }
 
 sub_5.1_edit_ip() {
@@ -707,7 +711,7 @@ sub_5.3_sub_menu() {
 3. Exit to the previous menu
 EOF
 
-	read -p $'\n: ' allowed_input
+	read -rp $'\n: ' allowed_input
 }
 
 sub_5.3.1_change_ip() {
@@ -738,7 +742,7 @@ sub_5.4_endpoint_edit_menu() {
 3. Exit to the previous menu
 EOF
 
-	read -p $': ' wan_peer_input
+	read -rp $': ' wan_peer_input
 }
 
 sub_5.4.1_change_endpoint() {
@@ -764,7 +768,7 @@ Troubleshooting and help. Choose an option:
 3. Useful Commands
 4. Exit
 EOF
-	read -p ": " help_input
+	read -rp ": " help_input
 }
 
 sub_6.3_commands() {
@@ -801,7 +805,7 @@ Choose which option you'd like to do:
 
 EOF
 
-	read -p ": " cleanup_input
+	read -rp ": " cleanup_input
 }
 
 sub_7.1_rm_single_config() {
