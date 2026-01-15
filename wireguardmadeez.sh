@@ -442,11 +442,11 @@ main_menu() {
 Choose the install type:
 
 1. (OPTIONAL) Set Static IP (Recommended for Option #2)
-2. Wireguard Server Install and Setup
-3. Wireguard Server Peer Config
-4. Client Peer Install and Setup
-5. Client Peer Config
-6. Troubleshooting and help
+2. Server Install and Setup
+3. Server Config edit
+4. Client Install and Setup
+5. Client Config edit
+6. Info and commands
 7. Delete and cleanup
 
 Type "exit" (or ctrl + c) to exit the script.
