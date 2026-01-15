@@ -949,7 +949,7 @@ while true; do
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check "$key_type"
 			main_4_collect_networks_loop
 			check_user_input_multi $'Please enter the IP of the Wireguard server or peer. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
-			default_port "
+			default_port
 			main_4_peer_config
 			print_public_key_set_aliases
 			enable_wg
