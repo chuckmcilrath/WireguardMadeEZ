@@ -103,23 +103,6 @@ check_install() {
 	fi
 }
 
-#check_install() {
-#	local install_name="$1"
-#	echo "looking for $install_name..."
-#	if ! dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
-#		echo "Installing $install_name..."
-#		apt install $install_name -y &> /dev/null
-#		if dpkg -l | awk '{print $2}' | grep -xq "$install_name"; then
-#			echo "$install_name has been successfully installed."
-#		else
-#			echo -e "${RED}Installation failed. Please clear the error and try again.${NC}"
-#			exit 1
-#		fi
-#	else
-#		echo -e "${GREEN}$install_name is already installed. Continuing...${NC}"
-#	fi
-#}
-
 # Reusable input validation.
 check_user_input() {
 	local prompt="$1"
@@ -132,7 +115,7 @@ check_user_input() {
   			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 	 	else
    			eval "$var_name=\"\$user_input\""
-	  		return
+	  		return 0
 	 	fi
 	done
 }
@@ -149,7 +132,7 @@ check_user_input_multi() {
 			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
 		else
 			eval "$var_name=\"\$user_input\""
-			return
+			return 0
 		fi
 	done
 }
@@ -163,7 +146,7 @@ check_user_input_y_N() {
 		if [[ -z "$user_input" || "$user_input" == "n" ]]; then
 			return 1
 		elif [[ "$user_input" == "y" ]]; then
-			return
+			return 0
 		else
 			echo "Invalid input. Please enter 'y' or 'n'."
 		fi
@@ -176,7 +159,7 @@ check_user_input_Y_n() {
 		read -rp "$prompt" user_input
 		user_input="${user_input,,}"  # convert to lowercase
 		if [[ -z "$user_input" || "$user_input" == "y" ]]; then
-			return
+			return 0
 		elif [[ "$user_input" == "n" ]]; then
 			return 1
 		else
@@ -188,7 +171,7 @@ check_user_input_Y_n() {
 check_user_input_select() {
  	local input_one="$1"
 		if grep -q "# $input_one" "$config_choice_final"; then
-			return
+			return 0
 		else
 			echo -e "${RED}User not found, please try again.${NC}"
 			return 1
@@ -259,8 +242,26 @@ port_num_check() {
 	local num="$1"
 	[[ ! $num =~ ^[1-9][0-9]*$ ]] && return 1
 	(( num < 49152 || num > 65535 )) && return 1
-
 	return 0
+}
+
+default_port() {
+	echo -e "\nPlease choose the Port number the server will use."
+  	echo -e "${YELLOW}NOTE: 51820 is the default port.${NC} Press ENTER to use 51820."
+	while true; do
+		read -rp ": " port_input
+		if [[ -z "$port_input" ]]; then
+			server_port_input="51820"
+			return 0
+		elif [[ -n "$port_input" ]]; then
+    		if port_num_check "$port_input"; then
+				server_port_input="$port_input"
+				return 0
+    		else
+        		echo -e "${RED}'${port_input}' is not a valid ${port_type}${NC} Please try again."
+    		fi
+		fi
+	done
 }
 
 valid_ddns_check() {
@@ -521,7 +522,6 @@ main_2_file_check_server() {
 	shopt -u nullglob
 }
 
-
 # Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
 main_2_program_check() {
 	spin &
@@ -543,26 +543,6 @@ main_2_server_network() {
  	echo -e "${YELLOW}NOTE: This will also be it's network. Make it different from your other networks.${NC}"
   	echo "${YELLO}Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these.${NC}"
  	check_user_input ": " server_network_input valid_ip_check "$ip_type"
-}
-
-# user input for server port
-main_2_server_port() {
-	echo -e "\nPlease choose the Port number the server will use."
-  	echo -e "${YELLOW}NOTE: 51820 is the default port.${NC} Press ENTER to use 51820."
-	while true; do
-		read -rp ": " port_input
-		if [[ -z "$port_input" ]]; then
-			server_port_input="51820"
-			return 0
-		elif [[ -n "$port_input" ]]; then
-    		if port_num_check "$port_input"; then
-				server_port_input="$port_input"
-				return 0
-    		else
-        		echo -e "${RED}'${port_input}' is not a valid ${port_type}${NC} Please try again."
-    		fi
-		fi
-	done
 }
 
 # Checks and makes the config folder
@@ -616,7 +596,7 @@ sub_3.2_delete() {
 	read -rp $': ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
-		return
+		return 0
 	elif grep -q "# $user_select" "$config_choice_final"; then
 		if check_user_input_Y_n "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
 			sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
@@ -693,7 +673,7 @@ Address = $peer_address/32
 # Wireguard VM server on local Proxmox
 PublicKey = $peer_pk
 AllowedIPs = $collected_ips
-Endpoint = $endpoint_address:$port_num
+Endpoint = $endpoint_address:$port_input
 PersistentKeepalive = 25
 EOF
 	fi
@@ -898,7 +878,7 @@ while true; do
 			config_file_creation
    			wg_keygen
 			main_2_server_network
-			main_2_server_port
+			default_port
 	  		main_2_server_config
 			enable_wg
    			print_public_key_set_aliases
@@ -968,8 +948,8 @@ while true; do
 			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address valid_ip_check "$ip_type"
 			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check "$key_type"
 			main_4_collect_networks_loop
-			check_user_input_multi $'Please enter the Endpoint IP of the Wireguard server this peer will connect to (LAN for inside networ, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
-			check_user_input $'Please enter the Port number the Wiregard Server is using\n(Default port is 51820): ' port_num port_num_check "$port_type"
+			check_user_input_multi $'Please enter the IP of the Wireguard server or peer. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
+			default_port
 			main_4_peer_config
 			print_public_key_set_aliases
 			enable_wg
