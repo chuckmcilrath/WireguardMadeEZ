@@ -552,15 +552,15 @@ EOF
 	fi
 }
 
-# Peer selection menu.
+# Client Peer selection menu.
 main_3_selection_submenu() {
 	echo
 	cat << EOF
 Server Peer Configuration
 
-1. Add a new Peer.
-2. Remove a Peer.
-3. Edit a Peer.
+1. Add a new client.
+2. Remove a client.
+3. Edit a client.
 4. Exit back to the main menu.
 EOF
 
@@ -674,8 +674,8 @@ main_5_menu() {
 	cat << EOF
 Which setting would you like to edit?
 
-1. Edit the peer address.
-2. Edit the remote Wireguard Public Key.
+1. Edit the client's IP address.
+2. Edit the remote's Public Key.
 3. Edit Allowed Networks.
 4. Edit the IP and Port of the Endpoint. (The server this peer is connecting to).
 
@@ -759,8 +759,9 @@ sub_5.4.1_change_endpoint() {
 }
 
 sub_5.4.2_change_port() {
-	check_user_input $'Enter the new port number of the remote Wireguard Server\n: ' port_peer_change port_num_check "$port_type" \
-	&& sed -i -E "s/(Endpoint = [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:)[0-9]+/\1$port_peer_change/" "$config_choice_final" \
+	default_port
+	# check_user_input $'Enter the new port number of the remote Wireguard Server\n: ' port_peer_change port_num_check "$port_type" \
+	&& sed -i -E "s/(Endpoint = [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:)[0-9]+/\1$port_num/" "$config_choice_final" \
 	&& echo "The port has been changed. Restarting Wireguard..." \
 	&& systemctl restart wg-quick@$config_basename.service
 }
