@@ -759,8 +759,7 @@ sub_5.4.1_change_endpoint() {
 }
 
 sub_5.4.2_change_port() {
-	default_port
-	# check_user_input $'Enter the new port number of the remote Wireguard Server\n: ' port_peer_change port_num_check "$port_type" \
+	default_port \
 	&& sed -i -E "s/(Endpoint = [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:)[0-9]+/\1$port_num/" "$config_choice_final" \
 	&& echo "The port has been changed. Restarting Wireguard..." \
 	&& systemctl restart wg-quick@$config_basename.service
