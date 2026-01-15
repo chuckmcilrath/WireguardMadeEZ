@@ -50,7 +50,6 @@ spin() {
   local i=0
   local sp='|/-\\'
   local n=${#sp}
-  
   while true; do
     printf '\r%s ' "${sp:i++%n:1}"  # Use \r instead of \b
     sleep 0.1
@@ -512,7 +511,7 @@ main_2_file_check_server() {
 	shopt -u nullglob
 }
 
-# Asks for DNS input and pings DNS. Will ask re-input if DNS ping failed. Also installs programs needed for Server.
+# Installs programs needed for Server.
 main_2_program_check() {
 	spin &
   	spinpid=$!
@@ -739,7 +738,7 @@ sub_5.3.2_append_ip() {
 }
 
 sub_5.4_endpoint_edit_menu() {
-	echo -e "\nHere is the Endpont IP and port of the remote Wireguard Server this peer connects to:"
+	echo -e "\nHere is the IP and port of the remote Wireguard Server this peer connects to:"
 	grep '^Endpoint' "$config_choice_final"
 	echo
 	cat << EOF
