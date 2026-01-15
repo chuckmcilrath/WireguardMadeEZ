@@ -673,7 +673,7 @@ Address = $peer_address/32
 # Wireguard VM server on local Proxmox
 PublicKey = $peer_pk
 AllowedIPs = $collected_ips
-Endpoint = $endpoint_address:$port_input
+Endpoint = $endpoint_address:$server_port_input
 PersistentKeepalive = 25
 EOF
 	fi
