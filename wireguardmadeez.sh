@@ -239,7 +239,7 @@ default_port() {
 	echo -e "Please enter the Port number."
   	echo -e "${YELLOW}NOTE: Press ENTER to use the default, 51820.${NC}"
 	while true; do
-		read -rp ": " port_input
+		read -rp ": " user_input
 		if [[ -z "$user_input" ]]; then
 			port_num="51820"
 			return 0
