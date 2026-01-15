@@ -70,16 +70,6 @@ run_apt_update() {
   	echo "Apt update has been completed."
 }
 
-#run_apt_update() {
-#	echo "Starting apt update..."
-#	export DEBIAN_FRONTEND=noninteractive
-#	spin &
-#	spinpid=$!
-#	apt update &> /dev/null
-# 	kill "$spinpid"
-#  	echo "Apt update has been completed."
-#}
-
 # Check to see if an app is installed.
 check_install() {
 	local install_name="$1"
@@ -250,15 +240,15 @@ default_port() {
   	echo -e "${YELLOW}NOTE: Press ENTER to use the default, 51820.${NC}"
 	while true; do
 		read -rp ": " port_input
-		if [[ -z "$port_input" ]]; then
-			server_port_input="51820"
+		if [[ -z "$user_input" ]]; then
+			port_num="51820"
 			return 0
-		elif [[ -n "$port_input" ]]; then
-    		if port_num_check "$port_input"; then
-				server_port_input="$port_input"
+		elif [[ -n "$user_input" ]]; then
+    		if port_num_check "$user_input"; then
+				port_num="$user_input"
 				return 0
     		else
-        		echo -e "${RED}'${port_input}' is not a valid ${port_type}${NC} Please try again."
+        		echo -e "${RED}'${user_input}' is not a valid ${port_type}${NC} Please try again."
     		fi
 		fi
 	done
@@ -552,7 +542,7 @@ main_2_server_config() {
 [Interface]
 PrivateKey = $private_key
 Address = $server_network_input/32
-ListenPort = $server_port_input
+ListenPort = $port_num
 # IP forwarding
 PreUp = sysctl -w net.ipv4.ip_forward=1
 # This makes the server act as a router on the network.
@@ -673,7 +663,7 @@ Address = $peer_address/32
 # Wireguard VM server on local Proxmox
 PublicKey = $peer_pk
 AllowedIPs = $collected_ips
-Endpoint = $endpoint_address:$server_port_input
+Endpoint = $endpoint_address:$port_num
 PersistentKeepalive = 25
 EOF
 	fi
