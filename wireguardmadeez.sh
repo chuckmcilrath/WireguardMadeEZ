@@ -439,7 +439,7 @@ main_menu() {
               #### MAIN MENU ####
               ###################
 
-Choose the install type:
+Choose your Wireguard install type:
 
 1. (OPTIONAL) Set Static IP (Recommended for Option #2)
 2. Server Install and Setup
