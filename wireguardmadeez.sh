@@ -737,7 +737,7 @@ sub_5.3.2_append_ip() {
 
 sub_5.4_endpoint_edit_menu() {
 	echo -e "\nHere is the IP and port of the remote Wireguard Server this peer connects to:"
-	grep '^Endpoint' "$config_choice_final"
+	grep "^Endpoint" "$config_choice_final" | sed "s/^Endpoint/${CYAN}&${NC}/"
 	echo
 	cat << EOF
 1. Change the Remote Endpoint IP (This is the IP used to communicate to the remote Wireguard Server)
@@ -750,7 +750,7 @@ EOF
 
 sub_5.4.1_change_endpoint() {
 	check_user_input_multi $'Enter the Remote Server IP for this peer to connect to\n: ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
-	&& sed -i -E "s/(Endpoint = )[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)/\1$wan_peer_change\2/" "$config_choice_final" \
+	&& sed -i -E "s/(Endpoint = )([^:]+)(:[0-9]+)/\1$wan_peer_change\3/" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
 }
