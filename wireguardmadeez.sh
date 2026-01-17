@@ -326,7 +326,7 @@ config_file_check() {
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -q '^Endpoint' $config_choice_final; then
-		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a Peer. Please try again."
+		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a Peer. Please choose the correct config:"
 		return 1
 	fi
 }
