@@ -560,7 +560,7 @@ Server Peer Configuration
 1. Add a new client.
 2. Remove a client.
 3. Edit a client.
-4. Exit back to the main menu.
+4. Return to the previous menu.
 EOF
 
 	read -rp ": " peer_choice
@@ -619,8 +619,7 @@ Which setting would you like to edit?
 
 1. Change the Public Key.
 2. Change the user's IP.
-
-Type 'exit' to go back to the previous menu.
+3. Return to the previous menu.
 EOF
 
 	read -rp ": " setting_select_3_3
@@ -677,8 +676,7 @@ Which setting would you like to edit?
 2. Edit the remote's Public Key.
 3. Edit Allowed Networks.
 4. Edit the IP and Port of the Endpoint. (The server this peer is connecting to).
-
-Type 'exit' to go back to the previous menu.
+5. Return to the previous menu.
 EOF
 
 	read -rp ": " setting_select_5
@@ -713,7 +711,7 @@ sub_5.3_sub_menu() {
 	cat << EOF
 1. Change the network of AllowedIPs (This will change the line back to one network allowed.)
 2. Append a new network to end of the AllowedIP list
-3. Exit to the previous menu
+3. Return to the previous menu.
 EOF
 
 	read -rp $'\n: ' allowed_input
@@ -744,14 +742,14 @@ sub_5.4_endpoint_edit_menu() {
 	cat << EOF
 1. Change the Remote Endpoint IP (This is the IP used to communicate to the remote Wireguard Server)
 2. Change the port
-3. Exit to the previous menu
+3. Return to the previous menu.
 EOF
 
 	read -rp $': ' wan_peer_input
 }
 
 sub_5.4.1_change_endpoint() {
-	check_user_input $'Enter the Remote Server IP for this peer to connect to\n: ' wan_peer_change valid_ip_check "$ip_type" \
+	check_user_input_multi $'Enter the Remote Server IP for this peer to connect to\n: ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
 	&& sed -i -E "s/(Endpoint = )[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)/\1$wan_peer_change\2/" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
@@ -771,7 +769,7 @@ Troubleshooting and help. Choose an option:
 1. wg (Command to see peers and public key
 2. Print out the configuration file
 3. Useful Commands
-4. Exit
+4. Return to the previous menu.
 EOF
 	read -rp ": " help_input
 }
@@ -909,7 +907,7 @@ while true; do
 								2)
 									sub_3.3.2_change_ip && break
 								;;
-								exit)
+								3)
 									exit_selection && break
 								;;
 								*)
