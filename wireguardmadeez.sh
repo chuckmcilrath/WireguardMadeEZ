@@ -779,6 +779,28 @@ EOF
 	read -rp ": " help_input
 }
 
+sub_6.1_info () {
+	if grep -q '^ListenPort' "$config_choice_final"; then
+		echo -e "${CYAN}Configuration Type:${NC} \nServer"
+		echo -e "${CYAN}Local IP:${NC}"
+		hostname -I | awk '{print $1}'
+		echo -e "${CYAN}WAN IP:${NC}"
+		wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
+		echo -e "${CYAN}Listening Port:${NC}"
+		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
+		echo -e "${CYAN}Public Key:${NC}"
+		grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
+	elif grep -q '^Endpoint' "$config_choice_final"; then
+		echo -e "${CYAN}Configuration Type:${NC} \nClient"
+		echo -e "${CYAN}Address:${NC}"
+		grep '^Address' "$config_choice_final" | awk '{print $3}'
+		echo -e "${CYAN}Public Key:${NC}"
+		grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
+	else
+		echo "ERROR"
+	fi
+}
+
 sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 
@@ -937,10 +959,10 @@ while true; do
 			check_install "openresolv"
 			config_file_creation
 			wg_keygen
-			check_user_input $'Please enter the IP Address for this Peer\n: ' peer_address valid_ip_check "$ip_type"
-			check_user_input $'Please enter the Public Key of the Remote Wireguard Server this peer will connect to\n: ' peer_pk key_check "$key_type"
+			check_user_input $'Please enter the IP Address this client will use.\n: ' peer_address valid_ip_check "$ip_type"
+			check_user_input $'Please enter the public key of the remote Wireguard server or client this client will connect to.\n: ' peer_pk key_check "$key_type"
 			main_4_collect_networks_loop
-			check_user_input_multi $'Please enter the IP of the Wireguard server or peer. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
+			check_user_input_multi $'Please enter the IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 			default_port
 			main_4_peer_config
 			print_public_key_set_aliases
@@ -1011,7 +1033,8 @@ while true; do
 				main_6_help_menu
 				case "$help_input" in
 					1) # Prints useful commands
-					
+						choosing_config
+						
 					;;
 					2) # Wireguard command to print connections and public key(s).
 						wg
