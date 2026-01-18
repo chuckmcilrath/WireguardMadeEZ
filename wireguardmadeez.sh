@@ -749,7 +749,9 @@ EOF
 }
 
 sub_5.4.1_change_endpoint() {
-	check_user_input_multi $'Enter the Remote Server IP for this peer to connect to\n: ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
+	echo "Enter the remote server IP that this peer will connect to."
+	echo -e "${YELLOW}NOTE:${NC} DDNS is supported."
+	check_user_input_multi $': ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
 	&& sed -i -E "s/(Endpoint = )([^:]+)(:[0-9]+)/\1$wan_peer_change\3/" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
