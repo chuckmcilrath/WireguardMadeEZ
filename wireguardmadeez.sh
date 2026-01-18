@@ -781,20 +781,20 @@ EOF
 
 sub_6.1_info () {
 	if grep -q '^ListenPort' "$config_choice_final"; then
-		echo -e "${CYAN}Configuration Type:${NC} \nServer"
-		echo -e "${CYAN}Local IP:${NC}"
+		echo -e "\n${CYAN}Configuration Type:${NC} \nServer"
+		echo -e "\n${CYAN}Local IP:${NC}"
 		hostname -I | awk '{print $1}'
-		echo -e "${CYAN}WAN IP:${NC}"
+		echo -e "\n${CYAN}WAN IP:${NC}"
 		wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
-		echo -e "${CYAN}Listening Port:${NC}"
+		echo -e "\n${CYAN}Listening Port:${NC}"
 		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
-		echo -e "${CYAN}Public Key:${NC}"
+		echo -e "$\n{CYAN}Public Key:${NC}"
 		grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
 	elif grep -q '^Endpoint' "$config_choice_final"; then
-		echo -e "${CYAN}Configuration Type:${NC} \nClient"
-		echo -e "${CYAN}Address:${NC}"
+		echo -e "\n${CYAN}Configuration Type:${NC} \nClient"
+		echo -e "\n${CYAN}Address:${NC}"
 		grep '^Address' "$config_choice_final" | awk '{print $3}'
-		echo -e "${CYAN}Public Key:${NC}"
+		echo -e "\n${CYAN}Public Key:${NC}"
 		grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
 	else
 		echo "ERROR"
