@@ -788,7 +788,7 @@ sub_6.1_info () {
 		wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 		echo -e "\n${CYAN}Listening Port:${NC}"
 		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
-		echo -e "$\n{CYAN}Public Key:${NC}"
+		echo -e "\n${CYAN}Public Key:${NC}"
 		grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
 	elif grep -q '^Endpoint' "$config_choice_final"; then
 		echo -e "\n${CYAN}Configuration Type:${NC} \nClient"
