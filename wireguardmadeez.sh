@@ -277,7 +277,7 @@ choosing_config() {
 		echo -e "${GREEN}$i) $file${NC}"
 		((i++))
 	done
-	echo -e "\nPlease choose a config file to edit by number. (Press enter to return to main menu.)"
+	echo -e "\nPlease choose a config file. (Press ENTER to return to previous menu.)"
 	while true; do
 		read -rp ": " config_choice
 		if [[ -z "$config_choice" ]]; then
@@ -642,6 +642,8 @@ sub_3.3.2_change_ip() {
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
+		echo "Please enter the Allowed Network(s)."
+		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection. Please use a 0 in the last octet."
 		check_user_input $'Please enter the Allowed Network(s). (Note: 0.0.0.0 is full tunnel. Please use a 0 in the 4th octet)\n: ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
@@ -768,15 +770,16 @@ main_6_help_menu() {
 	echo
 	cat << EOF
 Troubleshooting and help. Choose an option:
-1. wg (Command to see peers and public key
-2. Print out the configuration file
-3. Useful Commands
-4. Return to the previous menu.
+1. Print useful connection info. (For connecting to other clients).
+2. wg (Command to see peers and public key.)
+3. Print the configuration file.
+4. Useful Commands.
+5. Return to the previous menu.
 EOF
 	read -rp ": " help_input
 }
 
-sub_6.3_commands() {
+sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 
 ${GREEN}wg${NC} (Command for Wireguard to print connections and public key of server)
@@ -1007,17 +1010,20 @@ while true; do
 			while true; do
 				main_6_help_menu
 				case "$help_input" in
-					1) # Wireguard command to print connections and public key(s).
+					1) # Prints useful commands
+					
+					;;
+					2) # Wireguard command to print connections and public key(s).
 						wg
 					;;
-					2) # Prints the config file
+					3) # Prints the config file
 						choosing_config
 						cat "$config_choice_final"
 					;;
-					3) # Prints useful commands
-						sub_6.3_commands
+					4) # Prints useful commands
+						sub_6.4_commands
 					;;
-					4) # Exits the menu
+					5) # Exits the menu
 						exit_selection && break
 					;;
 					*)
