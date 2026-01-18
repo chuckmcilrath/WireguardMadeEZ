@@ -1034,7 +1034,7 @@ while true; do
 				case "$help_input" in
 					1) # Prints useful commands
 						choosing_config
-						
+						sub_6.1_info
 					;;
 					2) # Wireguard command to print connections and public key(s).
 						wg
