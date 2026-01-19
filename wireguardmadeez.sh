@@ -353,24 +353,15 @@ wg_keygen() {
 	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
 	wg pubkey < /etc/wireguard/"$wg_port_name"_private.key > /etc/wireguard/"$wg_port_name"_public.key
 
-	unset private_key
-	unset public_key
-	private_key=$(< /etc/wireguard/"$wg_port_name"_private.key)
-	public_key=$(< /etc/wireguard/"$wg_port_name"_public.key)
-
-	eval "${wg_port_name}_private_key=\"\$private_key\""
-	eval "${wg_port_name}_public_key=\"\$public_key\""
-
-	sed -i "/^export ${wg_port_name}_private_key=/d" ~/.bashrc
-	printf 'export %s="%s"\n' "${wg_port_name}_private_key" "$(cat /etc/wireguard/"$wg_port_name"_private.key)" >> ~/.bashrc
-
-	sed -i "/^export ${wg_port_name}_public_key=/d" ~/.bashrc
-	printf 'export %s="%s"\n' "${wg_port_name}_public_key" "$(cat /etc/wireguard/"$wg_port_name"_public.key)" >> ~/.bashrc
+	sed -i "/^alias ${wg_port_name}_private_key=/d" ~/.bashrc
+	printf 'alias %s="cat /etc/wireguard/%s_private.key"\n' "${wg_port_name}_private_key" "$wg_port_name" >> ~/.bashrc
+	sed -i "/^alias ${wg_port_name}_public_key=/d" ~/.bashrc
+	printf 'alias %s="cat /etc/wireguard/%s_public.key"\n' "${wg_port_name}_public_key" "$wg_port_name" >> ~/.bashrc
 }
 
 # print the public key for the user to use in clients.
 print_public_key_set_aliases() {
-	echo -e "\nPrinting the Public key\n\n${GREEN}$public_key${NC}\n\n"
+	echo -e "\nPrinting the Public key:\n\n${GREEN}$public_key${NC}\n\n"
 	echo "Please copy this key to use for setting up the client"
  	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
 
