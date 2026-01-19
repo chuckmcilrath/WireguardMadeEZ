@@ -841,6 +841,7 @@ sub_7.1_rm_single_config() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
 	if check_user_input_y_N $': '; then
 		rm -f "${config_choice_final%.*}"*
+		unset config_basename
 		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
 		sed -i "/^alias ${config_basename}/d" ~/.bashrc
@@ -854,6 +855,7 @@ sub_7.1_rm_single_config() {
 }
 
 sub_7.2_rm_wireguard() {
+	unset config_basename
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete wireguard and all of it's configurations? (y/N)\n"
 	if check_user_input_y_N $': '; then
 		config_basenames=()
@@ -867,6 +869,10 @@ sub_7.2_rm_wireguard() {
 
 		for config_basename in "${config_basenames[@]}"; do
 			sed -i "/^alias ${config_basename}_/d" ~/.bashrc
+			sed -i "/^alias ${config_basename}start=/d" ~/.bashrc
+			sed -i "/^alias ${config_basename}stop=/d" ~/.bashrc
+			sed -i "/^alias ${config_basename}status=/d" ~/.bashrc
+			sed -i "/^alias ${config_basename}restart=/d" ~/.bashrc
 		done
 		
 		apt-get remove --purge wireguard wireguard-tools -y \
