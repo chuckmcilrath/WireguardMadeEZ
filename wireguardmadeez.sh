@@ -856,10 +856,19 @@ sub_7.1_rm_single_config() {
 sub_7.2_rm_wireguard() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete wireguard and all of it's configurations? (y/N)\n"
 	if check_user_input_y_N $': '; then
+		config_basenames=()
+		for file in /etc/wireguard/*.conf; do
+			if [ -f "$file" ]; then
+				config_basenames+=("$(basename "$file" .conf)")
+			fi
+		done
+
 		rm -r /etc/wireguard/
-		sed -i "/^alias ${config_basename}/d" ~/.bashrc
-		sed -i "/${config_basename}_private_key=/d" ~/.bashrc
-		sed -i "/${config_basename}_public_key=/d" ~/.bashrc
+
+		for config_basename in "${config_basenames[@]}"; do
+			sed -i "/^alias ${config_basename}_/d" ~/.bashrc
+		done
+		
 		apt-get remove --purge wireguard wireguard-tools -y \
 		&& apt autoremove -y \
 		&& modprobe -r wireguard
