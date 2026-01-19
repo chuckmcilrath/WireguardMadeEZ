@@ -353,6 +353,14 @@ wg_keygen() {
 	umask 077 && wg genkey > /etc/wireguard/"$wg_port_name"_private.key
 	wg pubkey < /etc/wireguard/"$wg_port_name"_private.key > /etc/wireguard/"$wg_port_name"_public.key
 
+	unset private_key
+	unset public_key
+	private_key=$(< /etc/wireguard/"$wg_port_name"_private.key)
+	public_key=$(< /etc/wireguard/"$wg_port_name"_public.key)
+	
+	eval "${wg_port_name}_private_key=\"\$private_key\""
+	eval "${wg_port_name}_public_key=\"\$public_key\""
+	
 	sed -i "/^alias ${wg_port_name}_private_key=/d" ~/.bashrc
 	printf 'alias %s="cat /etc/wireguard/%s_private.key"\n' "${wg_port_name}_private_key" "$wg_port_name" >> ~/.bashrc
 	sed -i "/^alias ${wg_port_name}_public_key=/d" ~/.bashrc
