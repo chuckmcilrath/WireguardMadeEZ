@@ -641,7 +641,7 @@ sub_3.3.2_change_ip() {
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo "Please enter the Allowed Network(s)."
+		echo "Please enter the ${CYAN}Allowed Network(s).${NC}"
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection. Please use a 0 in the last octet."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
