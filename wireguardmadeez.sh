@@ -51,7 +51,7 @@ spin() {
   local sp='|/-\\'
   local n=${#sp}
   while true; do
-    printf '\r%s ' "${sp:i++%n:1}"  # Use \r instead of \b
+    printf '\r%s ' "${sp:i++%n:1}"
     sleep 0.1
   done
 }
