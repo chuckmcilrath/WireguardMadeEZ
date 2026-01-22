@@ -343,7 +343,7 @@ config_file_check_server() {
 # Checks to make sure there isn't another input of the same in the config file.
 unique() {
 	local var_name="$1"
-	if grep -q "$var_name" "$config_choice_final"; then
+	if grep -qw "$var_name" "$config_choice_final"; then
 		echo -e "${RED}ERROR${NC}"
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
 		return 1
