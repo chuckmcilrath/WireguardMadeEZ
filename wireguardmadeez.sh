@@ -409,13 +409,17 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = |# ' -v cyan="$CYAN" -v nc="$NC" '
-		/#/{name=$2}
-		/AllowedIPs/{
-			# Remove /32 (or any CIDR notation) from IP
+	awk -F' = ' -v cyan="$CYAN" -v nc="$NC" '
+		/^# /{
+			# Extract name after "# "
+			name=$0
+			sub(/^# /, "", name)
+		}
+		/^AllowedIPs/{
+			# Extract IP and remove CIDR notation
 			ip=$2
 			sub(/\/[0-9]+$/, "", ip)
-			# Store for sorting: IP and name
+			# Store for sorting
 			peers[ip] = name
 		}
 		END {
