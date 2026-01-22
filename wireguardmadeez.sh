@@ -446,6 +446,14 @@ invalid_option() {
 	echo -e "${RED}Invalid option. Please try again.${NC}"
 }
 
+ping_test() {
+	if ping -q -c 1 -w 1 "$endpoint" &> /dev/null; then
+		echo -e "${GREEN}Ping to the EndPoint, ${endpoint} was successful!${NC}"
+	else
+		echo -e "${RED}Ping was not successful.${NC}"
+	fi
+}
+
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -849,7 +857,7 @@ main_7_delete_menu() {
 	cat << EOF
 Choose which option you'd like to do:
 
-1. Delete a port's config file and remove its aliases.
+1. Delete an interfaces' config file and remove its aliases.
 2. Remove Wireguard, delete all config files and aliases.
 3. Return to the previous menu.
 
