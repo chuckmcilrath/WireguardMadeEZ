@@ -200,17 +200,18 @@ DNS_check() {
 
 # Check if user entered IP is valid
 valid_ip_check() {
-	local ip=$1
-	local IFS='.'
-	local -a octets=($ip)
-	[[ ! "$ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 1
-	[[ "${octets[0]}" -eq 127 ]] && return 1
-	[[ ${#octets[@]} -ne 4 ]] && return 1
-	for octet in "${octets[@]}"; do
-		[[ ! "$octet" =~ ^[0-9]+$ ]] && return 1
-		((octet < 0 || octet > 255)) && return 1
-	done
-return 0
+    local ip=$1
+    local -a octets
+    IFS='.' read -ra octets <<< "$ip"
+    [[ ! "$ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 1
+    [[ ${#octets[@]} -ne 4 ]] && return 1
+    for octet in "${octets[@]}"; do
+        [[ "$octet" =~ ^0[0-9]+$ ]] && return 1
+        [[ ! "$octet" =~ ^[0-9]+$ ]] && return 1
+        ((10#$octet < 0 || 10#$octet > 255)) && return 1
+    done
+    [[ "${octets[0]}" -eq 127 ]] && return 1
+    return 0
 }
 
 # Check the user's CIDR input to make sure it's within 0-32
@@ -641,7 +642,7 @@ sub_3.3.2_change_ip() {
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo "Please enter the ${CYAN}Allowed Network(s).${NC}"
+		echo "Enter the ${CYAN}Allowed Network(s).${NC}"
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection. Please use a 0 in the last octet."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
@@ -812,7 +813,7 @@ ${GREEN}nano /etc/wireguard/INTERFACE.conf${NC} (Edits the config file)
 ${GREEN}cat /etc/wireguard/INTERFACE_public_key${NC} or ${GREEN}echo \$INTERFACE_public_key${NC} (Prints the Public Key of the server)
 ${GREEN}cat /etc/wireguard/INTERFACE_private_key${NC} or ${GREEN}echo \$INTERFACE_private_key${NC} (Prints the Private Key of the server)
 
-After configuring a wireguard port, run '~/.bashrc source' to load in aliases:
+After configuring a wireguard port, run 'source ~/.bashrc' to load in aliases:
 ${GREEN}INTERFACEstart${NC} will execute the same as ${GREEN}systemctl start wg-quick@INTERFACE${NC}
 ${GREEN}INTERFACEstop${NC} will execute the same as ${GREEN}systemctl stop wg-quick@INTERFACE${NC}
 ${GREEN}INTERFACErestart${NC} will execute the same as ${GREEN}systemctl restart wg-quick@INTERFACE${NC}
