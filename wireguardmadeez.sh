@@ -410,12 +410,22 @@ print_public_key_set_aliases() {
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
 	awk -F' = |# ' -v cyan="$CYAN" -v nc="$NC" '
-    		/#/{name=$2}
-		/PublicKey/{public=$2}
+		/#/{name=$2}
 		/AllowedIPs/{
-        printf "%s%s%s %s\n", cyan, name, nc, $2
-        print "PublicKey:", public "\n"
-	}
+			# Remove /32 (or any CIDR notation) from IP
+			ip=$2
+			sub(/\/[0-9]+$/, "", ip)
+			# Store for sorting: IP and name
+			peers[ip] = name
+		}
+		END {
+			# Sort IPs numerically
+			n = asorti(peers, sorted_ips, "@ind_num_asc")
+			for (i = 1; i <= n; i++) {
+				ip = sorted_ips[i]
+				printf "%s%s%s %s\n\n", cyan, peers[ip], nc, ip
+			}
+		}
 	' "$config_choice_final"
 }
 
