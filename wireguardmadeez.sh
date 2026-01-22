@@ -337,7 +337,7 @@ config_file_check() {
 
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
-	if grep -q '^Endpoint' $config_choice_final; then
+	if grep -qi '^Endpoint' $config_choice_final; then
 		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a Peer. Please choose the correct config:"
 		return 1
 	fi
@@ -345,7 +345,7 @@ config_file_check_peer() {
 
 # Checks to see if the config file is set up to be a server. If it is, it will tell the user.
 config_file_check_server() {
-	if grep -q '^ListenPort' $config_choice_final; then
+	if grep -qi '^ListenPort' $config_choice_final; then
 		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Server. Please try again."
 		return 1
 	fi
@@ -354,7 +354,7 @@ config_file_check_server() {
 # Checks to make sure there isn't another input of the same in the config file.
 unique() {
 	local var_name="$1"
-	if grep -qw "$var_name" "$config_choice_final"; then
+	if grep -qwi "$var_name" "$config_choice_final"; then
 		echo -e "${RED}ERROR${NC}"
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
 		return 1
