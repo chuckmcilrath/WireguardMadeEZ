@@ -285,7 +285,7 @@ choosing_config() {
 		echo "Available config files:"
 		local i=1
 		for file in "${config_files_array[@]}"; do
-			echo -e "${GREEN}$i) $file${NC}"
+			echo -e "${GREEN}$i) ${file##*/}${NC}"
 			((i++))
 		done
 		echo -e "\nPlease choose a config file. (Press ENTER to return to previous menu.)"
