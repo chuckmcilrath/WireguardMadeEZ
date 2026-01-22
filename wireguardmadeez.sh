@@ -923,7 +923,6 @@ while true; do
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
 						while true; do
-							server_peer_show
 	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check "$alphanumeric_type"
 							unique "$peer_name" || continue
 	  						check_user_input $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check "$ip_type"
