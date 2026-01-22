@@ -412,25 +412,20 @@ server_peer_show() {
 	awk -F' = ' -v cyan="$CYAN" -v nc="$NC" '
 		/^# /{
 			# Extract name after "# "
-			name=$0
+			name = $0
 			sub(/^# /, "", name)
 		}
 		/^AllowedIPs/{
 			# Extract IP and remove CIDR notation
-			ip=$2
+			ip = $2
 			sub(/\/[0-9]+$/, "", ip)
-			# Store for sorting
-			peers[ip] = name
+			# Print immediately for piping to sort
+			printf "%s|%s\n", ip, name
 		}
-		END {
-			# Sort IPs numerically
-			n = asorti(peers, sorted_ips, "@ind_num_asc")
-			for (i = 1; i <= n; i++) {
-				ip = sorted_ips[i]
-				printf "%s%s%s %s\n\n", cyan, peers[ip], nc, ip
-			}
-		}
-	' "$config_choice_final"
+	' "$config_choice_final" | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | \
+	awk -F'|' -v cyan="$CYAN" -v nc="$NC" '{
+		printf "%s%s%s %s\n", cyan, $2, nc, $1
+	}'
 }
 
 # Enables the Wireguard port as a service to start on boot.
