@@ -934,11 +934,9 @@ while true; do
 						sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer.
-						server_peer_show
 						sub_3.2_delete
 	 				;;
 	 				3) # Edit a Peer.
-						server_peer_show
 						while true; do
 							sub_3.3_user_select || break
 							sub_3.3_menu
