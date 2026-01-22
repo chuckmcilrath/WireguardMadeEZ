@@ -270,29 +270,40 @@ valid_ddns_check() {
 # User config file choice
 choosing_config() {
 	unset config_choice_final
- 	unset config_basename
- 	config_files_array=(/etc/wireguard/*.conf)
-	echo "Available config files:"
-	local i=1
-	for file in "${config_files_array[@]}"; do
-		echo -e "${GREEN}$i) $file${NC}"
-		((i++))
-	done
-	echo -e "\nPlease choose a config file. (Press ENTER to return to previous menu.)"
-	while true; do
-		read -rp ": " config_choice
-		if [[ -z "$config_choice" ]]; then
-			echo "Returning to previous menu."
-			return 1
-   		elif [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
-			config_choice_final="${config_files_array[$config_choice -1]}"
-   			config_basename="$(basename "$config_choice_final" .conf)"
-			echo -e "${GREEN}You chose: $config_choice_final${NC}"
-			break
-		else
-			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}. ${NC}"
-		fi
-   	done
+	unset config_basename
+	config_files_array=(/etc/wireguard/*.conf)
+
+	# Check if no configs exist or glob didn't match
+	if [[ ! -e "${config_files_array[0]}" ]]; then
+		echo -e "${RED}ERROR:${NC} No configuration found!"
+		return 1
+	elif [[ ${#config_files_array[@]} -eq 1 ]]; then
+		config_choice_final="${config_files_array[0]}"
+		config_basename="$(basename "$config_choice_final" .conf)"
+		return 0
+	else
+		echo "Available config files:"
+		local i=1
+		for file in "${config_files_array[@]}"; do
+			echo -e "${GREEN}$i) $file${NC}"
+			((i++))
+		done
+		echo -e "\nPlease choose a config file. (Press ENTER to return to previous menu.)"
+		while true; do
+			read -rp ": " config_choice
+			if [[ -z "$config_choice" ]]; then
+				echo "Returning to previous menu."
+				return 1
+			elif [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
+				config_choice_final="${config_files_array[$config_choice -1]}"
+				config_basename="$(basename "$config_choice_final" .conf)"
+				echo -e "${GREEN}You chose: $config_choice_final${NC}"
+				break
+			else
+				echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}.${NC}"
+			fi
+		done
+	fi
 }
 
 
