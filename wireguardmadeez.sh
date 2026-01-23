@@ -278,6 +278,7 @@ choosing_config() {
 		echo -e "${RED}ERROR:${NC} No configuration found!"
 		return 1
 	elif [[ ${#config_files_array[@]} -eq 1 ]]; then
+		echo "Selected ${config_files_array[0]} as it was the only config..." 
 		config_choice_final="${config_files_array[0]}"
 		config_basename="$(basename "$config_choice_final" .conf)"
 		return 0
