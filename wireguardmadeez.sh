@@ -255,7 +255,7 @@ default_port() {
 }
 
 valid_ddns_check() {
-	local name=$1
+	local name="$1"
 	[[ "$name" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && return 1
 	(( ${#name} > 253 )) && return 1
 	IFS='.' read -ra labels <<< "$name"
@@ -310,7 +310,7 @@ choosing_config() {
 # User input for config name
 config_file_creation() {
   	while true; do
-		echo -e "\nName your Wireguard Port. This will be used for the config file name."
+		echo -e "\nName your Wireguard Interface. This will be used for the config file name."
  		echo -e "${YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}"
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
@@ -447,10 +447,11 @@ invalid_option() {
 }
 
 ping_test() {
+	local endpoint="$1"
 	if ping -q -c 1 -w 1 "$endpoint" &> /dev/null; then
 		echo -e "${GREEN}Ping to the EndPoint, ${endpoint} was successful!${NC}"
 	else
-		echo -e "${RED}Ping was not successful.${NC}"
+		echo -e "${YELLOW}WARNING${NC}Ping was not successful."
 	fi
 }
 
@@ -1008,6 +1009,7 @@ while true; do
 			main_4_peer_config
 			print_public_key_set_aliases
 			enable_wg
+			ping_test "$endpoint_address"
 		;;
 		5) # Client Peer Config.
 			while true; do
