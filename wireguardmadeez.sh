@@ -598,9 +598,21 @@ EOF
 }
 
 sub_3.1_peer_input() {
-	echo -e "Enter a name for the ${CYAN}peer${NC}.
+	echo -e "Enter a name for the ${CYAN}peer${NC}."
 	check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
 	unique "$peer_name"
+}
+
+sub_3.1_peer_IP() {
+	echo -e "Enter the ${CYAN}private IP address${NC} for the peer to use."
+	check_user_input $': ' peer_ip valid_ip_check "$ip_type"
+	unique "$peer_ip"
+}
+
+sub_3.1_public_key() {
+	echo -e "Enter the ${CYAN}PublicKey${NC} from the client."
+	check_user_input $': ' peer_key key_check "$key_type"
+	unique "$peer_key"
 }
 
 # Adds a peer to the server config.
@@ -972,11 +984,9 @@ while true; do
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
 						while true; do
-	  						sub_3.1_peer_input || continue
-	  						check_user_input $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check "$ip_type"
-							unique "$peer_ip" || continue
-							check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check "$key_type"
-							unique "$peer_key" || continue
+	  						sub_3.1_peer_input
+	  						sub_3.1_peer_IP
+							sub_3.1_public_key
 							break
 	  					done
 						sub_3.1_peer_config && break
