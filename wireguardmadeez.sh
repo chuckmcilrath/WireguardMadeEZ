@@ -682,34 +682,36 @@ EOF
 }
 
 sub_3.3.1_change_public_key() {
-	check_user_input $'Please enter the New Public Key you would like to use\n: ' new_public_key key_check "$ip_type" \
+	echo -e "Enter the new ${CYAN}PublicKey${NC} you would like to use."
+	check_user_input $': ' new_public_key key_check "$ip_type" \
 	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
 	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 sub_3.3.2_change_ip() {
-	check_user_input $'Please enter the new IP you would like to use\n: ' new_ip valid_ip_check "$ip_type" \
+	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
+	check_user_input $': ' new_ip valid_ip_check "$ip_type" \
 	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 main_4_private_IP() {
-	echo "Enter the ${CYAN}Private IP Address${NC} this client will use."
+	echo -e "Enter the ${CYAN}Private IP Address${NC} this client will use."
 	check_user_input $': ' peer_address valid_ip_check "$ip_type"
 	peer_address_change="${peer_address%.*}.0"
 }
 
 main_4_public_key() {
-	echo "Enter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
+	echo -e "Enter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
 	check_user_input $': ' peer_pk key_check "$key_type"
 }
 
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo "Enter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
+		echo -e "Enter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
@@ -753,26 +755,27 @@ EOF
 }
 
 sub_5.1_edit_ip() {
-	echo -e "\nHere is the IP for this connection:"
+	echo -e "\nHere is the ${CYAN}private IP address${NC} for this connection:"
 	grep '^Address' "$config_choice_final"
-	check_user_input $'\nPlease enter the new IP you would like to use\n: ' new_peer_ip valid_ip_check "$ip_type" \
+	check_user_input $'\nEnter the new ${CYAN}private IP address${NC} you would like to use\n: ' new_peer_ip valid_ip_check "$ip_type" \
 	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 sub_5.2_edit_public_key() {
-	echo -e "\nHere is the Public Key for the Remote Wireguard Server:\n"
+	echo -e "\nHere is the ${CYAN}PublicKey${NC} for the remote Wireguard server:\n"
 	grep '^PublicKey' "$config_choice_final"
-	check_user_input $'\nPlease enter the new Public Key\n: ' new_peer_public_key key_check "$key_type" \
+	echo -e "Please enter the new ${CYAN}PublicKey${NC}."
+	check_user_input $': ' new_peer_public_key key_check "$key_type" \
 	&& sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
 	&& echo -e "${GREEN}The Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 sub_5.3_echo() {
-	echo -e "\nHere is a list of the networks that are allowed for this Peer (0.0.0.0/0 is default and means a full tunnel connection):\n"
-	grep '^AllowedIPs' "$config_choice_final"
+	echo -e "\n${CYAN}AllowedIPs${NC}: (0.0.0.0/0 entered means a full tunnel connection):\n"
+	grep "^AllowedIPs" "$config_choice_final" | sed "s/^Endpoint/${CYAN}&${NC}/"
 	echo -e "\n${YELLOW}NOTE:${NC} Please use a 0 in the 4th octet"
 }
 
@@ -1040,7 +1043,6 @@ while true; do
 			config_file_creation
 			wg_keygen
 			main_4_private_IP
-			
 			main_4_collect_networks_loop
 			check_user_input_multi $'Please enter the IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 			default_port
@@ -1051,7 +1053,7 @@ while true; do
 		5) # Client Peer Config.
 			while true; do
 				choosing_config || break
-				config_file_check_server || continue
+				config_file_check_server || break
 				main_5_menu
 				case "$setting_select_5" in
 					1) # Edits the IP Address of the Peer Config.
