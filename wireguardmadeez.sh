@@ -670,15 +670,22 @@ sub_3.3.2_change_ip() {
 }
 
 main_4_private_IP() {
-	echo "Enter the ${CYAN}Private IP Address${NC}" this client will use.
+	echo "Enter the ${CYAN}Private IP Address${NC} this client will use."
 	check_user_input $': ' peer_address valid_ip_check "$ip_type"
+	peer_address_change="${peer_address%.*}.0"
+}
+
+main_4_public_key() {
+	echo "Enter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
+	check_user_input $': ' peer_pk key_check "$key_type"
 }
 
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo "Enter the ${CYAN}Allowed Network(s).${NC}"
+		echo "Enter the ${CYAN}Allowed Network(s).${NC} for the ${CYAN}AllowedIPs${NC} section."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection. Please use a 0 in the last octet."
+		echo -e "${YELLOW}EXAMPLE:${NC} ${peer_address_change}."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
@@ -1008,7 +1015,7 @@ while true; do
 			config_file_creation
 			wg_keygen
 			main_4_private_IP
-			check_user_input $'Enter the public key of the remote Wireguard server or client this client will connect to.\n: ' peer_pk key_check "$key_type"
+			
 			main_4_collect_networks_loop
 			check_user_input_multi $'Please enter the IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 			default_port
