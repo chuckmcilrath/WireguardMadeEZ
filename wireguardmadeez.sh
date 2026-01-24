@@ -280,7 +280,7 @@ choosing_config() {
 	elif [[ ${#config_files_array[@]} -eq 1 ]]; then 
 		config_choice_final="${config_files_array[0]}"
 		config_basename="$(basename "$config_choice_final" .conf)"
-		echo -e "Selected ${GREEN} ${config_basename} ${NC} as it was the only config."
+		echo -e "1 config available.${GREEN} ${config_basename} ${NC}was selected."
 		return 0
 	else
 		echo "Available config files:"
@@ -448,11 +448,11 @@ invalid_option() {
 }
 
 ping_test() {
-	local endpoint="$1"
-	if ping -q -c 1 -w 1 "$endpoint" &> /dev/null; then
-		echo -e "${GREEN}Ping to the EndPoint, ${endpoint} was successful!${NC}"
+	local peer_ping="$1"
+	if ping -q -c 1 -w 1 "$peer_ping" &> /dev/null; then
+		echo -e "${GREEN}Ping to the EndPoint, ${peer_ping} was successful!${NC}"
 	else
-		echo -e "${YELLOW}WARNING${NC}Ping was not successful."
+		echo -e "${YELLOW}WARNING:${NC} Ping was not successful."
 	fi
 }
 
@@ -470,13 +470,13 @@ main_menu() {
 
 Choose your Wireguard install type:
 
-1. (OPTIONAL) Set Static IP (Recommended for Option #2)
-2. Server Install and Setup
-3. Server Config edit
-4. Client Install and Setup
-5. Client Config edit
-6. Info and commands
-7. Delete and cleanup
+1. (OPTIONAL) Set Static IP. (Recommended for Option #2)
+2. Server Install and Setup.
+3. Server Config edit.
+4. Client Install and Setup.
+5. Client Config edit.
+6. Info and commands.
+7. Delete and cleanup.
 
 Type "exit" (or ctrl + c) to exit the script.
 EOF
@@ -669,6 +669,11 @@ sub_3.3.2_change_ip() {
 	&& systemctl restart wg-quick@${config_basename}.service
 }
 
+main_4_private_IP() {
+	echo "Enter the ${CYAN}Private IP Address${NC}" this client will use.
+	check_user_input $': ' peer_address valid_ip_check "$ip_type"
+}
+
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
@@ -799,7 +804,7 @@ sub_5.4.2_change_port() {
 main_6_help_menu() {
 	echo
 	cat << EOF
-Troubleshooting and help. Choose an option:
+Info and commands. Choose an option:
 1. Print useful connection info. (For connecting to other clients).
 2. wg (Command to see peers and public key.)
 3. Print the configuration file.
@@ -1002,15 +1007,14 @@ while true; do
 			check_install "openresolv"
 			config_file_creation
 			wg_keygen
-			check_user_input $'Please enter the IP Address this client will use.\n: ' peer_address valid_ip_check "$ip_type"
-			check_user_input $'Please enter the public key of the remote Wireguard server or client this client will connect to.\n: ' peer_pk key_check "$key_type"
+			main_4_private_IP
+			check_user_input $'Enter the public key of the remote Wireguard server or client this client will connect to.\n: ' peer_pk key_check "$key_type"
 			main_4_collect_networks_loop
 			check_user_input_multi $'Please enter the IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 			default_port
 			main_4_peer_config
 			print_public_key_set_aliases
 			enable_wg
-			ping_test "$endpoint_address"
 		;;
 		5) # Client Peer Config.
 			while true; do
@@ -1072,7 +1076,7 @@ while true; do
 				esac
 			done
   		;;
-		6) # Troubleshooting and help.
+		6) # Info and commands.
 			while true; do
 				main_6_help_menu
 				case "$help_input" in
@@ -1092,6 +1096,9 @@ while true; do
 					;;
 					5) # Exits the menu
 						exit_selection && break
+					;;
+					6) # Pings an endpoint
+					
 					;;
 					*)
 						invalid_option
