@@ -715,11 +715,17 @@ main_4_collect_networks_loop() {
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
-		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
+		echo -e "Please enter the CIDR of your Allowed Network."
+		check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
 	done
 	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
+}
+
+main_4_endpoint() {
+	echo -e "Please enter the ${CYAN}Endpoint${NC} IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)."
+	check_user_input_multi $': ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 }
 
 main_4_peer_config() {
@@ -1046,7 +1052,7 @@ while true; do
 			wg_keygen
 			main_4_private_IP
 			main_4_collect_networks_loop
-			check_user_input_multi $'Please enter the IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)\n: ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
+			main_4_endpoint
 			default_port
 			main_4_peer_config
 			print_public_key_set_aliases
