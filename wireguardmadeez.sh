@@ -431,6 +431,13 @@ server_peer_show() {
 	}'
 }
 
+peer_check() {
+	if ! grep -q "Peer" "$config_choice_final"; then
+		echo -e "${RED}Error:${NC} No Peer found. Please add a peer."
+		return 1
+	fi
+}
+
 # Enables the Wireguard port as a service to start on boot.
 enable_wg() {
 	echo "Enabling the port to start on boot..."
@@ -992,9 +999,11 @@ while true; do
 						sub_3.1_peer_config && break
 					;;
 					2) # Delete a Peer.
+						peer_check || continue
 						sub_3.2_delete
 	 				;;
 	 				3) # Edit a Peer.
+						peer_check || continue
 						while true; do
 							sub_3.3_user_select || break
 							sub_3.3_menu
