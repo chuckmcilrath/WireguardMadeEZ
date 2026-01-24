@@ -746,7 +746,7 @@ Which setting would you like to edit?
 
 1. Edit the client's ${CYAN}private IP address${NC}.
 2. Edit the remote's ${CYAN}PublicKey${NC}.
-3. Edit Allowed Networks (${CYAN}AllowedIPs${NC}.
+3. Edit Allowed Networks (${CYAN}AllowedIPs${NC}).
 4. Edit the IP and Port of the ${CYAN}Endpoint${NC}. (The server this peer is connecting to).
 5. Return to the previous menu.
 EOF
@@ -756,8 +756,9 @@ EOF
 
 sub_5.1_edit_ip() {
 	echo -e "\nHere is the ${CYAN}private IP address${NC} for this connection:"
-	grep '^Address' "$config_choice_final"
-	check_user_input $'\nEnter the new ${CYAN}private IP address${NC} you would like to use\n: ' new_peer_ip valid_ip_check "$ip_type" \
+	grep '^Address' "$config_choice_final" | sed "s/^Address/${CYAN}&${NC}/"
+	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
+	check_user_input $': ' new_peer_ip valid_ip_check "$ip_type" \
 	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -765,7 +766,7 @@ sub_5.1_edit_ip() {
 
 sub_5.2_edit_public_key() {
 	echo -e "\nHere is the ${CYAN}PublicKey${NC} for the remote Wireguard server:\n"
-	grep '^PublicKey' "$config_choice_final"
+	grep '^PublicKey' "$config_choice_final" | sed "s/^PublicKey/${CYAN}&${NC}/"
 	echo -e "Please enter the new ${CYAN}PublicKey${NC}."
 	check_user_input $': ' new_peer_public_key key_check "$key_type" \
 	&& sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
