@@ -270,6 +270,7 @@ valid_ddns_check() {
 
 # User config file choice
 choosing_config() {
+	shopt -s nullglob
 	unset config_choice_final
 	unset config_basename
 
@@ -305,6 +306,7 @@ choosing_config() {
 			fi
 		done
 	fi
+	shopt -u nullglob
 }
 
 
@@ -312,7 +314,7 @@ choosing_config() {
 config_file_creation() {
   	while true; do
 		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name."
- 		echo -e "${YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}"
+ 		echo -e "${YELLOW}EXAMPLE:${NC} server, wg0, wg1, wg2, etc."
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
 			config_path="/etc/wireguard/${wg_port_name}.conf"
@@ -557,9 +559,9 @@ main_2_program_check() {
 
 # user input for server IP and Network
 main_2_server_network() {
-	echo -e "\nPlease choose the IP the server will use. This will act as a gateway."
- 	echo -e "${YELLOW}NOTE: This will also be it's network. Make it different from your other networks.${NC}"
-  	echo "${YELLO}Example: 10.15.0.1 or 172.16.0.1. If you're not sure, just use one of these.${NC}"
+	echo -e "\nEnter the ${CYAN}IP address${NC} the server will use. This will act as a gateway."
+ 	echo -e "${YELLOW}NOTE:${NC} Make it a non-conflicting IP from your other networks that you are connecting."
+  	echo "${YELLOW}Example:${NC} 10.15.0.1, 172.16.0.1, or 192.168.6.1."
  	check_user_input ": " server_network_input valid_ip_check "$ip_type"
 }
 
