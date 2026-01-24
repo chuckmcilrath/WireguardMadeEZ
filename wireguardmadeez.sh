@@ -238,7 +238,7 @@ port_num_check() {
 
 default_port() {
 	echo -e "Please enter the Port number."
-  	echo -e "${YELLOW}NOTE: Press ENTER to use the default, 51820.${NC}"
+  	echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
 	while true; do
 		read -rp ": " user_input
 		if [[ -z "$user_input" ]]; then
@@ -595,6 +595,12 @@ Server Peer Configuration
 EOF
 
 	read -rp ": " peer_choice
+}
+
+sub_3.1_peer_input() {
+	echo -e "Enter a name for the ${CYAN}peer${NC}.
+	check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
+	unique "$peer_name"
 }
 
 # Adds a peer to the server config.
@@ -966,8 +972,7 @@ while true; do
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
 						while true; do
-	  						check_user_input $'\nEnter a name for the peer\n: ' peer_name alphanumeric_check "$alphanumeric_type"
-							unique "$peer_name" || continue
+	  						sub_3.1_peer_input || continue
 	  						check_user_input $'Enter the IP for the peer to use\n: ' peer_ip valid_ip_check "$ip_type"
 							unique "$peer_ip" || continue
 							check_user_input $'Enter the public key from the client peer\n: ' peer_key key_check "$key_type"
