@@ -744,10 +744,10 @@ main_5_menu() {
 	cat << EOF
 Which setting would you like to edit?
 
-1. Edit the client's IP address.
-2. Edit the remote's Public Key.
-3. Edit Allowed Networks.
-4. Edit the IP and Port of the Endpoint. (The server this peer is connecting to).
+1. Edit the client's ${CYAN}private IP address${NC}.
+2. Edit the remote's ${CYAN}PublicKey${NC}.
+3. Edit Allowed Networks (${CYAN}AllowedIPs${NC}.
+4. Edit the IP and Port of the ${CYAN}Endpoint${NC}. (The server this peer is connecting to).
 5. Return to the previous menu.
 EOF
 
@@ -775,14 +775,14 @@ sub_5.2_edit_public_key() {
 
 sub_5.3_echo() {
 	grep "^AllowedIPs" "$config_choice_final" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
-	echo -e "${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0/0 entered means a full tunnel connection"
+	echo -e "\n${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0/0 entered means a full tunnel connection."
 }
 
 sub_5.3_sub_menu() {
 	echo
 	cat << EOF
-1. Change the network of AllowedIPs (This will change the line back to one network allowed.)
-2. Append a new network to end of the AllowedIP list
+1. Change ${CYAN}AllowedIPs${NC}. (This will change the line back to one network allowed.)
+2. Append a new network to end of the ${CYAN}AllowedIPs${NC} list.
 3. Return to the previous menu.
 EOF
 
@@ -790,18 +790,20 @@ EOF
 }
 
 sub_5.3.1_change_ip() {
-	check_user_input $'Enter the IP network you would like to use\n: ' allowed_ip_input valid_ip_check "$ip_type" \
+	echo -e "Enter the ${CYAN}AllowedIPs${NC}."
+	check_user_input $': ' allowed_ip_input valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
-	check_user_input $'Enter the CIDR notation (like /24 or /0)\n: ' allowed_cidr_input cidr_check "$cidr_type" \
+	check_user_input $'Enter the CIDR: ' allowed_cidr_input cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
 }
 
 sub_5.3.2_append_ip() {
-	check_user_input $'Enter the IP network you would like for Wireguard to be able to access\n: ' allowed_ip_input2 valid_ip_check "$ip_type" \
+	echo -e "Enter the ${CYAN}AllowedIPs${NC}."
+	check_user_input $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
-	check_user_input $'Enter the CIDR notation for that network (like /24 or /0)\n: ' allowed_cidr_input2 cidr_check "$cidr_type" \
+	check_user_input $'Enter the CIDR: ' allowed_cidr_input2 cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
@@ -812,8 +814,8 @@ sub_5.4_endpoint_edit_menu() {
 	grep "^Endpoint" "$config_choice_final" | sed "s/^Endpoint/${CYAN}&${NC}/"
 	echo
 	cat << EOF
-1. Change the Remote Endpoint IP (This is the IP used to communicate to the remote Wireguard Server)
-2. Change the port
+1. Edit the remote's ${CYAN}Endpoint${NC} IP. (This is the IP used to communicate to the remote Wireguard Server.)
+2. Edit the remote's ${CYAN}Endpoint${NC} port.
 3. Return to the previous menu.
 EOF
 
