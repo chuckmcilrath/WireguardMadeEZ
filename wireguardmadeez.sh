@@ -14,7 +14,6 @@
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 config_files=/etc/wireguard/*.conf
-config_files_array=(/etc/wireguard/*.conf)
 
 # finds the interface for use in a config file.
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+\(static\|dhcp\)' /etc/network/interfaces | awk '{print $2}')
@@ -273,6 +272,7 @@ choosing_config() {
 	shopt -s nullglob
 	unset config_choice_final
 	unset config_basename
+	config_files_array=(/etc/wireguard/*.conf)
 
 	# Check if no configs exist or glob didn't match
 	if [[ ! -e "${config_files_array[0]}" ]]; then
@@ -535,6 +535,7 @@ main_1_apply_network() {
 
 main_2_file_check_server() {
     shopt -s nullglob
+	config_files_array=(/etc/wireguard/*.conf)
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
