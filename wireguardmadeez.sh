@@ -774,9 +774,8 @@ sub_5.2_edit_public_key() {
 }
 
 sub_5.3_echo() {
-	echo -e "\n${CYAN}AllowedIPs${NC}: (0.0.0.0/0 entered means a full tunnel connection):\n"
-	grep "^AllowedIPs" "$config_choice_final" | sed "s/^Endpoint/${CYAN}&${NC}/"
-	echo -e "\n${YELLOW}NOTE:${NC} Please use a 0 in the 4th octet"
+	grep "^AllowedIPs" "$config_choice_final" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
+	echo -e "${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0/0 entered means a full tunnel connection"
 }
 
 sub_5.3_sub_menu() {
