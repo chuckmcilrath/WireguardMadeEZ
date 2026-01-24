@@ -1052,6 +1052,7 @@ while true; do
 			config_file_creation
 			wg_keygen
 			main_4_private_IP
+			main_4_public_key
 			main_4_collect_networks_loop
 			main_4_endpoint
 			default_port
