@@ -14,6 +14,7 @@
 resolved_path=/etc/systemd/resolved.conf
 net_interf=/etc/network/interfaces
 config_files=/etc/wireguard/*.conf
+config_files_array=(/etc/wireguard/*.conf)
 
 # finds the interface for use in a config file.
 interf=$(grep '^\s*iface\s\+\w\+\s\+inet\s\+\(static\|dhcp\)' /etc/network/interfaces | awk '{print $2}')
@@ -271,7 +272,6 @@ valid_ddns_check() {
 choosing_config() {
 	unset config_choice_final
 	unset config_basename
-	config_files_array=(/etc/wireguard/*.conf)
 
 	# Check if no configs exist or glob didn't match
 	if [[ ! -e "${config_files_array[0]}" ]]; then
@@ -311,7 +311,7 @@ choosing_config() {
 # User input for config name
 config_file_creation() {
   	while true; do
-		echo -e "\nName your Wireguard Interface. This will be used for the config file name."
+		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name."
  		echo -e "${YELLOW}EXAMPLE: server, wg0, wg1, wg2, etc.${NC}"
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
@@ -526,7 +526,6 @@ main_1_apply_network() {
 
 main_2_file_check_server() {
     shopt -s nullglob
-    config_files_array=(/etc/wireguard/*.conf)
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
             if grep -q '^ListenPort' "$config_file"; then
@@ -683,9 +682,9 @@ main_4_public_key() {
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo "Enter the ${CYAN}Allowed Network(s).${NC} for the ${CYAN}AllowedIPs${NC} section."
-		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection. Please use a 0 in the last octet."
+		echo "Enter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
+		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		check_user_input $'Please enter the CIDR of your Allowed Network\n: ' allowed_ip_cidr cidr_check "$cidr_type"
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
