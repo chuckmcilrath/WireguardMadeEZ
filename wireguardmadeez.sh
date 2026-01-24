@@ -841,7 +841,7 @@ sub_5.4.1_change_endpoint() {
 
 sub_5.4.2_change_port() {
 	default_port \
-	&& sed -i -E "s/(Endpoint = [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:)[0-9]+/\1$port_num/" "$config_choice_final" \
+	&& sed -i -E "s/(Endpoint = [^:]+:)[0-9]+/\1$port_num/" "$config_choice_final" \
 	&& echo "The port has been changed. Restarting Wireguard..." \
 	&& systemctl restart wg-quick@$config_basename.service
 }
