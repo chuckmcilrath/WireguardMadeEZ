@@ -386,7 +386,7 @@ wg_keygen() {
 print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key:\n\n${GREEN}$public_key${NC}\n\n"
 	echo "Please copy this key to use for setting up the client"
- 	echo "Aliases are set. Manually run ~/.bashrc or open a new terminal to use them." 
+ 	echo "Aliases are set. Manually run \'source ~/.bashrc\' or open a new terminal to use them." 
 
 	start_name="${wg_port_name}start"
 	start_line="alias ${start_name}=\"systemctl start wg-quick@${wg_port_name}\""
@@ -412,28 +412,32 @@ print_public_key_set_aliases() {
 # Shows the Peers that are on the server.
 server_peer_show() {
 	echo -e "\nHere are the list of Peers currently configured:\n"
-	awk -F' = ' -v cyan="$CYAN" -v nc="$NC" '
-		/^# /{
-			# Extract name after "# "
-			name = $0
-			sub(/^# /, "", name)
-		}
-		/^AllowedIPs/{
-			# Extract IP and remove CIDR notation
-			ip = $2
-			sub(/\/[0-9]+$/, "", ip)
-			# Print immediately for piping to sort
-			printf "%s|%s\n", ip, name
-		}
-	' "$config_choice_final" | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | \
-	awk -F'|' -v cyan="$CYAN" -v nc="$NC" '{
-		printf "%s%s%s %s\n", cyan, $2, nc, $1
-	}'
+	if ! grep -q "Peer" "$config_choice_final"; then
+		echo -e "No ${CYAN}peers${NC} found. Start by adding a ${CYAN}peer${NC} with option 1."
+	else
+		awk -F' = ' -v cyan="$CYAN" -v nc="$NC" '
+			/^# /{
+				# Extract name after "# "
+				name = $0
+				sub(/^# /, "", name)
+			}
+			/^AllowedIPs/{
+				# Extract IP and remove CIDR notation
+				ip = $2
+				sub(/\/[0-9]+$/, "", ip)
+				# Print immediately for piping to sort
+				printf "%s|%s\n", ip, name
+			}
+		' "$config_choice_final" | sort -t. -k1,1n -k2,2n -k3,3n -k4,4n | \
+		awk -F'|' -v cyan="$CYAN" -v nc="$NC" '{
+			printf "%s%s%s %s\n", cyan, $2, nc, $1
+		}'
+	fi
 }
 
 peer_check() {
 	if ! grep -q "Peer" "$config_choice_final"; then
-		echo -e "${RED}Error:${NC} No Peer found. Please add a peer."
+		echo -e "${RED}ERROR:${NC} No ${CYAN}peers${NC} found. Please add a ${CYAN}peer${NC}."
 		return 1
 	fi
 }
@@ -885,7 +889,7 @@ sub_6.1_wg_command() {
 	if wg show &> /dev/null; then
     	wg show
 	else
-    	echo "Error: wg command failed. No WireGuard interface may be configured or running."
+    	echo -e "${RED}ERROR:${NC} wg command failed. No WireGuard interface may be configured or running."
 	fi
 }
 
