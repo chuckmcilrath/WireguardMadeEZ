@@ -959,7 +959,7 @@ sub_7.2_rm_wireguard() {
 		apt-get remove --purge wireguard wireguard-tools -y \
 		&& apt autoremove -y \
 		&& modprobe -r wireguard
-		echo -e "${GREEN}Success${NC} Returning to previous menu"
+		echo -e "\n${GREEN}Success!${NC} Returning to previous menu."
 	fi
 }
 
@@ -1132,8 +1132,7 @@ while true; do
 						wg
 					;;
 					3) # Prints the config file
-						choosing_config
-						cat "$config_choice_final"
+						choosing_config && cat "$config_choice_final"
 					;;
 					4) # Prints useful commands
 						sub_6.4_commands
