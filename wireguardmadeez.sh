@@ -1136,7 +1136,7 @@ while true; do
 						choosing_config && sub_6.1_info
 					;;
 					2) # Wireguard command to print connections and public key(s).
-						wg_command
+						sub_6.1_wg_command
 					;;
 					3) # Prints the config file
 						choosing_config && cat "$config_choice_final"
