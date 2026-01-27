@@ -881,6 +881,14 @@ sub_6.1_info () {
 	fi
 }
 
+sub_6.1_wg_command() {
+	if wg show &> /dev/null; then
+    	wg show
+	else
+    	echo "Error: wg command failed. No WireGuard interface may be configured or running."
+	fi
+}
+
 sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 
@@ -1125,11 +1133,10 @@ while true; do
 				main_6_help_menu
 				case "$help_input" in
 					1) # Prints useful commands
-						choosing_config
-						sub_6.1_info
+						choosing_config && sub_6.1_info
 					;;
 					2) # Wireguard command to print connections and public key(s).
-						wg
+						wg_command
 					;;
 					3) # Prints the config file
 						choosing_config && cat "$config_choice_final"
