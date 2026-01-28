@@ -720,8 +720,12 @@ main_4_collect_networks_loop() {
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
-		echo -e "Please enter the CIDR of your Allowed Network."
-		check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
+		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
+			allowed_ip_cidr="0"
+		else
+			echo -e "Please enter the CIDR of your Allowed Network."
+			check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
+		fi
 		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
 	done
