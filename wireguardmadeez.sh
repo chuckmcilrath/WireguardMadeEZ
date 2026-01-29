@@ -663,9 +663,9 @@ sub_3.2_delete() {
 }
 
 sub_3.3_user_select() {
-	echo -e "Which user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
+	echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
 	read -rp $': ' user_select_3_3
-	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
+	if ! grep -qx "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
 		return 1
 	elif [[ -z "$user_select_3_3" ]]; then
@@ -674,6 +674,7 @@ sub_3.3_user_select() {
 }
 
 sub_3.3_menu() {
+	grep -x -A 2 "$user_select_3_3" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
 	echo
 	cat << EOF
 Which setting would you like to edit?
