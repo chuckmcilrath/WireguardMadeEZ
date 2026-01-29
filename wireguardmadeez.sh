@@ -312,7 +312,16 @@ choosing_config() {
 
 # User input for config name
 config_file_creation() {
-  	while true; do
+  	config_files_array=(/etc/wireguard/*.conf)
+	while true; do
+		if [[ ! -e "${config_files_array[0]}" ]]; then
+			echo -e "No configuration(s) to display"
+		else
+			echo -e "Here is a list of ${CYAN}Interfaces${NC} found on this device:"
+			for file in "${config_files_array[@]}"; do
+				echo -e "${GREEN}${file##*/}${NC}"
+			done
+		fi
 		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name."
  		echo -e "${YELLOW}EXAMPLE:${NC} server, wg0, wg1, wg2, etc."
 		read -rp ": " wg_port_name
