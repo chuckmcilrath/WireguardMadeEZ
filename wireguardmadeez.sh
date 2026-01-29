@@ -674,7 +674,8 @@ sub_3.3_user_select() {
 }
 
 sub_3.3_menu() {
-	grep -x -A 2 "$user_select_3_3" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
+	echo -e "\nYou chose: ${CYAN}${user_select_3_3}${NC}. Here is their connection information:"
+	grep -x -A 2 "# $user_select_3_3" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
 	echo
 	cat << EOF
 Which setting would you like to edit?
