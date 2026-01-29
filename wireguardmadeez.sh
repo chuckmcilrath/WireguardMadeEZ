@@ -877,7 +877,7 @@ sub_6.1_info () {
 	if grep -q '^ListenPort' "$config_choice_final"; then
 		echo -e "\n${CYAN}Configuration Type:${NC} \nServer"
 		echo -e "\n${CYAN}Server's IP Address:${NC}"
-		grep '^Address' "$config_choice_final" | awk '{print $3}'
+		grep '^Address' "$config_choice_final" | awk '{print $3}' | tr -d '/32'
 		echo -e "\n${CYAN}Listening Port:${NC}"
 		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
 	elif grep -q '^Endpoint' "$config_choice_final"; then
