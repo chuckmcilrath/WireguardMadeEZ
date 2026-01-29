@@ -1039,7 +1039,7 @@ while true; do
 	 				3) # Edit a Peer.
 						peer_check || continue
 						while true; do
-							sub_3.3_user_select || break
+							sub_3.3_user_select || continue
 							sub_3.3_menu
 							case "$setting_select_3_3" in
 								1)
