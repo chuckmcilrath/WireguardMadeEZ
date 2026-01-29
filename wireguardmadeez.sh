@@ -315,9 +315,9 @@ config_file_creation() {
   	config_files_array=(/etc/wireguard/*.conf)
 	while true; do
 		if [[ ! -e "${config_files_array[0]}" ]]; then
-			echo -e "No configuration(s) to display"
+			echo -e "\nNo configuration(s) found on this device."
 		else
-			echo -e "Here is a list of ${CYAN}Interfaces${NC} found on this device:"
+			echo -e "\nHere is a list of ${CYAN}Interfaces${NC} found on this device:"
 			for file in "${config_files_array[@]}"; do
 				echo -e "${GREEN}${file##*/}${NC}"
 			done
