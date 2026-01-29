@@ -793,6 +793,7 @@ sub_5.2_edit_public_key() {
 }
 
 sub_5.3_echo() {
+	echo -e "\nHere are the ${CYAN}AllowedIPs${NC}:"
 	grep "^AllowedIPs" "$config_choice_final" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
 	echo -e "\n${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0/0 entered means a full tunnel connection."
 }
@@ -805,11 +806,11 @@ sub_5.3_sub_menu() {
 3. Return to the previous menu.
 EOF
 
-	read -rp $'\n: ' allowed_input
+	read -rp $': ' allowed_input
 }
 
 sub_5.3.1_change_ip() {
-	echo -e "Enter the ${CYAN}AllowedIPs${NC}."
+	echo -e "Enter the new ${CYAN}AllowedIPs${NC}."
 	check_user_input $': ' allowed_ip_input valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
 	check_user_input $'Enter the CIDR: ' allowed_cidr_input cidr_check "$cidr_type" \
@@ -819,7 +820,7 @@ sub_5.3.1_change_ip() {
 }
 
 sub_5.3.2_append_ip() {
-	echo -e "Enter the ${CYAN}AllowedIPs${NC}."
+	echo -e "Enter the new, additional ${CYAN}AllowedIPs${NC}."
 	check_user_input $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
 	check_user_input $'Enter the CIDR: ' allowed_cidr_input2 cidr_check "$cidr_type" \
@@ -1082,13 +1083,13 @@ while true; do
 		5) # Client Peer Config.
 			while true; do
 				choosing_config || break
-				config_file_check_server || break
+				config_file_check_server || continue
 				main_5_menu
 				case "$setting_select_5" in
 					1) # Edits the IP Address of the Peer Config.
 						sub_5.1_edit_ip
 					;;
-					2) # Edits the Public Key of the Remote Wireguard Server this peer is connecting to.
+					2) # Edits the PublicKey of the Remote Wireguard Server this peer is connecting to.
 						sub_5.2_edit_public_key
 					;;
 					3) # Edit the Allowed IP's section. I've named it "Allowed Networks".
