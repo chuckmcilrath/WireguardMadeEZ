@@ -284,7 +284,7 @@ choosing_config() {
 		echo -e "1 config available.${GREEN} ${config_basename} ${NC}was selected."
 		return 0
 	else
-		echo "Available config files:"
+		echo -e "\nAvailable config files:"
 		local i=1
 		for file in "${config_files_array[@]}"; do
 			echo -e "${GREEN}$i) ${file##*/}${NC}"
@@ -299,7 +299,7 @@ choosing_config() {
 			elif [[ "$config_choice" =~ ^[0-9]+$ && "$config_choice" -ge 1 && "$config_choice" -le "${#config_files_array[@]}" ]]; then
 				config_choice_final="${config_files_array[$config_choice -1]}"
 				config_basename="$(basename "$config_choice_final" .conf)"
-				echo -e "${GREEN}You chose: $config_choice_final${NC}"
+				echo -e "\n${GREEN}You chose: $config_choice_final${NC}"
 				break
 			else
 				echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}.${NC}"
@@ -764,8 +764,8 @@ Which setting would you like to edit?
 
 1. Edit the client's ${CYAN}private IP address${NC}.
 2. Edit the remote's ${CYAN}PublicKey${NC}.
-3. Edit Allowed Networks (${CYAN}AllowedIPs${NC}).
-4. Edit the IP and Port of the ${CYAN}Endpoint${NC}. (The server this peer is connecting to).
+3. Edit Allowed Networks. (${CYAN}AllowedIPs${NC})
+4. Edit the IP and Port of the ${CYAN}Endpoint${NC}. (The server this peer is connecting to.)
 5. Return to the previous menu.
 EOF
 
