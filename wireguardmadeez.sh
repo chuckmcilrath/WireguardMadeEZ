@@ -641,8 +641,8 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_delete() {
-	echo "Which user would you like to delete?"
-	echo -e "\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)\n"
+	echo -e "\nWhich user would you like to delete?"
+	echo -e "${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
 	read -rp $': ' user_select
 	if [[ -z "$user_select" ]]; then
 		echo "Returning to previous menu."
@@ -663,7 +663,7 @@ sub_3.2_delete() {
 }
 
 sub_3.3_user_select() {
-	echo -e "Which user would you like to edit?\n(${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu)"
+	echo -e "Which user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
 	read -rp $': ' user_select_3_3
 	if ! grep -q "# $user_select_3_3" "$config_choice_final"; then
 		echo -e "${RED}User not found. Please try again.${NC}"
@@ -678,8 +678,8 @@ sub_3.3_menu() {
 	cat << EOF
 Which setting would you like to edit?
 
-1. Change the Public Key.
-2. Change the user's IP.
+1. Change the ${CYAN}PublicKey${NC}.
+2. Change the user's ${CYAN}private IP address${NC}.
 3. Return to the previous menu.
 EOF
 
@@ -830,7 +830,7 @@ sub_5.3.2_append_ip() {
 }
 
 sub_5.4_endpoint_edit_menu() {
-	echo -e "\nHere is the IP and port of the remote Wireguard Server this peer connects to:"
+	echo -e "\nHere is the IP and port of the remote Wireguard server this peer connects to:"
 	grep "^Endpoint" "$config_choice_final" | sed "s/^Endpoint/${CYAN}&${NC}/"
 	echo
 	cat << EOF
