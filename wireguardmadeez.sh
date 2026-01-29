@@ -721,13 +721,16 @@ main_4_collect_networks_loop() {
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
-			allowed_ip_cidr="0"
+			collected_ips="0.0.0.0/0"
+			echo -e "Added ${GREEN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
+			echo -e "${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
+			break
 		else
 			echo -e "Please enter the CIDR of your Allowed Network."
 			check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
+			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
+			check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
 		fi
-		ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
-		check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
 	done
 	collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 }
