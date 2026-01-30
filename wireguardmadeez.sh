@@ -685,7 +685,7 @@ EOF
 }
 
 sub_3.2.1_change_public_key() {
-	echo -e "Enter the new ${CYAN}PublicKey${NC} you would like to use."
+	echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use."
 	check_user_input $': ' new_public_key key_check "$ip_type" \
 	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
 	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
@@ -693,7 +693,7 @@ sub_3.2.1_change_public_key() {
 }
 
 sub_3.2.2_change_ip() {
-	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
+	echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use."
 	check_user_input $': ' new_ip valid_ip_check "$ip_type" \
 	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
@@ -715,6 +715,7 @@ sub_3.3_delete() {
 				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
 				echo -e "${RED}User '$user_select' deleted.${NC}" \
 				&& systemctl restart wg-quick@${config_basename}.service
+				return 0
 			else
 				return 1
 			fi
