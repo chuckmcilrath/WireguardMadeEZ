@@ -607,6 +607,7 @@ EOF
 main_3_selection_submenu() {
 	echo
 	cat << EOF
+
 Server Peer Configuration
 
 1. Add a new client.
@@ -619,19 +620,19 @@ EOF
 }
 
 sub_3.1_peer_input() {
-	echo -e "Enter a name for the ${CYAN}peer${NC}."
+	echo -e "\nEnter a name for the ${CYAN}peer${NC}."
 	check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
 	unique "$peer_name"
 }
 
 sub_3.1_peer_IP() {
-	echo -e "Enter the ${CYAN}private IP address${NC} for the peer to use."
+	echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
 	check_user_input $': ' peer_ip valid_ip_check "$ip_type"
 	unique "$peer_ip"
 }
 
 sub_3.1_public_key() {
-	echo -e "Enter the ${CYAN}PublicKey${NC} from the client."
+	echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
 	check_user_input $': ' peer_key key_check "$key_type"
 	unique "$peer_key"
 }
@@ -644,7 +645,7 @@ sub_3.1_peer_config() {
 PublicKey = $peer_key
 AllowedIPs = $peer_ip/32
 EOF
-	echo -e "${GREEN}Peer added successfully. Restarting Wireguard...${NC}" \
+	echo -e "\n${GREEN}Peer added successfully. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
@@ -1043,7 +1044,7 @@ while true; do
 					;;
 					2) # Delete a Peer.
 						peer_check || continue
-						sub_3.2_delete
+						sub_3.2_delete || continue
 	 				;;
 	 				3) # Edit a Peer.
 						peer_check || continue
