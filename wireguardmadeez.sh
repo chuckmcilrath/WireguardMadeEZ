@@ -395,7 +395,7 @@ wg_keygen() {
 print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key:\n\n${GREEN}$public_key${NC}\n\n"
 	echo "Please copy this key to use for setting up the client"
- 	echo "Aliases are set. Manually run \'source ~/.bashrc\' or open a new terminal to use them." 
+ 	echo "Aliases are set. Manually run 'source ~/.bashrc' or open a new terminal to use them." 
 
 	start_name="${wg_port_name}start"
 	start_line="alias ${start_name}=\"systemctl start wg-quick@${wg_port_name}\""
@@ -454,7 +454,7 @@ peer_check() {
 # Enables the Wireguard port as a service to start on boot.
 enable_wg() {
 	echo "Enabling the port to start on boot..."
-	systemctl enable wg-quick@"$wg_port_name".service \
+	systemctl enable wg-quick@"$wg_port_name".service &> /dev/null \
 	&& systemctl daemon-reload \
 	&& systemctl start wg-quick@"$wg_port_name"
 	echo -e "${GREEN}The Wireguard installation has been completed!${NC}"
