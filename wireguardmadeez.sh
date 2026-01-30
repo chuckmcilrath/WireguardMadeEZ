@@ -369,6 +369,8 @@ unique() {
 	if grep -qwi "$var_name" "$config_choice_final"; then
 		echo -e "${RED}ERROR${NC}"
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
+		return 0
+	else
 		return 1
 	fi
 }
@@ -620,21 +622,27 @@ EOF
 }
 
 sub_3.1_peer_input() {
-	echo -e "\nEnter a name for the ${CYAN}peer${NC}."
-	check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
-	unique "$peer_name"
+	while true; do
+		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
+		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
+		unique "$peer_name"
+	done
 }
 
 sub_3.1_peer_IP() {
-	echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
-	check_user_input $': ' peer_ip valid_ip_check "$ip_type"
-	unique "$peer_ip"
+	while true; do
+		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
+		check_user_input $': ' peer_ip valid_ip_check "$ip_type"
+		unique "$peer_ip"
+	done
 }
 
 sub_3.1_public_key() {
-	echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
-	check_user_input $': ' peer_key key_check "$key_type"
-	unique "$peer_key"
+	while true; do
+		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
+		check_user_input $': ' peer_key key_check "$key_type"
+		unique "$peer_key"
+	done
 }
 
 # Adds a peer to the server config.
@@ -1038,7 +1046,7 @@ while true; do
 						while true; do
 	  						sub_3.1_peer_input
 	  						sub_3.1_peer_IP
-							sub_3.1_public_key
+							sub_3.1_public_key 
 							break
 	  					done
 						sub_3.1_peer_config && break
