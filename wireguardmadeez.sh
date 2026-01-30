@@ -611,8 +611,8 @@ main_3_selection_submenu() {
 Server Peer Configuration
 
 1. Add a new client.
-2. Remove a client.
-3. Edit a client.
+2. Edit a client.
+3. Remove a client.
 4. Return to the previous menu.
 EOF
 
@@ -649,15 +649,57 @@ EOF
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
+sub_3.2_user_select() {
+	echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
+	read -rp $': ' user_select_3_2
+	if ! grep -qx "# $user_select_3_2" "$config_choice_final"; then
+		echo -e "${RED}User not found. Please try again.${NC}"
+		return 1
+	elif [[ -z "$user_select_3_2" ]]; then
+		return 1
+	fi
+}
+
+sub_3.2_menu() {
+	echo -e "\nYou chose: ${CYAN}${user_select_3_2}${NC}. Here is their connection information:"
+	grep -x -A 2 "# $user_select_3_2" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
+	echo
+	cat << EOF
+Which setting would you like to edit?
+
+1. Change the ${CYAN}PublicKey${NC}.
+2. Change the user's ${CYAN}private IP address${NC}.
+3. Return to the previous menu.
+EOF
+
+	read -rp ": " setting_select_3_2
+}
+
+sub_3.2.1_change_public_key() {
+	echo -e "Enter the new ${CYAN}PublicKey${NC} you would like to use."
+	check_user_input $': ' new_public_key key_check "$ip_type" \
+	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
+	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
+}
+
+sub_3.2.2_change_ip() {
+	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
+	check_user_input $': ' new_ip valid_ip_check "$ip_type" \
+	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
+	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+	&& systemctl restart wg-quick@${config_basename}.service
+}
+
 # Deletes a peer from the server config.
-sub_3.2_delete() {
+sub_3.3_delete() {
 	while true; do
 		echo -e "\nWhich user would you like to delete?"
 		echo -e "${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
 		read -rp $': ' user_select
 		if [[ -z "$user_select" ]]; then
 			echo "Returning to previous menu."
-			break
+			return 1
 		elif grep -q "# $user_select" "$config_choice_final"; then
 			if check_user_input_Y_n "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
 				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
@@ -669,51 +711,8 @@ sub_3.2_delete() {
 			fi
 		else
 			echo -e "${RED}User not found, please try again.${NC}"
-			return 1
 		fi
 	done
-}
-
-sub_3.3_user_select() {
-	echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
-	read -rp $': ' user_select_3_3
-	if ! grep -qx "# $user_select_3_3" "$config_choice_final"; then
-		echo -e "${RED}User not found. Please try again.${NC}"
-		return 1
-	elif [[ -z "$user_select_3_3" ]]; then
-		return 1
-	fi
-}
-
-sub_3.3_menu() {
-	echo -e "\nYou chose: ${CYAN}${user_select_3_3}${NC}. Here is their connection information:"
-	grep -x -A 2 "# $user_select_3_3" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
-	echo
-	cat << EOF
-Which setting would you like to edit?
-
-1. Change the ${CYAN}PublicKey${NC}.
-2. Change the user's ${CYAN}private IP address${NC}.
-3. Return to the previous menu.
-EOF
-
-	read -rp ": " setting_select_3_3
-}
-
-sub_3.3.1_change_public_key() {
-	echo -e "Enter the new ${CYAN}PublicKey${NC} you would like to use."
-	check_user_input $': ' new_public_key key_check "$ip_type" \
-	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
-	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
-	&& systemctl restart wg-quick@${config_basename}.service
-}
-
-sub_3.3.2_change_ip() {
-	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
-	check_user_input $': ' new_ip valid_ip_check "$ip_type" \
-	&& sed -i "/# $user_select_3_3/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
-	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
-	&& systemctl restart wg-quick@${config_basename}.service
 }
 
 main_4_private_IP() {
@@ -1044,21 +1043,17 @@ while true; do
 	  					done
 						sub_3.1_peer_config && break
 					;;
-					2) # Delete a Peer.
-						peer_check || continue
-						sub_3.2_delete || continue
-	 				;;
-	 				3) # Edit a Peer.
+	 				2) # Edit a Peer.
 						peer_check || continue
 						while true; do
-							sub_3.3_user_select || continue
-							sub_3.3_menu
-							case "$setting_select_3_3" in
+							sub_3.2_user_select || continue
+							sub_3.2_menu
+							case "$setting_select_3_2" in
 								1)
-									sub_3.3.1_change_public_key && break
+									sub_3.2.1_change_public_key && break
 								;;
 								2)
-									sub_3.3.2_change_ip && break
+									sub_3.2.2_change_ip && break
 								;;
 								3)
 									exit_selection && break
@@ -1069,6 +1064,10 @@ while true; do
 							esac
 						done
 	  				;;
+					3) # Delete a Peer.
+						peer_check || continue
+						sub_3.3_delete || continue
+					;;
 	  				4) # Exit
 	   					exit_selection && break
 		 			;;
