@@ -394,7 +394,7 @@ wg_keygen() {
 # print the public key for the user to use in clients.
 print_public_key_set_aliases() {
 	echo -e "\nPrinting the Public key:\n\n${GREEN}$public_key${NC}\n\n"
-	echo "Please copy this key to use for setting up the client"
+	echo "Please copy this key to use for setting up the client."
  	echo -e "${YELLOW}Aliases are set.\nManually run 'source ~/.bashrc' or open a new terminal to use them.${NC}" 
 
 	start_name="${wg_port_name}start"
