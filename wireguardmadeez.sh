@@ -369,8 +369,6 @@ unique() {
 	if grep -qwi "$var_name" "$config_choice_final"; then
 		echo -e "\n${RED}ERROR${NC}"
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
-		return 0
-	elif ! grep -qwi "$var_name" "$config_choice_final"; then
 		return 1
 	fi
 }
