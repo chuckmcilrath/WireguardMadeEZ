@@ -726,40 +726,40 @@ sub_3.3_delete() {
 }
 
 main_4_private_IP() {
-	echo -e "Enter the ${CYAN}Private IP Address${NC} this client will use."
+	echo -e "\nEnter the ${CYAN}Private IP Address${NC} this client will use."
 	check_user_input $': ' peer_address valid_ip_check "$ip_type"
 	peer_address_change="${peer_address%.*}.0"
 }
 
 main_4_public_key() {
-	echo -e "Enter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
+	echo -e "\nEnter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
 	check_user_input $': ' peer_pk key_check "$key_type"
 }
 
 main_4_collect_networks_loop() {
 	local ip_list=()
 	while true; do
-		echo -e "Enter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
+		echo -e "\nEnter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
 			collected_ips="0.0.0.0/0"
-			echo -e "Added ${GREEN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
-			echo -e "${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
+			echo -e "\nAdded ${GREEN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
+			echo -e "\n${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
 			break
 		else
-			echo -e "Please enter the CIDR of your Allowed Network."
+			echo -e "\nPlease enter the CIDR of your Allowed Network."
 			check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
 			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 			collected_ips=$(IFS=, ; echo "${ip_list[*]}")
-			check_user_input_y_N $'Would you like to add another Allowed Network? (y/N): ' || break
+			check_user_input_y_N $'\nWould you like to add another Allowed Network? (y/N): ' || break
 		fi
 	done
 }
 
 main_4_endpoint() {
-	echo -e "Please enter the ${CYAN}Endpoint${NC} IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)."
+	echo -e "\nPlease enter the ${CYAN}Endpoint${NC} IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)."
 	check_user_input_multi $': ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 }
 
