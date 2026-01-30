@@ -236,7 +236,7 @@ port_num_check() {
 }
 
 default_port() {
-	echo -e "Please enter the Port number."
+	echo -e "\nPlease enter the Port number."
   	echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
 	while true; do
 		read -rp ": " user_input
@@ -281,7 +281,7 @@ choosing_config() {
 	elif [[ ${#config_files_array[@]} -eq 1 ]]; then 
 		config_choice_final="${config_files_array[0]}"
 		config_basename="$(basename "$config_choice_final" .conf)"
-		echo -e "1 config available.${GREEN} ${config_basename} ${NC}was selected."
+		echo -e "\n1 config available.${GREEN} ${config_basename} ${NC}was selected."
 		return 0
 	else
 		echo -e "\nAvailable config files:"
@@ -323,7 +323,7 @@ config_file_creation() {
 			done
 		fi
 		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name."
- 		echo -e "${YELLOW}EXAMPLE:${NC} server, wg0, wg1, wg2, etc."
+ 		echo -e "${YELLOW}EXAMPLE:${NC} server, dcm, wg0, wg1, etc."
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
 			config_path="/etc/wireguard/${wg_port_name}.conf"
@@ -446,7 +446,7 @@ server_peer_show() {
 
 peer_check() {
 	if ! grep -q "Peer" "$config_choice_final"; then
-		echo -e "${RED}ERROR:${NC} No ${CYAN}peers${NC} found. Please add a ${CYAN}peer${NC}."
+		echo -e "\n${RED}ERROR:${NC} No ${CYAN}peers${NC} found. Please add a ${CYAN}peer${NC}."
 		return 1
 	fi
 }
@@ -651,25 +651,27 @@ EOF
 
 # Deletes a peer from the server config.
 sub_3.2_delete() {
-	echo -e "\nWhich user would you like to delete?"
-	echo -e "${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
-	read -rp $': ' user_select
-	if [[ -z "$user_select" ]]; then
-		echo "Returning to previous menu."
-		return 0
-	elif grep -q "# $user_select" "$config_choice_final"; then
-		if check_user_input_Y_n "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
-			sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
-			sed -i '/^$/N;/^\n$/D' "$config_choice_final"
-			echo -e "${RED}User '$user_select' deleted.${NC}" \
-			&& systemctl restart wg-quick@${config_basename}.service
+	while true; do
+		echo -e "\nWhich user would you like to delete?"
+		echo -e "${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
+		read -rp $': ' user_select
+		if [[ -z "$user_select" ]]; then
+			echo "Returning to previous menu."
+			break
+		elif grep -q "# $user_select" "$config_choice_final"; then
+			if check_user_input_Y_n "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
+				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
+				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
+				echo -e "${RED}User '$user_select' deleted.${NC}" \
+				&& systemctl restart wg-quick@${config_basename}.service
+			else
+				return 1
+			fi
 		else
+			echo -e "${RED}User not found, please try again.${NC}"
 			return 1
 		fi
-	else
-		echo -e "${RED}User not found, please try again.${NC}"
-		return 1
-	fi
+	done
 }
 
 sub_3.3_user_select() {
