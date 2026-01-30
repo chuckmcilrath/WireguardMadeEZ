@@ -622,15 +622,20 @@ EOF
 }
 
 sub_3.1_peer_input() {
+	while true; do
 		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
-		check_user_input_multi $': ' peer_name alphanumeric_check unique "$alphanumeric_type"
+		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
+		unique "$peer_name" || continue
+		break
+	done
 }
 
 sub_3.1_peer_IP() {
 	while true; do
 		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
 		check_user_input $': ' peer_ip valid_ip_check "$ip_type"
-		unique "$peer_ip"
+		unique "$peer_ip" || continue
+		break
 	done
 }
 
@@ -638,7 +643,8 @@ sub_3.1_public_key() {
 	while true; do
 		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
 		check_user_input $': ' peer_key key_check "$key_type"
-		unique "$peer_key"
+		unique "$peer_key" || continue
+		break
 	done
 }
 
