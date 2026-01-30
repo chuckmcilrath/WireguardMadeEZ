@@ -367,10 +367,10 @@ config_file_check_server() {
 unique() {
 	local var_name="$1"
 	if grep -qwi "$var_name" "$config_choice_final"; then
-		echo -e "${RED}ERROR${NC}"
+		echo -e "\n${RED}ERROR${NC}"
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
 		return 0
-	else
+	elif ! grep -qwi "$var_name" "$config_choice_final"; then
 		return 1
 	fi
 }
@@ -622,11 +622,8 @@ EOF
 }
 
 sub_3.1_peer_input() {
-	while true; do
 		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
-		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
-		unique "$peer_name"
-	done
+		check_user_input_multi $': ' peer_name alphanumeric_check unique "$alphanumeric_type"
 }
 
 sub_3.1_peer_IP() {
