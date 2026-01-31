@@ -361,14 +361,6 @@ config_file_creation() {
   	done
 }
 
-# checks to see if there is a wireguard config, then stops the setup.
-config_file_check() {
-	if ! compgen -G "$config_files" > /dev/null; then
-		echo -e " ${RED}**WARNING**${NC} Wireguard config file not found, please run either the Wireguard Server or Wireguard Peer setup."
-		return 1
-	fi
- }
-
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -qi '^Endpoint' $config_choice_final; then
@@ -786,7 +778,8 @@ main_4_collect_networks_loop() {
 			check_input_validate $': ' allowed_ip_cidr cidr_check "$cidr_type"
 			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 			collected_ips=$(IFS=, ; echo "${ip_list[*]}")
-			check_user_input_y_N $'\nWould you like to add another ${CYAN}Allowed Network${NC}? (y/N): ' || break
+			echo -e "\nWould you like to add another ${CYAN}Allowed Network${NC}? (y/N)"
+			check_user_input_y_N $': ' || break
 		fi
 	done
 }
@@ -1072,9 +1065,8 @@ while true; do
 		;;
   		3)  # Server Peer editing.
 			while true; do
-   				config_file_check || continue
 	   			choosing_config || break
-	   			config_file_check_peer || continue
+	   			config_file_check_peer || break
 	   			server_peer_show
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
@@ -1137,7 +1129,7 @@ while true; do
 		5) # Client Peer Config.
 			while true; do
 				choosing_config || break
-				config_file_check_server || continue
+				config_file_check_server || break
 				main_5_menu
 				case "$setting_select_5" in
 					1) # Edits the IP Address of the Peer Config.
