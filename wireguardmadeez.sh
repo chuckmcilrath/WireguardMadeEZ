@@ -261,10 +261,12 @@ default_cidr_validate() {
   	local validation_func="$3"
 	local type="$4"
 	local user_input
+	echo -e "${YELLOW}NOTE:${NC} Leave empty to select /24."
 	while true; do
  		read -rp "$prompt" user_input
 		if [[ -z "$user_input" ]]; then
-			"$var_name"=24
+			eval "$var_name"=24
+			echo "Default of ${CYAN}/24${NC} has been selected."
 			return 0
 		elif ! "$validation_func" "$user_input"; then
   			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
@@ -1021,7 +1023,6 @@ sub_7.1_rm_single_config() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
 	if check_user_input_y_N $': '; then
 		rm -f "${config_choice_final%.*}"*
-		unset config_basename
 		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
 		sed -i "/^alias ${config_basename}/d" ~/.bashrc
