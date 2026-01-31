@@ -962,20 +962,20 @@ sub_6.1_wg_command() {
 sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 
-${GREEN}wg${NC} (Command for Wireguard to print connections and public key of server)
-${GREEN}systemctl start wg-quick@INTERFACE${NC} (Starts the Wireguard service)
-${GREEN}systemctl stop wg-quick@INTERFACE${NC} (Stops the Wireguard service)
-${GREEN}systemctl restart wg-quick@INTERFACE${NC} (Restarts the Wireguard service)
-${GREEN}systemctl status wg-quick@INTERFACE${NC} (Shows the status of the Wireguard service)
-${GREEN}nano /etc/wireguard/INTERFACE.conf${NC} (Edits the config file)
-${GREEN}cat /etc/wireguard/INTERFACE_public_key${NC} or ${GREEN}\$INTERFACE_public_key${NC} (Prints the Public Key of the server)
-${GREEN}cat /etc/wireguard/INTERFACE_private_key${NC} or ${GREEN}\$INTERFACE_private_key${NC} (Prints the Private Key of the server)
+${YELLOW}wg${NC} (Command for Wireguard to print connections and public key of server)
+${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC} (Starts the Wireguard service)
+${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard service)
+${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard service)
+${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard service)
+${YELLOW}nano /etc/wireguard/${GREEN}INTERFACE.conf${NC} (Edits the config file)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key or \$${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key or \$${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
 
 After configuring a wireguard port, run 'source ~/.bashrc' to load in aliases:
-${GREEN}INTERFACEstart${NC} will execute the same as ${GREEN}systemctl start wg-quick@INTERFACE${NC}
-${GREEN}INTERFACEstop${NC} will execute the same as ${GREEN}systemctl stop wg-quick@INTERFACE${NC}
-${GREEN}INTERFACErestart${NC} will execute the same as ${GREEN}systemctl restart wg-quick@INTERFACE${NC}
-${GREEN}INTERFACEstatus${NC} will execute the same as ${GREEN}systemctl status wg-quick@INTERFACE${NC}
+${GREEN}INTERFACE${YELLOW}start${NC} will execute the same as ${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC}
+${GREEN}INTERFACE${YELLOW}stop${NC} will execute the same as ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC}
+${GREEN}INTERFACE${YELLOW}restart${NC} will execute the same as ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC}
+${GREEN}INTERFACE${YELLOW}status${NC} will execute the same as ${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC}
 EOF
 )
 
