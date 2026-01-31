@@ -355,9 +355,8 @@ config_file_creation() {
 			fi
 		elif [[ -z "$wg_port_name" ]]; then
 			return 1
-   		elif
+   		else
 	 		echo -e "${RED}Not a valid input. Must be an alphanumeric input.${NC}"
-		
 		fi
   	done
 }
