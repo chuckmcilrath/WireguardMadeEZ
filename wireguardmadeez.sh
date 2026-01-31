@@ -621,15 +621,10 @@ EOF
 
 sub_3.1_peer_input() {
 	while true; do
-		echo -e "\nEnter a name for the ${CYAN}peer${NC}. Leave blank to return to previous menu."
-		if [[ -z "$peer_name" ]]; then
-			return 1
-		elif [[ -n "$peer_name" ]]; then
-			check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
-		else
-			unique "$peer_name" || continue
-			break
-		fi
+		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
+		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
+		unique "$peer_name" || continue
+		break
 	done
 }
 
