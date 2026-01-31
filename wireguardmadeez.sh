@@ -749,17 +749,18 @@ main_4_collect_networks_loop() {
 			echo -e "\n${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
 			break
 		else
-			echo -e "\nPlease enter the CIDR of your Allowed Network."
+			echo -e "\nPlease enter the CIDR of your ${CYAN}Allowed Network${NC}."
 			check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
 			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 			collected_ips=$(IFS=, ; echo "${ip_list[*]}")
-			check_user_input_y_N $'\nWould you like to add another Allowed Network? (y/N): ' || break
+			check_user_input_y_N $'\nWould you like to add another ${CYAN}Allowed Network${NC}? (y/N): ' || break
 		fi
 	done
 }
 
 main_4_endpoint() {
 	echo -e "\nPlease enter the ${CYAN}Endpoint${NC} IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)."
+	echo -e "${YELLOW}NOTE:${NC} DDNS is supported."
 	check_user_input_multi $': ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 }
 
