@@ -641,7 +641,7 @@ EOF
 
 sub_3.1_peer_input() {
 	while true; do
-		echo -e "\nEnter a name for the ${CYAN}peer${NC}. Press ENTER to return to previous menu."
+		echo -e "\nEnter a name for the ${CYAN}peer${NC}. Leave blank to return to previous menu."
 		check_input_validate_space $': ' peer_name alphanumeric_check "$alphanumeric_type" || return 1
 		unique "$peer_name" || continue
 		break
@@ -650,7 +650,7 @@ sub_3.1_peer_input() {
 
 sub_3.1_peer_IP() {
 	while true; do
-		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use. Press ENTER to return to previous menu."
+		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' peer_ip valid_ip_check "$ip_type" || return 1
 		unique "$peer_ip" || continue
 		break
@@ -659,7 +659,7 @@ sub_3.1_peer_IP() {
 
 sub_3.1_public_key() {
 	while true; do
-		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client. Press ENTER to return to previous menu."
+		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client. Leave blank to return to previous menu."
 		check_input_validate_space $': ' peer_key key_check "$key_type" || return 1
 		unique "$peer_key" || continue
 		break
@@ -700,7 +700,7 @@ sub_3.2_menu() {
 Which setting would you like to edit?
 
 1. Change the ${CYAN}PublicKey${NC}.
-2. Change the user's ${CYAN}private IP address${NC}.
+2. Change the user's ${CYAN}private IP address${NC} under ${CYAN}AllowedIPs${NC}.
 3. Return to the previous menu.
 EOF
 
@@ -708,19 +708,27 @@ EOF
 }
 
 sub_3.2.1_change_public_key() {
-	echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use."
-	check_input_validate $': ' new_public_key key_check "$ip_type" \
-	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
-	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
-	&& systemctl restart wg-quick@${config_basename}.service
+	while true; do
+		echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use. Leave blank to return to previous menu."
+		check_input_validate_space $': ' new_public_key key_check "$ip_type" || return 1
+		unique "$new_public_key" || continue
+		&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
+		&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
+		&& systemctl restart wg-quick@${config_basename}.service
+		break
+	done
 }
 
 sub_3.2.2_change_ip() {
-	echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use."
-	check_input_validate $': ' new_ip valid_ip_check "$ip_type" \
-	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
-	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
-	&& systemctl restart wg-quick@${config_basename}.service
+	while true; do
+		echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use. Leave blank to return to previous menu."
+		check_input_validate_space $': ' new_ip valid_ip_check "$ip_type" || return 1
+		unique "$new_ip" || continue
+		&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
+		&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
+		&& systemctl restart wg-quick@${config_basename}.service
+		break
+	done
 }
 
 # Deletes a peer from the server config.
@@ -1081,10 +1089,10 @@ while true; do
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
-									sub_3.2.1_change_public_key && break
+									sub_3.2.1_change_public_key && break || continue
 								;;
 								2)
-									sub_3.2.2_change_ip && break
+									sub_3.2.2_change_ip && break || continue
 								;;
 								3)
 									exit_selection && break
