@@ -978,7 +978,7 @@ sub_6.1_wg_command() {
 	if wg show &> /dev/null; then
     	wg show
 	else
-    	echo -e "${RED}ERROR:${NC} wg command failed. No WireGuard interface may be configured or running."
+    	echo -e "\n${RED}ERROR:${NC} wg command failed. No WireGuard interface may be configured or running."
 	fi
 }
 
@@ -986,10 +986,10 @@ sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 
 ${YELLOW}wg${NC} (Command for Wireguard to print connections and public key of server)
-${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC} (Starts the Wireguard service)
-${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard service)
-${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard service)
-${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard service)
+${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC} (Starts the Wireguard interface service)
+${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard interface service)
+${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard interface service)
+${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard interface service)
 ${YELLOW}nano /etc/wireguard/${GREEN}INTERFACE.conf${NC} (Edits the config file)
 ${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key or ${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
 ${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key or ${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
