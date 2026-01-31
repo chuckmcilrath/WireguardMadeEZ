@@ -659,14 +659,15 @@ EOF
 }
 
 sub_3.2_user_select() {
-	echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
-	read -rp $': ' user_select_3_2
-	if ! grep -qx "# $user_select_3_2" "$config_choice_final"; then
-		echo -e "${RED}User not found. Please try again.${NC}"
-		return 1
-	elif [[ -z "$user_select_3_2" ]]; then
-		return 1
-	fi
+	while true; do
+		echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
+		read -rp $': ' user_select_3_2
+		if ! grep -qx "# $user_select_3_2" "$config_choice_final"; then
+			echo -e "${RED}User not found. Please try again.${NC}"
+		elif [[ -z "$user_select_3_2" ]]; then
+			return 1
+		fi
+	done
 }
 
 sub_3.2_menu() {
@@ -1046,18 +1047,15 @@ while true; do
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
-						while true; do
-	  						sub_3.1_peer_input
-	  						sub_3.1_peer_IP
-							sub_3.1_public_key 
-							break
-	  					done
+	  					sub_3.1_peer_input
+	  					sub_3.1_peer_IP
+						sub_3.1_public_key
 						sub_3.1_peer_config && break
 					;;
 	 				2) # Edit a Peer.
 						peer_check || continue
 						while true; do
-							sub_3.2_user_select || continue
+							sub_3.2_user_select || break
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
