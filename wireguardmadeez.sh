@@ -342,7 +342,7 @@ config_file_creation() {
 				echo -e "${GREEN}${file##*/}${NC}"
 			done
 		fi
-		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name."
+		echo -e "\nName your Wireguard ${GREEN}Interface${NC}. This will be used for the config file name. Leave blank to return to main menu."
  		echo -e "${YELLOW}EXAMPLE:${NC} server, dcm, wg0, wg1, etc."
 		read -rp ": " wg_port_name
 		if alphanumeric_check "$wg_port_name"; then
@@ -353,8 +353,11 @@ config_file_creation() {
 			else
 				echo -e "${RED}File name already in use, please remove file from /etc/wireguard or choose another name for the Wireguard Port.${NC}"
 			fi
-   		else
+		elif [[ -z "$wg_port_name" ]]; then
+			return 1
+   		elif
 	 		echo -e "${RED}Not a valid input. Must be an alphanumeric input.${NC}"
+		
 		fi
   	done
 }
@@ -712,7 +715,7 @@ sub_3.2.1_change_public_key() {
 		echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_public_key key_check "$ip_type" || return 1
 		unique "$new_public_key" || continue
-		&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
+		sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
 		&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
 		&& systemctl restart wg-quick@${config_basename}.service
 		break
@@ -724,7 +727,7 @@ sub_3.2.2_change_ip() {
 		echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_ip valid_ip_check "$ip_type" || return 1
 		unique "$new_ip" || continue
-		&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
+		sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 		&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 		&& systemctl restart wg-quick@${config_basename}.service
 		break
@@ -741,7 +744,7 @@ sub_3.3_delete() {
 			echo "Returning to previous menu."
 			return 1
 		elif grep -q "# $user_select" "$config_choice_final"; then
-			if check_user_input_Y_n "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
+			if check_user_input_y_N "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
 				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
 				echo -e "${RED}User '$user_select' deleted.${NC}" \
@@ -1060,7 +1063,7 @@ while true; do
 			DNS_check
    			run_apt_update
 			main_2_program_check
-			config_file_creation
+			config_file_creation || continue
    			wg_keygen
 			main_2_server_network
 			default_port
@@ -1121,7 +1124,7 @@ while true; do
 			run_apt_update
 			check_install "wireguard"
 			check_install "openresolv"
-			config_file_creation
+			config_file_creation || continue
 			wg_keygen
 			main_4_private_IP
 			main_4_public_key
