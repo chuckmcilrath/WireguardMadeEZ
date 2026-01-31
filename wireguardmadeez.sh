@@ -666,6 +666,8 @@ sub_3.2_user_select() {
 			echo -e "${RED}User not found. Please try again.${NC}"
 		elif [[ -z "$user_select_3_2" ]]; then
 			return 1
+		else
+			return 0
 		fi
 	done
 }
