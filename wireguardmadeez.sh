@@ -662,12 +662,12 @@ sub_3.2_user_select() {
 	while true; do
 		echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
 		read -rp $': ' user_select_3_2
-		if ! grep -qx "# $user_select_3_2" "$config_choice_final"; then
-			echo -e "${RED}User not found. Please try again.${NC}"
+		if grep -qx "# $user_select_3_2" "$config_choice_final"; then
+			return 0
 		elif [[ -z "$user_select_3_2" ]]; then
 			return 1
 		else
-			return 0
+			echo -e "${RED}User not found. Please try again.${NC}"
 		fi
 	done
 }
