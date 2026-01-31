@@ -892,7 +892,7 @@ EOF
 }
 
 sub_5.3.1_change_ip() {
-	echo -e "Enter the new ${CYAN}AllowedIPs${NC}."
+	echo -e "Enter the new ${CYAN}AllowedIP${NC}."
 	check_input_validate $': ' allowed_ip_input valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
 	echo "Enter the CIDR. Numbers only."
