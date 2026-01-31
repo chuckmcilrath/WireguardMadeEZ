@@ -93,11 +93,12 @@ check_install() {
 }
 
 # Reusable input validation.
-check_user_input() {
+check_input_validate() {
 	local prompt="$1"
  	local var_name="$2"
   	local validation_func="$3"
 	local type="$4"
+	local user_input
 	while true; do
  		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
@@ -109,12 +110,13 @@ check_user_input() {
 	done
 }
 
-check_user_input_multi() {
+check_input_validate_2() {
 	local prompt="$1"
 	local var_name="$2"
 	local validation_func="$3"
 	local validation_func_2="$4"
 	local type="$5"
+	local user_input
 	while true; do
 		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
@@ -126,6 +128,24 @@ check_user_input_multi() {
 	done
 }
 
+check_input_validate_space() {
+ 	local prompt="$1"
+ 	local var_name="$2"
+  	local validation_func="$3"
+	local type="$4"
+	local user_input
+	while true; do
+ 		read -rp "$prompt" user_input
+		if [[ -z "$user_input" ]]; then
+			return 1
+	 	elif ! "$validation_func" "$user_input"; then
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+		else
+   			eval "$var_name=\"\$user_input\""
+	  		return 0
+	 	fi
+	done
+}
 
 check_user_input_y_N() {
  	local prompt="$1"
@@ -181,7 +201,7 @@ DNS_check() {
 		echo -e "${RED}WARNING!\n${NC}"
 		if check_user_input_Y_n "This script will overwrite your /etc/resolv.conf file. Proceed? (Y/n):"; then
 			while true; do
-				check_user_input $'\nEnter a DNS IP to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type"
+				check_input_validate $'\nEnter a DNS IP to use. (The gateway or firewall IP would be best.)\n: ' dns_ip valid_ip_check "$ip_type"
 				echo "Valid IP address: $dns_ip. Updating DNS..."
 				echo "nameserver $dns_ip" > /etc/resolv.conf
 				if ping -q -c 1 -w 1 google.com &> /dev/null; then
@@ -518,7 +538,7 @@ main_1_DHCP_check() {
 # Edits the IP (Only the IP)
 main_1_static_ip_edit() {
 	echo -e "${RED}\n***WARNING***\nOnce you change the IP, you MAY be disconnected.\nIf that happens, you will need to re-connect using the correct IP.${NC}\n"
-	check_user_input $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check "$ip_type"
+	check_input_validate $'Input the static IP you would like the Wireguard Server to use. (e.g. 192.168.1.2)\n: ' static_ip valid_ip_check "$ip_type"
 	check_user_input_Y_n  "Are you sure you want to use ${static_ip}? (Y/n)" || return 1
 	sed -i "/address/c\        address "$static_ip" " $net_interf \
 	&& echo -e "\n${GREEN}Address has been updated.${NC}\n"
@@ -526,7 +546,7 @@ main_1_static_ip_edit() {
 
 # Adds the CIDR notation to the end of the user inputed static IP.
 main_1_cidr_edit() {
-	check_user_input $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check "$cidr_type"
+	check_input_validate $'Enter the subnet in CIDR notation. (e.g. 24)\n: ' cidr_input cidr_check "$cidr_type"
 	check_user_input_Y_n "Are you sure you want to use $cidr_input? (Y/n)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 	&& echo -e "\n${GREEN}Subnet has been updated.${NC}\n"
@@ -534,7 +554,7 @@ main_1_cidr_edit() {
 
 # Edits the gateway for static IP
 main_1_gateway_edit() {
-	check_user_input $'Input the gateway\n: ' static_gw valid_ip_check "$ip_type"
+	check_input_validate $'Input the gateway\n: ' static_gw valid_ip_check "$ip_type"
 	check_user_input_Y_n "Are you sure you want to use $static_gw? (Y/n)" || return 1
 	sed -i "/gateway/c\        gateway "$static_gw" " $net_interf \
 	&& echo -e "\n${GREEN}Gateway has been changed.${NC}\n"
@@ -583,7 +603,7 @@ main_2_server_network() {
 	echo -e "\nEnter the ${CYAN}IP address${NC} the server will use. This will act as a gateway."
  	echo -e "${YELLOW}NOTE:${NC} Make it a non-conflicting IP from your other networks that you are connecting."
   	echo "${YELLOW}Example:${NC} 10.15.0.1, 172.16.0.1, or 192.168.6.1."
- 	check_user_input ": " server_network_input valid_ip_check "$ip_type"
+ 	check_input_validate ": " server_network_input valid_ip_check "$ip_type"
 }
 
 # Checks and makes the config folder
@@ -622,7 +642,7 @@ EOF
 sub_3.1_peer_input() {
 	while true; do
 		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
-		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
+		check_input_validate_space $': ' peer_name alphanumeric_check "$alphanumeric_type" || return 1
 		unique "$peer_name" || continue
 		break
 	done
@@ -631,7 +651,7 @@ sub_3.1_peer_input() {
 sub_3.1_peer_IP() {
 	while true; do
 		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
-		check_user_input $': ' peer_ip valid_ip_check "$ip_type"
+		check_input_validate $': ' peer_ip valid_ip_check "$ip_type"
 		unique "$peer_ip" || continue
 		break
 	done
@@ -640,7 +660,7 @@ sub_3.1_peer_IP() {
 sub_3.1_public_key() {
 	while true; do
 		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
-		check_user_input $': ' peer_key key_check "$key_type"
+		check_input_validate $': ' peer_key key_check "$key_type"
 		unique "$peer_key" || continue
 		break
 	done
@@ -689,7 +709,7 @@ EOF
 
 sub_3.2.1_change_public_key() {
 	echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use."
-	check_user_input $': ' new_public_key key_check "$ip_type" \
+	check_input_validate $': ' new_public_key key_check "$ip_type" \
 	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
 	&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -697,7 +717,7 @@ sub_3.2.1_change_public_key() {
 
 sub_3.2.2_change_ip() {
 	echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use."
-	check_user_input $': ' new_ip valid_ip_check "$ip_type" \
+	check_input_validate $': ' new_ip valid_ip_check "$ip_type" \
 	&& sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -730,13 +750,13 @@ sub_3.3_delete() {
 
 main_4_private_IP() {
 	echo -e "\nEnter the ${CYAN}Private IP Address${NC} this client will use."
-	check_user_input $': ' peer_address valid_ip_check "$ip_type"
+	check_input_validate $': ' peer_address valid_ip_check "$ip_type"
 	peer_address_change="${peer_address%.*}.0"
 }
 
 main_4_public_key() {
 	echo -e "\nEnter the ${CYAN}PublicKey${NC} of the remote Wireguard server or client this client will connect to."
-	check_user_input $': ' peer_pk key_check "$key_type"
+	check_input_validate $': ' peer_pk key_check "$key_type"
 }
 
 main_4_collect_networks_loop() {
@@ -745,7 +765,7 @@ main_4_collect_networks_loop() {
 		echo -e "\nEnter the ${CYAN}Allowed Network(s)${NC} for the ${CYAN}AllowedIPs${NC} section."
 		echo -e "${YELLOW}EXAMPLE:${NC} \"${peer_address_change}\"."
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
-		check_user_input $': ' allowed_ips_peer valid_ip_check "$ip_type"
+		check_input_validate $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
 			collected_ips="0.0.0.0/0"
 			echo -e "\nAdded ${GREEN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
@@ -753,7 +773,7 @@ main_4_collect_networks_loop() {
 			break
 		else
 			echo -e "\nPlease enter the CIDR of your ${CYAN}Allowed Network${NC}."
-			check_user_input $': ' allowed_ip_cidr cidr_check "$cidr_type"
+			check_input_validate $': ' allowed_ip_cidr cidr_check "$cidr_type"
 			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 			collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 			check_user_input_y_N $'\nWould you like to add another ${CYAN}Allowed Network${NC}? (y/N): ' || break
@@ -764,7 +784,7 @@ main_4_collect_networks_loop() {
 main_4_endpoint() {
 	echo -e "\nPlease enter the ${CYAN}Endpoint${NC} IP of the remote Wireguard server or client. (LAN for inside network, WAN for outside)."
 	echo -e "${YELLOW}NOTE:${NC} DDNS is supported."
-	check_user_input_multi $': ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
+	check_input_validate_2 $': ' endpoint_address valid_ip_check valid_ddns_check "$multi_type"
 }
 
 main_4_peer_config() {
@@ -803,7 +823,7 @@ sub_5.1_edit_ip() {
 	echo -e "\nHere is the ${CYAN}private IP address${NC} for this connection:"
 	grep '^Address' "$config_choice_final" | sed "s/^Address/${CYAN}&${NC}/"
 	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
-	check_user_input $': ' new_peer_ip valid_ip_check "$ip_type" \
+	check_input_validate $': ' new_peer_ip valid_ip_check "$ip_type" \
 	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -813,7 +833,7 @@ sub_5.2_edit_public_key() {
 	echo -e "\nHere is the ${CYAN}PublicKey${NC} for the remote Wireguard server:\n"
 	grep '^PublicKey' "$config_choice_final" | sed "s/^PublicKey/${CYAN}&${NC}/"
 	echo -e "Please enter the new ${CYAN}PublicKey${NC}."
-	check_user_input $': ' new_peer_public_key key_check "$key_type" \
+	check_input_validate $': ' new_peer_public_key key_check "$key_type" \
 	&& sed -i "/^PublicKey =/c\PublicKey = $new_peer_public_key" "$config_choice_final" \
 	&& echo -e "${GREEN}The Public Key has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
@@ -838,9 +858,9 @@ EOF
 
 sub_5.3.1_change_ip() {
 	echo -e "Enter the new ${CYAN}AllowedIPs${NC}."
-	check_user_input $': ' allowed_ip_input valid_ip_check "$ip_type" \
+	check_input_validate $': ' allowed_ip_input valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
-	check_user_input $'Enter the CIDR: ' allowed_cidr_input cidr_check "$cidr_type" \
+	check_input_validate $'Enter the CIDR: ' allowed_cidr_input cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
@@ -848,9 +868,9 @@ sub_5.3.1_change_ip() {
 
 sub_5.3.2_append_ip() {
 	echo -e "Enter the new, additional ${CYAN}AllowedIPs${NC}."
-	check_user_input $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
+	check_input_validate $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
-	check_user_input $'Enter the CIDR: ' allowed_cidr_input2 cidr_check "$cidr_type" \
+	check_input_validate $'Enter the CIDR: ' allowed_cidr_input2 cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
@@ -872,7 +892,7 @@ EOF
 sub_5.4.1_change_endpoint() {
 	echo "Enter the remote server IP that this peer will connect to."
 	echo -e "${YELLOW}NOTE:${NC} DDNS is supported."
-	check_user_input_multi $': ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
+	check_input_validate_2 $': ' wan_peer_change valid_ip_check valid_ddns_check "$multi_type" \
 	&& sed -i -E "s/(Endpoint = )([^:]+)(:[0-9]+)/\1$wan_peer_change\3/" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@$config_basename.service
