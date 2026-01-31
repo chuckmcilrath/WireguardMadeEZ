@@ -508,19 +508,20 @@ ping_test() {
 main_menu() {
 	echo
 	cat << EOF
-              ###################
-              #### MAIN MENU ####
-              ###################
-
+${CYAN}		  
+###################
+#### MAIN MENU ####
+###################
+${NC}
 Choose your Wireguard install type:
 
 1. (OPTIONAL) Set Static IP. (Recommended for Option #2)
-2. Server Install and Setup.
-3. Server Config edit.
-4. Client Install and Setup.
-5. Client Config edit.
-6. Info and commands.
-7. Delete and cleanup.
+2. ${CYAN}Server${NC} Install and Setup.
+3. ${CYAN}Server${NC} Config edit.
+4. ${CYAN}Client${NC} Install and Setup.
+5. ${CYAN}Client${NC} Config edit.
+6. ${YELLOW}Info${NC} and commands.
+7. ${RED}Delete and cleanup${NC}.
 
 Type "exit" (or ctrl + c) to exit the script.
 EOF
