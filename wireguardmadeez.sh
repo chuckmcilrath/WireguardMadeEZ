@@ -641,7 +641,7 @@ EOF
 
 sub_3.1_peer_input() {
 	while true; do
-		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
+		echo -e "\nEnter a name for the ${CYAN}peer${NC}. Press ENTER to return to previous menu."
 		check_input_validate_space $': ' peer_name alphanumeric_check "$alphanumeric_type" || return 1
 		unique "$peer_name" || continue
 		break
@@ -650,8 +650,8 @@ sub_3.1_peer_input() {
 
 sub_3.1_peer_IP() {
 	while true; do
-		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use."
-		check_input_validate $': ' peer_ip valid_ip_check "$ip_type"
+		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use. Press ENTER to return to previous menu."
+		check_input_validate_space $': ' peer_ip valid_ip_check "$ip_type" || return 1
 		unique "$peer_ip" || continue
 		break
 	done
@@ -659,8 +659,8 @@ sub_3.1_peer_IP() {
 
 sub_3.1_public_key() {
 	while true; do
-		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client."
-		check_input_validate $': ' peer_key key_check "$key_type"
+		echo -e "\nEnter the ${CYAN}PublicKey${NC} from the client. Press ENTER to return to previous menu."
+		check_input_validate_space $': ' peer_key key_check "$key_type" || return 1
 		unique "$peer_key" || continue
 		break
 	done
@@ -1069,9 +1069,9 @@ while true; do
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
-	  					sub_3.1_peer_input || break
-	  					sub_3.1_peer_IP
-						sub_3.1_public_key
+	  					sub_3.1_peer_input || continue
+	  					sub_3.1_peer_IP || continue
+						sub_3.1_public_key || continue
 						sub_3.1_peer_config && break
 					;;
 	 				2) # Edit a Peer.
