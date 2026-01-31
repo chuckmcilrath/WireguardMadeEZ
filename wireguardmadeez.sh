@@ -261,7 +261,7 @@ default_cidr_validate() {
   	local validation_func="$3"
 	local type="$4"
 	local user_input
-	echo -e "${YELLOW}NOTE:${NC} Leave empty to select /24."
+	echo -e "${YELLOW}NOTE:${NC} Leave empty to select ${CYAN}/24${NC}."
 	while true; do
  		read -rp "$prompt" user_input
 		if [[ -z "$user_input" ]]; then
@@ -801,7 +801,7 @@ main_4_collect_networks_loop() {
 		check_input_validate $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
 			collected_ips="0.0.0.0/0"
-			echo -e "\nAdded ${GREEN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
+			echo -e "\nAdded ${CYAN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
 			echo -e "\n${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
 			break
 		else
@@ -1223,12 +1223,14 @@ while true; do
 				main_6_help_menu
 				case "$help_input" in
 					1) # Prints useful commands
+						config_file_check || break
 						choosing_config && sub_6.1_info
 					;;
 					2) # Wireguard command to print connections and public key(s).
 						sub_6.1_wg_command
 					;;
 					3) # Prints the config file
+						config_file_check || break
 						choosing_config && cat "$config_choice_final"
 					;;
 					4) # Prints useful commands
