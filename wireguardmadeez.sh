@@ -287,6 +287,18 @@ valid_ddns_check() {
 	return 0
 }
 
+# Check if no configs exist or
+config_file_check() {
+	shopt -s nullglob
+	config_files_array=(/etc/wireguard/*.conf)
+
+	if [[ ! -e "${config_files_array[0]}" ]]; then
+		echo -e "${RED}ERROR:${NC} No configuration found!"
+		return 1
+	fi
+	shopt -u nullglob
+}
+
 # User config file choice
 choosing_config() {
 	shopt -s nullglob
@@ -294,11 +306,7 @@ choosing_config() {
 	unset config_basename
 	config_files_array=(/etc/wireguard/*.conf)
 
-	# Check if no configs exist or glob didn't match
-	if [[ ! -e "${config_files_array[0]}" ]]; then
-		echo -e "${RED}ERROR:${NC} No configuration found!"
-		return 1
-	elif [[ ${#config_files_array[@]} -eq 1 ]]; then 
+	if [[ ${#config_files_array[@]} -eq 1 ]]; then 
 		config_choice_final="${config_files_array[0]}"
 		config_basename="$(basename "$config_choice_final" .conf)"
 		echo -e "\n1 config available.${GREEN} ${config_basename} ${NC}was selected."
@@ -320,7 +328,7 @@ choosing_config() {
 				config_choice_final="${config_files_array[$config_choice -1]}"
 				config_basename="$(basename "$config_choice_final" .conf)"
 				echo -e "\n${GREEN}You chose: $config_choice_final${NC}"
-				break
+				return 0
 			else
 				echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#config_files_array[@]}.${NC}"
 			fi
@@ -1065,7 +1073,8 @@ while true; do
 		;;
   		3)  # Server Peer editing.
 			while true; do
-	   			choosing_config || break
+	   			config_file_check || break
+				choosing_config || continue
 	   			config_file_check_peer || break
 	   			server_peer_show
 	   			main_3_selection_submenu
@@ -1128,7 +1137,8 @@ while true; do
 		;;
 		5) # Client Peer Config.
 			while true; do
-				choosing_config || break
+				config_file_check || break
+				choosing_config || continue
 				config_file_check_server || break
 				main_5_menu
 				case "$setting_select_5" in
