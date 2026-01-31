@@ -621,10 +621,14 @@ EOF
 
 sub_3.1_peer_input() {
 	while true; do
-		echo -e "\nEnter a name for the ${CYAN}peer${NC}."
+		echo -e "\nEnter a name for the ${CYAN}peer${NC}. Leave blank to return to previous menu."
 		check_user_input $': ' peer_name alphanumeric_check "$alphanumeric_type"
-		unique "$peer_name" || continue
-		break
+		if [[ -z "$peer_name" ]]; then
+			return 1
+		else
+			unique "$peer_name" || continue
+			break
+		fi
 	done
 }
 
@@ -1049,7 +1053,7 @@ while true; do
 	   			main_3_selection_submenu
 	   			case "$peer_choice" in
 	   				1) # Add a Peer.
-	  					sub_3.1_peer_input
+	  					sub_3.1_peer_input || break
 	  					sub_3.1_peer_IP
 						sub_3.1_public_key
 						sub_3.1_peer_config && break
