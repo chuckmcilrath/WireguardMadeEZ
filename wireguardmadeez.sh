@@ -293,7 +293,7 @@ config_file_check() {
 	config_files_array=(/etc/wireguard/*.conf)
 
 	if [[ ! -e "${config_files_array[0]}" ]]; then
-		echo -e "${RED}ERROR:${NC} No configuration found!"
+		echo -e "\n${RED}ERROR:${NC} No configuration found!"
 		return 1
 	fi
 	shopt -u nullglob
