@@ -968,10 +968,10 @@ ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard ser
 ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard service)
 ${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard service)
 ${YELLOW}nano /etc/wireguard/${GREEN}INTERFACE.conf${NC} (Edits the config file)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key or \$${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key or \$${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key or ${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key or ${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
 
-After configuring a wireguard port, run 'source ~/.bashrc' to load in aliases:
+After configuring a wireguard port, run '${YELLOW}source ~/.bashrc${NC}' to load in aliases:
 ${GREEN}INTERFACE${YELLOW}start${NC} will execute the same as ${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC}
 ${GREEN}INTERFACE${YELLOW}stop${NC} will execute the same as ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC}
 ${GREEN}INTERFACE${YELLOW}restart${NC} will execute the same as ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC}
