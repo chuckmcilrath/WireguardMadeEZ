@@ -255,7 +255,28 @@ port_num_check() {
 	return 0
 }
 
+default_cidr_validate() {
+	local prompt="$1"
+ 	local var_name="$2"
+  	local validation_func="$3"
+	local type="$4"
+	local user_input
+	while true; do
+ 		read -rp "$prompt" user_input
+		if [[ -z "$user_input" ]]; then
+			"$var_name"=24
+			return 0
+		elif ! "$validation_func" "$user_input"; then
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+	 	else
+   			eval "$var_name=\"\$user_input\""
+	  		return 0
+	 	fi
+	done
+}
+
 default_port() {
+	local = user_input
 	echo -e "\nPlease enter the Port number."
   	echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
 	while true; do
@@ -783,7 +804,7 @@ main_4_collect_networks_loop() {
 			break
 		else
 			echo -e "\nPlease enter the CIDR of your ${CYAN}Allowed Network${NC}."
-			check_input_validate $': ' allowed_ip_cidr cidr_check "$cidr_type"
+			default_cidr_validate $': ' allowed_ip_cidr cidr_check "$cidr_type"
 			ip_list+=("$allowed_ips_peer"/"$allowed_ip_cidr")
 			collected_ips=$(IFS=, ; echo "${ip_list[*]}")
 			echo -e "\nWould you like to add another ${CYAN}Allowed Network${NC}? (y/N)"
