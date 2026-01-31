@@ -1223,14 +1223,14 @@ while true; do
 				main_6_help_menu
 				case "$help_input" in
 					1) # Prints useful commands
-						config_file_check || break
+						config_file_check || continue
 						choosing_config && sub_6.1_info
 					;;
 					2) # Wireguard command to print connections and public key(s).
 						sub_6.1_wg_command
 					;;
 					3) # Prints the config file
-						config_file_check || break
+						config_file_check || continue
 						choosing_config && cat "$config_choice_final"
 					;;
 					4) # Prints useful commands
