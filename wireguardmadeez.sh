@@ -571,7 +571,8 @@ main_1_static_ip_edit() {
 
 # Adds the CIDR notation to the end of the user inputed static IP.
 main_1_cidr_edit() {
-	default_cidr_validate $'Enter the subnet in CIDR notation. Numbers Only: ' cidr_input cidr_check "$cidr_type"
+	echo "Enter the subnet in CIDR notation. Numbers Only."
+	default_cidr_validate $': ' cidr_input cidr_check "$cidr_type"
 	check_user_input_Y_n "Are you sure you want to use $cidr_input? (Y/n)" || return 1
 	sed -i "/"$static_ip"/c\        address "$static_ip"\/"$cidr_input" " $net_interf \
 	&& echo -e "\n${GREEN}Subnet has been updated.${NC}\n"
@@ -894,7 +895,8 @@ sub_5.3.1_change_ip() {
 	echo -e "Enter the new ${CYAN}AllowedIPs${NC}."
 	check_input_validate $': ' allowed_ip_input valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
-	default_cidr_validate $'Enter the CIDR. Numbers only: ' allowed_cidr_input cidr_check "$cidr_type" \
+	echo "Enter the CIDR. Numbers only."
+	default_cidr_validate $': ' allowed_cidr_input cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
@@ -904,7 +906,8 @@ sub_5.3.2_append_ip() {
 	echo -e "Enter the new, additional ${CYAN}AllowedIPs${NC}."
 	check_input_validate $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
 	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
-	default_cidr_validate $'Enter the CIDR. Numbers only: ' allowed_cidr_input2 cidr_check "$cidr_type" \
+	echo "Enter the CIDR. Numbers only."
+	default_cidr_validate $': ' allowed_cidr_input2 cidr_check "$cidr_type" \
 	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
 	&& systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
