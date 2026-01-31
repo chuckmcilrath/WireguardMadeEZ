@@ -573,8 +573,8 @@ main_2_file_check_server() {
 	config_files_array=(/etc/wireguard/*.conf)
     if ((${#config_files_array[@]} > 0)); then
         for config_file in "${config_files_array[@]}"; do
-            if grep -q '^ListenPort' "$config_file"; then
-                echo -e "${RED}There is already a server configuration file configured. Please run Option 3, Server Peer Config.${NC}"
+            if grep -q '^PreUp = sysctl -w net.ipv4.ip_forward=1' "$config_file"; then
+                echo -e "\n${RED}There is already a server configuration file configured. Run Option 3, Server Peer Config.${NC}"
 				return 1
             fi
         done
@@ -930,7 +930,7 @@ EOF
 }
 
 sub_6.1_info () {
-	if grep -q '^ListenPort' "$config_choice_final"; then
+	if grep -q '^PreUp = sysctl -w net.ipv4.ip_forward=1' "$config_choice_final"; then
 		echo -e "\n${CYAN}Configuration Type:${NC} \nServer"
 		echo -e "\n${CYAN}Server's IP Address:${NC}"
 		grep '^Address' "$config_choice_final" | awk '{print $3}' | tr -d '/32'
