@@ -510,7 +510,7 @@ choosing_peer() {
 	echo -e "\nAvailable peers:"
 	local i=1
 	for peer in "${peer_names_array[@]}"; do
-		echo -e "${GREEN}$i) $peer${NC}"
+		echo -e "${CYAN}$i) $peer${NC}"
 		((i++))
 	done
 	echo -e "\nPlease choose a peer. (Press ENTER to return to previous menu.)"
@@ -521,7 +521,7 @@ choosing_peer() {
 			return 1
 		elif [[ "$peer_choice" =~ ^[0-9]+$ && "$peer_choice" -ge 1 && "$peer_choice" -le "${#peer_names_array[@]}" ]]; then
 			peer_choice_final="${peer_names_array[$peer_choice -1]}"
-			echo -e "\n${GREEN}You chose: $peer_choice_final${NC}"
+			echo -e "\n${GREEN}You chose: ${CYAN}$peer_choice_final${NC}"
 			return 0
 		else
 			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#peer_names_array[@]}.${NC}"
