@@ -489,6 +489,45 @@ server_peer_show() {
 	fi
 }
 
+choosing_peer() {
+	unset peer_choice_final
+
+	# Extract peer names, sort alphabetically, and store in array
+	peer_names_array=($(awk '
+		/^# /{
+			name=$0
+			sub(/^# /, "", name)
+			print name
+		}
+	' "$config_choice_final" | sort))
+
+	if [[ ${#peer_names_array[@]} -eq 0 ]]; then
+		echo -e "${RED}ERROR:${NC} No peers found!"
+		return 1
+	fi
+
+	echo -e "\nAvailable peers:"
+	local i=1
+	for peer in "${peer_names_array[@]}"; do
+		echo -e "${GREEN}$i) $peer${NC}"
+		((i++))
+	done
+	echo -e "\nPlease choose a peer. (Press ENTER to return to previous menu.)"
+	while true; do
+		read -rp ": " peer_choice
+		if [[ -z "$peer_choice" ]]; then
+			echo "Returning to previous menu."
+			return 1
+		elif [[ "$peer_choice" =~ ^[0-9]+$ && "$peer_choice" -ge 1 && "$peer_choice" -le "${#peer_names_array[@]}" ]]; then
+			peer_choice_final="${peer_names_array[$peer_choice -1]}"
+			echo -e "\n${GREEN}You chose: $peer_choice_final${NC}"
+			return 0
+		else
+			echo -e "${RED}Invalid choice. Please enter a number between 1 and ${#peer_names_array[@]}.${NC}"
+		fi
+	done
+}
+
 peer_check() {
 	if ! grep -q "Peer" "$config_choice_final"; then
 		echo -e "\n${RED}ERROR:${NC} No ${CYAN}peers${NC} found. Please add a ${CYAN}peer${NC}."
@@ -1001,22 +1040,21 @@ sub_6.1_info () {
 	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 }
 
-#sub_6.2_ping_peer() {
+sub_6.2_ping_peer() {
 	 
-#}
+	 
+}
 
 sub_6.3_ping_server() {
-	while true; do
-		echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
-		check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
-		if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
-			echo -e "\n${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
-			return 1
-		else
-			echo -e "\n${RED}Ping to ${ping_server_ip} was not successful.${NC}"
-			echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
-		fi
-	done
+	echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
+	check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
+	if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
+		echo -e "\n${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
+		return 1
+	else
+		echo -e "\n${RED}Ping to ${ping_server_ip} was not successful.${NC}"
+		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+	fi
 }
 
 sub_6.4_wg_command() {
@@ -1272,7 +1310,10 @@ while true; do
 						choosing_config && sub_6.1_info
 					;;
 					2) # Pings a server's peer. (Client)
-					
+						config_file_check || break
+						choosing_config || continue
+	   					config_file_check_peer || break
+						choosing_peer
 					;;
 					3) # Ping a server.
 						sub_6.3_ping_server
