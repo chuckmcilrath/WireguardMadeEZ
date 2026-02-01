@@ -1040,10 +1040,10 @@ sub_6.1_info () {
 	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 }
 
-sub_6.2_ping_peer() {
+#sub_6.2_ping_peer() {
+	# $peer_choice_final
 	 
-	 
-}
+#}
 
 sub_6.3_ping_server() {
 	echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
