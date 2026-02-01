@@ -1041,10 +1041,17 @@ sub_6.1_info () {
 	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 }
 
-#sub_6.2_ping_peer() {
-	# $peer_choice_final
+sub_6.2_ping_peer() {
+	local peer_ip=$(grep -x -A 2 "# ${peer_choice_final}" "$server_config_final" | awk 'NR == 3 {print $3}' | tr -d "/32")
+	if ping -q -c 1 -w 1 "$peer_ip" &> /dev/null; then
+		echo -e "\n${GREEN}Ping to ${peer_choice_final} (${peer_ip}) was successful.${NC}"
+		return 1
+	else
+		echo -e "\n${RED}Ping to ${peer_choice_final} (${peer_ip}) was not successful.${NC}"
+		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+	fi
 	 
-#}
+}
 
 sub_6.3_ping_server() {
 	echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
@@ -1315,6 +1322,7 @@ while true; do
 						choosing_config || continue
 	   					config_file_check_peer || break
 						choosing_peer
+						sub_6.2_ping_peer
 					;;
 					3) # Ping a server.
 						sub_6.3_ping_server
