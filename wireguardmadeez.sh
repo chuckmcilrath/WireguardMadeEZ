@@ -904,18 +904,30 @@ sub_5.3.1_change_ip() {
 		&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final"
 	fi
 	systemctl restart wg-quick@$config_basename.service \
-	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+	&& echo -e "\n${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
 }
 
 sub_5.3.2_append_ip() {
-	echo -e "Enter the new, additional ${CYAN}AllowedIPs${NC}."
-	check_input_validate $': ' allowed_ip_input2 valid_ip_check "$ip_type" \
-	&& sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
-	echo "Enter the CIDR. Numbers only."
-	default_cidr_validate $': ' allowed_cidr_input2 cidr_check "$cidr_type" \
-	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
-	&& systemctl restart wg-quick@$config_basename.service \
-	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+	if grep -q "AllowedIPs = 0.0.0.0/0" "$config_choice_final"; then
+		echo -e "\n${YELLOW}WARNING:${NC} Cannot add more ${CYAN}AllowedIPs${NC}. This network is configured as a full tunnel (0.0.0.0/0)."
+		echo -e "Run \'1. Change ${CYAN}AllowedIPs${NC}.\'"
+		return 0
+	else
+		echo -e "\nEnter the new, additional ${CYAN}AllowedIPs${NC}."
+		check_input_validate $': ' allowed_ip_input2 valid_ip_check "$ip_type"
+		if [ $allowed_ip_input2 = "0.0.0.0" ]; then
+			echo -e "\n${RED}ERROR:${NC} Cannot use 0.0.0.0 to append to ${CYAN}AllowedIPs${NC}."
+			echo -e "Run \'1. Change ${CYAN}AllowedIPs${NC}\' to change to full tunnel."
+			return 0
+		else
+			sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
+			echo "\nEnter the CIDR. Numbers only."
+			default_cidr_validate $': ' allowed_cidr_input2 cidr_check "$cidr_type" \
+			&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
+			&& systemctl restart wg-quick@$config_basename.service \
+			&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
+		fi
+	fi
 }
 
 sub_5.4_endpoint_edit_menu() {
