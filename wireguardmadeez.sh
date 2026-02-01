@@ -278,7 +278,7 @@ default_cidr_validate() {
 }
 
 default_port() {
-	local = user_input
+	local user_input
 	echo -e "\nPlease enter the Port number."
   	echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
 	while true; do
@@ -395,7 +395,7 @@ config_file_creation() {
 # checks to see if the config file is set up to be a peer. If it is, it will tell the user.
 config_file_check_peer() {
 	if grep -qi '^Endpoint' $config_choice_final; then
-		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a Peer. Please choose the correct config:"
+		echo -e "\n ${RED}**ERROR**${NC} This config file is set up to be a ${CYAN}Client.${NC}"
 		return 1
 	fi
 }
@@ -494,7 +494,8 @@ choosing_peer() {
 
 	# Extract peer names, sort alphabetically, and store in array
 	peer_names_array=($(awk '
-		/^# /{
+		/^\[Peer\]/{found=1}
+		found && /^# /{
 			name=$0
 			sub(/^# /, "", name)
 			print name
