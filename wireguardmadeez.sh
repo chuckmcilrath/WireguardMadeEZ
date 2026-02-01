@@ -1001,20 +1001,22 @@ sub_6.1_info () {
 	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 }
 
-sub_6.2_ping_peer() {
+#sub_6.2_ping_peer() {
 	 
-}
+#}
 
 sub_6.3_ping_server() {
-	echo -e "Enter the server's ${CYAN} private IP or DDNS address ${NC}."
-	check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
-	if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
-		echo -e "${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
-		return 1
-	else
-		echo -e "${RED}Ping to ${ping_server_ip} was not successful.${NC}"
-		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
-	fi
+	while true; do
+		echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
+		check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
+		if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
+			echo -e "\n${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
+			return 1
+		else
+			echo -e "\n${RED}Ping to ${ping_server_ip} was not successful.${NC}"
+			echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+		fi
+	done
 }
 
 sub_6.4_wg_command() {
