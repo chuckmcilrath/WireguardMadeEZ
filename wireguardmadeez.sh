@@ -801,7 +801,7 @@ main_4_collect_networks_loop() {
 		echo -e "${YELLOW}NOTE:${NC} 0.0.0.0 entered means a full tunnel connection."
 		check_input_validate $': ' allowed_ips_peer valid_ip_check "$ip_type"
 		if [ "$allowed_ips_peer" = 0.0.0.0 ]; then
-			collected_ips="0.0.0.0/0"
+			collected_ips=0.0.0.0/0
 			echo -e "\nAdded ${CYAN}0.0.0.0/0${NC} to ${CYAN}AllowedIPs${NC}."
 			echo -e "\n${RED}WARNING!!!${NC} This will disconnect your connection if you are remoting into this machine."
 			break
@@ -893,12 +893,17 @@ EOF
 
 sub_5.3.1_change_ip() {
 	echo -e "Enter the new ${CYAN}AllowedIP${NC}."
-	check_input_validate $': ' allowed_ip_input valid_ip_check "$ip_type" \
-	&& sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
-	echo "Enter the CIDR. Numbers only."
-	default_cidr_validate $': ' allowed_cidr_input cidr_check "$cidr_type" \
-	&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final" \
-	&& systemctl restart wg-quick@$config_basename.service \
+	check_input_validate $': ' allowed_ip_input valid_ip_check "$ip_type"
+	if [ "$allowed_ip_input" = 0.0.0.0 ]; then
+		allowed_ip_input=0.0.0.0/0
+		sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
+	else
+		sed -i "/^AllowedIPs =/c\AllowedIPs = $allowed_ip_input" "$config_choice_final"
+		echo "Enter the CIDR. Numbers only."
+		default_cidr_validate $': ' allowed_cidr_input cidr_check "$cidr_type" \
+		&& sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input|" "$config_choice_final"
+	fi
+	systemctl restart wg-quick@$config_basename.service \
 	&& echo -e "${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
 }
 
