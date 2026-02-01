@@ -1042,7 +1042,7 @@ sub_6.1_info () {
 }
 
 sub_6.2_ping_peer() {
-	local peer_ip=$(grep -x -A 2 "# ${peer_choice_final}" "$server_config_final" | awk 'NR == 3 {print $3}' | tr -d "/32")
+	local peer_ip=$(grep -x -A 2 "# ${peer_choice_final}" "$config_choice_final" | awk 'NR == 3 {print $3}' | tr -d "/32")
 	if ping -q -c 1 -w 1 "$peer_ip" &> /dev/null; then
 		echo -e "\n${GREEN}Ping to ${peer_choice_final} (${peer_ip}) was successful.${NC}"
 		return 1
