@@ -877,7 +877,7 @@ sub_5.2_edit_public_key() {
 sub_5.3_echo() {
 	echo -e "\nHere are the ${CYAN}AllowedIPs${NC}:"
 	grep "^AllowedIPs" "$config_choice_final" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
-	echo -e "\n${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0/0 entered means a full tunnel connection."
+	echo -e "\n${YELLOW}NOTE:${NC}\nUse a 0 in the 4th octet.\n0.0.0.0 entered means a full tunnel connection."
 }
 
 sub_5.3_sub_menu() {
@@ -920,13 +920,13 @@ sub_5.3.2_append_ip() {
 			echo -e "Run '1. Change ${CYAN}AllowedIPs${NC}' to change to full tunnel."
 			return 0
 		else
-			sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
 			echo -e "\nEnter the CIDR. Numbers only."
 			default_cidr_validate $': ' allowed_cidr_input2 cidr_check "$cidr_type"
 			if grep -q "${allowed_ip_input2}/${allowed_cidr_input2}" "$config_choice_final"; then
-				echo -e "${RED}ERROR:${NC} Duplicate IP found. Try again."
+				echo -e "\n${RED}ERROR:${NC} Duplicate IP found. Try again."
 				return 0
 			else
+				sed -i "/^AllowedIPs/s|$|, $allowed_ip_input2|" "$config_choice_final"
 				sed -i "/^AllowedIPs/s|$|/$allowed_cidr_input2|" "$config_choice_final" \
 				&& systemctl restart wg-quick@$config_basename.service \
 				&& echo -e "\n${GREEN}Allowed Network has been updated and the Wireguard service has been restarted.${NC}"
