@@ -969,10 +969,12 @@ main_6_help_menu() {
 	cat << EOF
 Info and commands. Choose an option:
 1. Print useful connection info. (For connecting to other clients).
-2. wg (Command to see peers and public key.)
-3. Print the configuration file.
-4. Useful Commands.
-5. Return to the previous menu.
+2. Ping a server peer. (client)
+3. Ping a server.
+4. wg (Command to see peers and public key.)
+5. Print a configuration file.
+6. List of useful Commands.
+7. Return to the previous menu.
 EOF
 	read -rp ": " help_input
 }
@@ -999,7 +1001,23 @@ sub_6.1_info () {
 	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 }
 
-sub_6.1_wg_command() {
+sub_6.2_ping_peer() {
+	 
+}
+
+sub_6.3_ping_server() {
+	echo -e "Enter the server's ${CYAN} private IP or DDNS address ${NC}."
+	check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
+	if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
+		echo -e "${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
+		return 1
+	else
+		echo -e "${RED}Ping to ${ping_server_ip} was not successful.${NC}"
+		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+	fi
+}
+
+sub_6.4_wg_command() {
 	if wg show &> /dev/null; then
     	wg show
 	else
@@ -1007,7 +1025,7 @@ sub_6.1_wg_command() {
 	fi
 }
 
-sub_6.4_commands() {
+sub_6.6_commands() {
 	commands_text=$(cat <<EOF
 
 ${YELLOW}wg${NC} (Command for Wireguard to print connections and public key of server)
@@ -1251,21 +1269,24 @@ while true; do
 						config_file_check || continue
 						choosing_config && sub_6.1_info
 					;;
-					2) # Wireguard command to print connections and public key(s).
-						sub_6.1_wg_command
+					2) # Pings a server's peer. (Client)
+					
 					;;
-					3) # Prints the config file
+					3) # Ping a server.
+						sub_6.3_ping_server
+					;;
+					4) # Wireguard command to print connections and public key(s).
+						sub_6.4_wg_command
+					;;
+					5) # Prints the config file
 						config_file_check || continue
 						choosing_config && cat "$config_choice_final"
 					;;
-					4) # Prints useful commands
-						sub_6.4_commands
+					6) # Prints useful commands
+						sub_6.6_commands
 					;;
-					5) # Exits the menu
+					7) # Exits the menu
 						exit_selection && break
-					;;
-					6) # Pings an endpoint
-					
 					;;
 					*)
 						invalid_option
