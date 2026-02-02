@@ -1026,8 +1026,7 @@ sub_6.1_info () {
 		grep '^Address' "$config_choice_final" | awk '{print $3}' | tr -d '/32'
 		echo -e "\n${CYAN}Listening Port:${NC}"
 		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
-	else
-		grep -q '^Endpoint' "$config_choice_final"; then
+	elif grep -q '^Endpoint' "$config_choice_final"; then
 		echo -e "\n${CYAN}Configuration Type:${NC} \nClient"
 		echo -e "\n${CYAN}Private IP Address:${NC}"
 		grep '^Address' "$config_choice_final" | awk '{print $3}'
