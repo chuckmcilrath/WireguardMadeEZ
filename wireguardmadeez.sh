@@ -1008,12 +1008,12 @@ main_6_help_menu() {
 	echo
 	cat << EOF
 Info and commands. Choose an option:
-1. Print useful connection info. (For connecting to other clients).
-2. Ping a server peer. (client)
-3. Ping a server.
-4. wg (Command to see peers and public key.)
-5. Print a configuration file.
-6. List of useful Commands.
+1. Print ${YELLOW}useful connection info${NC}. (For connecting to other clients).
+2. Ping a server ${CYAN}peer. (client)${NC}
+3. Ping any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
+4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}s.)
+5. Print a ${GREEN}Wireguard interface configuration file${NC}.
+6. List of ${YELLOW}useful Commands${NC}.
 7. Return to the previous menu.
 EOF
 	read -rp ": " help_input
@@ -1026,12 +1026,11 @@ sub_6.1_info () {
 		grep '^Address' "$config_choice_final" | awk '{print $3}' | tr -d '/32'
 		echo -e "\n${CYAN}Listening Port:${NC}"
 		grep '^ListenPort' "$config_choice_final" | awk '{print $3}'
-	elif grep -q '^Endpoint' "$config_choice_final"; then
+	else
+		grep -q '^Endpoint' "$config_choice_final"; then
 		echo -e "\n${CYAN}Configuration Type:${NC} \nClient"
 		echo -e "\n${CYAN}Private IP Address:${NC}"
 		grep '^Address' "$config_choice_final" | awk '{print $3}'
-	else
-		echo "ERROR"
 	fi
 	echo -e "\n${CYAN}Public Key:${NC}"
 	grep "PrivateKey =" "$config_choice_final" | awk '{print $3}' | wg pubkey
