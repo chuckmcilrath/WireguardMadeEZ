@@ -1036,7 +1036,11 @@ sub_6.1_info () {
 	echo -e "\n${CYAN}Local IP:${NC}"
 	hostname -I | awk '{print $1}'
 	echo -e "\n${CYAN}WAN IP:${NC}"
-	wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
+	if ping -q -c 1 -w 1 google.com &> /dev/null; then
+		wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
+	else
+		echo -e "${RED}ERROR: Cannot reach the internet. Check internet connection and try again"
+	fi
 }
 
 sub_6.2_ping_peer() {
