@@ -578,10 +578,10 @@ ${NC}
 Choose your ${GREEN}Wireguard${NC} install type:
 
 1. (OPTIONAL) Set ${CYAN}Static IP${NC}. (Recommended for Option #2)
-2. ${CYAN}Server${NC} Install and Setup.
-3. ${CYAN}Server${NC} Config edit.
-4. ${CYAN}Client${NC} Install and Setup.
-5. ${CYAN}Client${NC} Config edit.
+2. ${CYAN}Server Install${NC} and Setup.
+3. ${CYAN}Server ${GREEN}Config${NC} edit.
+4. ${CYAN}Client Install${NC} and Setup.
+5. ${CYAN}Client ${GREEN}Config${NC} edit.
 6. ${YELLOW}Info and commands${NC}.
 7. ${RED}Delete and cleanup${NC}.
 
