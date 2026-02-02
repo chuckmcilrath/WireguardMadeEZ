@@ -1039,7 +1039,7 @@ sub_6.1_info () {
 	if ping -q -c 1 -w 1 google.com &> /dev/null; then
 		wget -qO- https://ipinfo.io | grep "ip" | awk 'NR == 1 {print $2}' | tr -d '",'
 	else
-		echo -e "${RED}ERROR: Cannot reach the internet. Check internet connection and try again"
+		echo -e "${RED}ERROR: Cannot reach the internet. Check internet connection and try again.${NC}"
 	fi
 }
 
