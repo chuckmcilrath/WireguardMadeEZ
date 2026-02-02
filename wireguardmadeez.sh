@@ -1009,7 +1009,7 @@ main_6_help_menu() {
 	cat << EOF
 Info and commands. Choose an option:
 1. Print ${YELLOW}useful connection info${NC}. (For connecting to other clients).
-2. Ping a server ${CYAN}peer. (client)${NC}
+2. Ping a server ${CYAN}peer. (Client)${NC}
 3. Ping any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
 4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}s.)
 5. Print a ${GREEN}Wireguard interface configuration file${NC}.
@@ -1317,7 +1317,7 @@ while true; do
 					2) # Pings a server's peer. (Client)
 						config_file_check || break
 						choosing_config || continue
-	   					config_file_check_peer || break
+	   					config_file_check_peer || continue
 						choosing_peer
 						sub_6.2_ping_peer
 					;;
