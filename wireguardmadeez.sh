@@ -177,16 +177,6 @@ check_user_input_Y_n() {
 	done
 }
 
-check_user_input_select() {
- 	local input_one="$1"
-		if grep -q "# $input_one" "$config_choice_final"; then
-			return 0
-		else
-			echo -e "${RED}User not found, please try again.${NC}"
-			return 1
-		fi
-}
-
 # Check for only letters and numbers.
 alphanumeric_check() {
 	[[ $1 =~ ^[[:alnum:]_]+$ ]]
@@ -1173,7 +1163,7 @@ while true; do
 			main_1_apply_network
 		;;
   		2)  # Server Install
-			main_2_file_check_server || continue
+			# main_2_file_check_server || continue
 			DNS_check
    			run_apt_update
 			main_2_program_check
