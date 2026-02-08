@@ -102,7 +102,7 @@ check_input_validate() {
 	while true; do
  		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return 0
@@ -120,7 +120,7 @@ check_input_validate_2() {
 	while true; do
 		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
-			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}."
 		else
 			eval "$var_name=\"\$user_input\""
 			return 0
@@ -139,7 +139,7 @@ check_input_validate_space() {
 		if [[ -z "$user_input" ]]; then
 			return 1
 	 	elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}."
 		else
    			eval "$var_name=\"\$user_input\""
 	  		return 0
@@ -259,7 +259,7 @@ default_cidr_validate() {
 			echo "Default of ${CYAN}/24${NC} has been selected."
 			return 0
 		elif ! "$validation_func" "$user_input"; then
-  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC} Please try again."
+  			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}."
 	 	else
    			eval "$var_name=\"\$user_input\""
 	  		return 0
@@ -324,7 +324,7 @@ default_port() {
                 port_num="$user_input"
                 return 0
             else
-                echo -e "${RED}'${user_input}' is not a valid ${port_type}${NC} Please try again."
+                echo -e "${RED}'${user_input}' is not a valid ${port_type}${NC}."
             fi
         fi
     done
@@ -435,7 +435,7 @@ config_file_check_peer() {
 # Checks to see if the config file is set up to be a server. If it is, it will tell the user.
 config_file_check_server() {
 	if grep -qi '^ListenPort' $config_choice_final; then
-		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Server. Please try again."
+		echo -e "\n ${RED}**WARNING**${NC} This config file is set up to be a Server."
 		return 1
 	fi
 }
@@ -445,7 +445,7 @@ unique() {
 	local var_name="$1"
 	if grep -qwi "$var_name" "$config_choice_final"; then
 		echo -e "\n${RED}ERROR${NC}"
-		echo "Douplicate input detected. ${CYAN}${var_name}${NC} is in use by another user. Please try again."
+		echo "Douplicate input detected. ${CYAN}${var_name}${NC} is in use by another user."
 		return 1
 	fi
 	return 0
@@ -584,7 +584,7 @@ exit_selection() {
 }
 
 invalid_option() {
-	echo -e "${RED}Invalid option. Please try again.${NC}"
+	echo -e "${RED}Invalid option.${NC}"
 }
 
 ping_test() {
@@ -604,7 +604,6 @@ ip_in_use_check() {
         [ -f "$conf" ] || continue
         if grep -qE "^(Address|AllowedIPs).*=.*$ip" "$conf"; then
             echo -e "\n${RED}ERROR: ${CYAN}$ip${NC} is already assigned in ${GREEN}$(basename $conf)${NC}"
-			echo "Please try again."
             return 1
         fi
     done
@@ -612,7 +611,6 @@ ip_in_use_check() {
     # Check running interfaces
     if ip addr show | grep -q "inet $ip"; then
         echo -e "\n${RED}ERROR: ${CYAN}$ip${NC} is already assigned to a running interface"
-		echo "Please try again."
         return 1
     fi
     
@@ -813,7 +811,7 @@ sub_3.2_user_select() {
 		elif [[ -z "$user_select_3_2" ]]; then
 			return 1
 		else
-			echo -e "${RED}User not found. Please try again.${NC}"
+			echo -e "${RED}User not found.${NC}"
 		fi
 	done
 }
@@ -877,7 +875,7 @@ sub_3.3_delete() {
 				return 1
 			fi
 		else
-			echo -e "${RED}User not found, please try again.${NC}"
+			echo -e "${RED}User not found.${NC}"
 		fi
 	done
 }
@@ -962,8 +960,12 @@ sub_5.1_edit_ip() {
 	echo -e "\nHere is the ${CYAN}private IP address${NC} for this connection:"
 	grep '^Address' "$config_choice_final" | sed "s/^Address/${CYAN}&${NC}/"
 	echo -e "Enter the new ${CYAN}private IP address${NC} you would like to use."
-	check_input_validate $': ' new_peer_ip valid_ip_check "$ip_type" \
-	&& sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
+	while true; do
+		check_input_validate $': ' new_peer_ip valid_ip_check "$ip_type"
+		ip_in_use_check "$new_peer_ip" || continue
+		break
+	done
+	sed -i "/^Address =/c\Address = $new_peer_ip" "$config_choice_final" \
 	&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 	&& systemctl restart wg-quick@${config_basename}.service
 }
@@ -1073,10 +1075,10 @@ main_6_help_menu() {
 	cat << EOF
 Info and commands. Choose an option:
 1. ${YELLOW}Print${NC} useful ${YELLOW}connection info${NC}. (For connecting to other clients).
-2. ${YELLOW}Ping{NC} a server ${CYAN}peer. (Client)${NC}
-3. ${YELLOW}Ping{NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
+2. ${YELLOW}Ping${NC} a server ${CYAN}peer. (Client)${NC}
+3. ${YELLOW}Ping${NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
 4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}s.)
-5. ${YELLOW}Print{NC} a ${GREEN}Wireguard interface configuration file${NC}.
+5. ${YELLOW}Print${NC} a ${GREEN}Wireguard interface configuration file${NC}.
 6. List of ${YELLOW}useful Commands${NC}.
 7. Return to the previous menu.
 EOF
@@ -1252,7 +1254,7 @@ while true; do
   		3)  # Server Peer editing.
 			while true; do
 	   			config_file_check || break
-				choosing_config || continue
+				choosing_config || break
 	   			config_file_check_peer || break
 	   			server_peer_show
 	   			main_3_selection_submenu
@@ -1270,10 +1272,10 @@ while true; do
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
-									sub_3.2.1_change_public_key && break || continue
+									sub_3.2.1_change_public_key && break
 								;;
 								2)
-									sub_3.2.2_change_ip && break || continue
+									sub_3.2.2_change_ip && break
 								;;
 								3)
 									exit_selection && break
