@@ -278,6 +278,12 @@ default_port() {
 			return 0
 		elif [[ -n "$user_input" ]]; then
     		if port_num_check "$user_input"; then
+				for conf in /etc/wireguard/*.conf; do
+        			[ -f "$conf" ] || continue
+        			if grep -q "^ListenPort.*=.*$port" "$conf"; then
+            			echo "Port $port already used in $(basename $conf)"
+        			fi
+    			done
 				port_num="$user_input"
 				return 0
     		else
@@ -559,20 +565,41 @@ ip_in_use_check() {
     for conf in /etc/wireguard/*.conf; do
         [ -f "$conf" ] || continue
         if grep -q "^Address.*=.*$ip" "$conf"; then
-            echo -e "${RED}ERROR: ${CYAN}$ip${NC} is already assigned in $(basename $conf)"
+            echo -e "${RED}ERROR: ${CYAN}$ip${NC} is already assigned in ${GREEN}$(basename $conf)${NC}"
 			echo "Please try again."
-            return 0
+            return 1
         fi
     done
     
     # Check running interfaces
     if ip addr show | grep -q "inet $ip"; then
-        echo "${RED}ERROR: ${CYAN}$ip${NC} already assigned to a running interface"
+        echo "${RED}ERROR: ${CYAN}$ip${NC} is already assigned to a running interface"
 		echo "Please try again."
-        return 0
+        return 1
     fi
     
-    return 1
+    return 0
+}
+
+check_port_in_use() {
+    local port=$1
+    
+    # Check all WireGuard config files
+    for conf in /etc/wireguard/*.conf; do
+        [ -f "$conf" ] || continue
+        if grep -q "^ListenPort.*=.*$port" "$conf"; then
+            echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+            return 1
+        fi
+    done
+    
+    # Check if port is bound by any process
+    if ss -ulpn | grep -q ":$port "; then
+        echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
+        return 1
+    fi
+    
+    return 0
 }
 ##################
 # MENU FUNCTIONS #
@@ -682,7 +709,7 @@ main_2_server_network() {
   	echo "${YELLOW}Example:${NC} 10.15.0.1, 172.16.0.1, or 192.168.6.1."
 	while true; do
  		check_input_validate ": " server_network_input valid_ip_check "$ip_type"
-		ip_in_use_check "$server_network_input"
+		ip_in_use_check "$server_network_input" || break
 	done
 }
 
