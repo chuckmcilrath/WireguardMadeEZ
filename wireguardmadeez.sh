@@ -602,7 +602,7 @@ ip_in_use_check() {
 	
     for conf in /etc/wireguard/*.conf; do
         [ -f "$conf" ] || continue
-        if grep -q "^Address.*=.*$ip" "$conf"; then
+        if grep -qE "^(Address|AllowedIPs).*=.*$ip" "$conf"; then
             echo -e "\n${RED}ERROR: ${CYAN}$ip${NC} is already assigned in ${GREEN}$(basename $conf)${NC}"
 			echo "Please try again."
             return 1
@@ -754,11 +754,11 @@ main_3_selection_submenu() {
 	echo
 	cat << EOF
 
-Server Peer Configuration
+Server ${CYAN}Peer (Client)${NC} Configuration
 
-1. Add a new client.
-2. Edit a client.
-3. Remove a client.
+1. Add a new ${CYAN}client${NC}.
+2. Edit a ${CYAN}client${NC}.
+3. Remove a ${CYAN}client${NC}.
 4. Return to the previous menu.
 EOF
 
@@ -1072,11 +1072,11 @@ main_6_help_menu() {
 	echo
 	cat << EOF
 Info and commands. Choose an option:
-1. Print ${YELLOW}useful connection info${NC}. (For connecting to other clients).
-2. Ping a server ${CYAN}peer. (Client)${NC}
-3. Ping any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
+1. ${YELLOW}Print${NC} useful ${YELLOW}connection info${NC}. (For connecting to other clients).
+2. ${YELLOW}Ping{NC} a server ${CYAN}peer. (Client)${NC}
+3. ${YELLOW}Ping{NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
 4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}s.)
-5. Print a ${GREEN}Wireguard interface configuration file${NC}.
+5. ${YELLOW}Print{NC} a ${GREEN}Wireguard interface configuration file${NC}.
 6. List of ${YELLOW}useful Commands${NC}.
 7. Return to the previous menu.
 EOF
