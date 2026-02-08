@@ -445,7 +445,7 @@ unique() {
 	local var_name="$1"
 	if grep -qwi "$var_name" "$config_choice_final"; then
 		echo -e "\n${RED}ERROR${NC}"
-		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
+		echo "Douplicate input detected. ${CYAN}${var_name}${NC} is in use by another user. Please try again."
 		return 1
 	fi
 	return 0
@@ -778,7 +778,7 @@ sub_3.1_peer_IP() {
 	while true; do
 		echo -e "\nEnter the ${CYAN}private IP address${NC} for the peer to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' peer_ip valid_ip_check "$ip_type" || return 1
-		unique "$peer_ip" || continue
+		unique "$peer_ip" && ip_in_use_check "$peer_ip" || continue
 		break
 	done
 }
@@ -1265,8 +1265,8 @@ while true; do
 					;;
 	 				2) # Edit a Peer.
 						peer_check || continue
+						sub_3.2_user_select || break
 						while true; do
-							sub_3.2_user_select || break
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
