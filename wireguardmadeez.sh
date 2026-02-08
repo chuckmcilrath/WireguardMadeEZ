@@ -271,7 +271,7 @@ default_port() {
     local user_input
     local port_in_use
     echo -e "\nPlease enter the Port number."
-    echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
+    echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, ${CYAN}51820${NC}."
     
     while true; do
         read -rp ": " user_input
@@ -306,7 +306,7 @@ default_port() {
                 for conf in /etc/wireguard/*.conf; do
                     [ -f "$conf" ] || continue
                     if grep -q "^ListenPort.*=.*$user_input" "$conf"; then
-                        echo "${RED}ERROR: ${CYAN}$user_input${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+                        echo -e "\n${RED}ERROR: ${CYAN}$user_input${NC} is already used in ${GREEN}$(basename $conf)${NC}"
                         port_in_use=true
                         break
                     fi
@@ -317,7 +317,7 @@ default_port() {
                 
                 # Check running processes
                 if ss -ulpn | grep -q ":$user_input "; then
-                    echo "${RED}ERROR: ${CYAN}$user_input${NC} is already in use by another process"
+                    echo -e "\n${RED}ERROR: ${CYAN}$user_input${NC} is already in use by another process"
                     continue
                 fi
                 
@@ -883,7 +883,11 @@ sub_3.3_delete() {
 
 main_4_private_IP() {
 	echo -e "\nEnter the ${CYAN}Private IP Address${NC} this client will use."
-	check_input_validate $': ' peer_address valid_ip_check "$ip_type"
+	while true; do
+		check_input_validate $': ' peer_address valid_ip_check "$ip_type"
+		ip_in_use_check "$peer_address" || continue
+		break
+	done
 	peer_address_change="${peer_address%.*}.0"
 }
 
