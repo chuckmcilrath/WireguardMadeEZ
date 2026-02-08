@@ -268,47 +268,66 @@ default_cidr_validate() {
 }
 
 default_port() {
-	local user_input
-	echo -e "\nPlease enter the Port number."
-  	echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
-	while true; do
-		read -rp ": " user_input
-		if [[ -z "$user_input" ]]; then
-			for conf in /etc/wireguard/*.conf; do
-        		[ -f "$conf" ] || continue
-        		if grep -q "^ListenPort.*=.*51820" "$conf"; then
-            		echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already used in ${GREEN}$(basename $conf)${NC}"
-            		return 1
-        		fi
-				continue
-			done
-				if ss -ulpn | grep -q ":51820 "; then
-        			echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already in use by another process"
-        			continue
-    			fi
-			port_num="51820"
-			return 0
-		elif [[ -n "$user_input" ]]; then
-    		if port_num_check "$user_input"; then
-				for conf in /etc/wireguard/*.conf; do
-        			[ -f "$conf" ] || continue
-        			if grep -q "^ListenPort.*=.*$user_input" "$conf"; then
-            			echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
-            			return 1
-        			fi
-					continue
-				done
-					if ss -ulpn | grep -q ":$user_input "; then
-        				echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
-        				continue
-    				fi
-				port_num="$user_input"
-				return 0
-    		else
-        		echo -e "${RED}'${user_input}' is not a valid ${port_type}${NC} Please try again."
-    		fi
-		fi
-	done
+    local user_input
+    local port_in_use
+    echo -e "\nPlease enter the Port number."
+    echo -e "${YELLOW}NOTE:${NC} Press ENTER to use the default, 51820."
+    
+    while true; do
+        read -rp ": " user_input
+        port_in_use=false
+        
+        if [[ -z "$user_input" ]]; then
+            # Check config files
+            for conf in /etc/wireguard/*.conf; do
+                [ -f "$conf" ] || continue
+                if grep -q "^ListenPort.*=.*51820" "$conf"; then
+                    echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+                    port_in_use=true
+                    break  # Exit the for loop early
+                fi
+            done
+            
+            # If port found in configs, restart while loop
+            [[ "$port_in_use" == true ]] && continue
+            
+            # Check running processes
+            if ss -ulpn | grep -q ":51820 "; then
+                echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already in use by another process"
+                continue
+            fi
+            
+            port_num="51820"
+            return 0
+            
+        elif [[ -n "$user_input" ]]; then
+            if port_num_check "$user_input"; then
+                # Check config files
+                for conf in /etc/wireguard/*.conf; do
+                    [ -f "$conf" ] || continue
+                    if grep -q "^ListenPort.*=.*$user_input" "$conf"; then
+                        echo "${RED}ERROR: ${CYAN}$user_input${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+                        port_in_use=true
+                        break
+                    fi
+                done
+                
+                # If port found in configs, restart while loop
+                [[ "$port_in_use" == true ]] && continue
+                
+                # Check running processes
+                if ss -ulpn | grep -q ":$user_input "; then
+                    echo "${RED}ERROR: ${CYAN}$user_input${NC} is already in use by another process"
+                    continue
+                fi
+                
+                port_num="$user_input"
+                return 0
+            else
+                echo -e "${RED}'${user_input}' is not a valid ${port_type}${NC} Please try again."
+            fi
+        fi
+    done
 }
 
 valid_ddns_check() {
@@ -707,7 +726,8 @@ main_2_server_network() {
   	echo "${YELLOW}Example:${NC} 10.15.0.1, 172.16.0.1, or 192.168.6.1."
 	while true; do
  		check_input_validate ": " server_network_input valid_ip_check "$ip_type"
-		ip_in_use_check "$server_network_input" || break
+		ip_in_use_check "$server_network_input" || continue
+		break
 	done
 }
 
