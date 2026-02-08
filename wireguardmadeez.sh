@@ -448,6 +448,7 @@ unique() {
 		echo "Douplicate input detected. ${var_name} is in use by another user. Please try again."
 		return 1
 	fi
+	return 0
 }
 
 wg_keygen() {
@@ -835,7 +836,7 @@ EOF
 sub_3.2.1_change_public_key() {
 	while true; do
 		echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use. Leave blank to return to previous menu."
-		check_input_validate_space $': ' new_public_key key_check "$ip_type" || return 1
+		check_input_validate_space $': ' new_public_key key_check "$ip_type" || break
 		unique "$new_public_key" || continue
 		sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s|^PublicKey =.*|PublicKey = ${new_public_key}| }" "$config_choice_final" \
 		&& echo -e "${GREEN}Public Key has been changed. Restarting Wireguard...${NC}" \
@@ -847,8 +848,8 @@ sub_3.2.1_change_public_key() {
 sub_3.2.2_change_ip() {
 	while true; do
 		echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use. Leave blank to return to previous menu."
-		check_input_validate_space $': ' new_ip valid_ip_check "$ip_type" || return 1
-		unique "$new_ip" || continue
+		check_input_validate_space $': ' new_ip valid_ip_check "$ip_type" || break
+		unique "$new_ip" && ip_in_use_check "$new_ip" || continue
 		sed -i "/# $user_select_3_2/,/^\[Peer\]/ { s/^AllowedIPs =.*/AllowedIPs = ${new_ip}\/32/ }" "$config_choice_final" \
 		&& echo -e "${GREEN}The IP has been changed. Restarting Wireguard...${NC}" \
 		&& systemctl restart wg-quick@${config_basename}.service
