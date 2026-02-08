@@ -274,16 +274,32 @@ default_port() {
 	while true; do
 		read -rp ": " user_input
 		if [[ -z "$user_input" ]]; then
+			for conf in /etc/wireguard/*.conf; do
+        		[ -f "$conf" ] || continue
+        		if grep -q "^ListenPort.*=.*51820" "$conf"; then
+            		echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+            		continue
+        		fi
+			done
+				if ss -ulpn | grep -q ":51820 "; then
+        			echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
+        			continue
+    			fi
 			port_num="51820"
 			return 0
 		elif [[ -n "$user_input" ]]; then
     		if port_num_check "$user_input"; then
 				for conf in /etc/wireguard/*.conf; do
         			[ -f "$conf" ] || continue
-        			if grep -q "^ListenPort.*=.*$port" "$conf"; then
-            			echo "Port $port already used in $(basename $conf)"
+        			if grep -q "^ListenPort.*=.*$user_input" "$conf"; then
+            			echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+            			continue
         			fi
-    			done
+				done
+					if ss -ulpn | grep -q ":$user_input "; then
+        				echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
+        				continue
+    				fi
 				port_num="$user_input"
 				return 0
     		else
@@ -581,26 +597,6 @@ ip_in_use_check() {
     return 0
 }
 
-check_port_in_use() {
-    local port=$1
-    
-    # Check all WireGuard config files
-    for conf in /etc/wireguard/*.conf; do
-        [ -f "$conf" ] || continue
-        if grep -q "^ListenPort.*=.*$port" "$conf"; then
-            echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
-            return 1
-        fi
-    done
-    
-    # Check if port is bound by any process
-    if ss -ulpn | grep -q ":$port "; then
-        echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
-        return 1
-    fi
-    
-    return 0
-}
 ##################
 # MENU FUNCTIONS #
 ##################
