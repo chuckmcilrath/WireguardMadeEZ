@@ -277,12 +277,13 @@ default_port() {
 			for conf in /etc/wireguard/*.conf; do
         		[ -f "$conf" ] || continue
         		if grep -q "^ListenPort.*=.*51820" "$conf"; then
-            		echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
-            		continue
+            		echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already used in ${GREEN}$(basename $conf)${NC}"
+            		return 1
         		fi
+				continue
 			done
 				if ss -ulpn | grep -q ":51820 "; then
-        			echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
+        			echo -e "\n${RED}ERROR: ${CYAN}51820${NC} is already in use by another process"
         			continue
     			fi
 			port_num="51820"
@@ -293,8 +294,9 @@ default_port() {
         			[ -f "$conf" ] || continue
         			if grep -q "^ListenPort.*=.*$user_input" "$conf"; then
             			echo "${RED}ERROR: ${CYAN}$port${NC} is already used in ${GREEN}$(basename $conf)${NC}"
-            			continue
+            			return 1
         			fi
+					continue
 				done
 					if ss -ulpn | grep -q ":$user_input "; then
         				echo "${RED}ERROR: ${CYAN}$port${NC} is already in use by another process"
@@ -581,7 +583,7 @@ ip_in_use_check() {
     for conf in /etc/wireguard/*.conf; do
         [ -f "$conf" ] || continue
         if grep -q "^Address.*=.*$ip" "$conf"; then
-            echo -e "${RED}ERROR: ${CYAN}$ip${NC} is already assigned in ${GREEN}$(basename $conf)${NC}"
+            echo -e "\n${RED}ERROR: ${CYAN}$ip${NC} is already assigned in ${GREEN}$(basename $conf)${NC}"
 			echo "Please try again."
             return 1
         fi
@@ -589,7 +591,7 @@ ip_in_use_check() {
     
     # Check running interfaces
     if ip addr show | grep -q "inet $ip"; then
-        echo "${RED}ERROR: ${CYAN}$ip${NC} is already assigned to a running interface"
+        echo -e "\n${RED}ERROR: ${CYAN}$ip${NC} is already assigned to a running interface"
 		echo "Please try again."
         return 1
     fi
