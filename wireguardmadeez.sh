@@ -350,7 +350,6 @@ choosing_config() {
 	shopt -u nullglob
 }
 
-
 # User input for config name
 config_file_creation() {
   	config_files_array=(/etc/wireguard/*.conf)
@@ -553,6 +552,28 @@ ping_test() {
 	fi
 }
 
+# Check if an IP is already assigned to any WireGuard interface
+ip_in_use_check() {
+    local ip=$1
+	
+    for conf in /etc/wireguard/*.conf; do
+        [ -f "$conf" ] || continue
+        if grep -q "^Address.*=.*$ip" "$conf"; then
+            echo -e "${RED}ERROR: ${CYAN}$ip${NC} is already assigned in $(basename $conf)"
+			echo "Please try again."
+            return 0
+        fi
+    done
+    
+    # Check running interfaces
+    if ip addr show | grep -q "inet $ip"; then
+        echo "${RED}ERROR: ${CYAN}$ip${NC} already assigned to a running interface"
+		echo "Please try again."
+        return 0
+    fi
+    
+    return 1
+}
 ##################
 # MENU FUNCTIONS #
 ##################
@@ -659,7 +680,10 @@ main_2_server_network() {
 	echo -e "\nEnter the ${CYAN}IP address${NC} the server will use. This will act as a gateway."
  	echo -e "${YELLOW}NOTE:${NC} Make it a non-conflicting IP from your other networks that you are connecting."
   	echo "${YELLOW}Example:${NC} 10.15.0.1, 172.16.0.1, or 192.168.6.1."
- 	check_input_validate ": " server_network_input valid_ip_check "$ip_type"
+	while true; do
+ 		check_input_validate ": " server_network_input valid_ip_check "$ip_type"
+		ip_in_use_check "$server_network_input"
+	done
 }
 
 # Checks and makes the config folder
