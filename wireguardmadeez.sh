@@ -1180,12 +1180,12 @@ EOF
 sub_7.1_rm_single_config() {
 	echo -e "${RED}***WARNING***${NC} Are you sure you want to delete this config file? (y/N)\n"
 	if check_user_input_y_N $': '; then
-		rm -f "${config_choice_final%.*}"*
+		rm -f "${config_choice_final}" "/etc/wireguard/${config_basename}_public.key" "/etc/wireguard/${config_basename}_private.key"
 		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
-		sed -i "/^alias ${config_basename}/d" ~/.bashrc
-		sed -i "/${config_basename}_private_key=/d" ~/.bashrc
-		sed -i "/${config_basename}_public_key=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}=/d" ~/.bashrc
+		sed -i "/^${config_basename}_private_key=/d" ~/.bashrc
+		sed -i "/^${config_basename}_public_key=/d" ~/.bashrc
 		modprobe -r wireguard
 		echo -e "${GREEN}Success${NC} Returning to previous menu"
 	else
@@ -1318,7 +1318,7 @@ while true; do
 		5) # Client Peer Config.
 			while true; do
 				config_file_check || break
-				choosing_config || continue
+				choosing_config || break
 				config_file_check_server || break
 				main_5_menu
 				case "$setting_select_5" in
