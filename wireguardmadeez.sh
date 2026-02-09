@@ -1183,9 +1183,12 @@ sub_7.1_rm_single_config() {
 		rm -f "${config_choice_final}" "/etc/wireguard/${config_basename}_public.key" "/etc/wireguard/${config_basename}_private.key"
 		unset "$config_basename"_public_key
 		unset "$config_basename"_private_key
-		sed -i "/^alias ${config_basename}=/d" ~/.bashrc
-		sed -i "/^${config_basename}_private_key=/d" ~/.bashrc
-		sed -i "/^${config_basename}_public_key=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}_private_key=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}_public_key=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}start=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}stop=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}status=/d" ~/.bashrc
+		sed -i "/^alias ${config_basename}restart=/d" ~/.bashrc
 		modprobe -r wireguard
 		echo -e "${GREEN}Success${NC} Returning to previous menu"
 	else
