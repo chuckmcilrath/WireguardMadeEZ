@@ -866,7 +866,7 @@ sub_3.3_delete() {
 			echo "Returning to previous menu."
 			return 1
 		elif grep -qx "# $user_select" "$config_choice_final"; then
-			if check_user_input_y_N "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
+			if check_user_input_y_N "Are you sure you want to delete user '${user_select}'? (y/N): "; then
 				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
 				echo -e "${RED}User '$user_select' deleted.${NC}" \
