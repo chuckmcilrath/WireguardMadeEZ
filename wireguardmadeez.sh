@@ -120,7 +120,7 @@ check_input_validate_2() {
 	while true; do
 		read -rp "$prompt" user_input
 		if ! "$validation_func" "$user_input" && ! "$validation_func_2" "$user_input"; then
-			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}."
+			echo -e "${RED}'${user_input}' is not a valid ${type}${NC}"
 		else
 			eval "$var_name=\"\$user_input\""
 			return 0
@@ -857,6 +857,7 @@ sub_3.2.2_change_ip() {
 
 # Deletes a peer from the server config.
 sub_3.3_delete() {
+	local user_select
 	while true; do
 		echo -e "\nWhich user would you like to delete?"
 		echo -e "${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
@@ -864,7 +865,7 @@ sub_3.3_delete() {
 		if [[ -z "$user_select" ]]; then
 			echo "Returning to previous menu."
 			return 1
-		elif grep -q "# $user_select" "$config_choice_final"; then
+		elif grep -qx "# $user_select" "$config_choice_final"; then
 			if check_user_input_y_N "Are you sure you want to delete user '${user_select}'? (Y/n): "; then
 				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
@@ -1077,7 +1078,7 @@ Info and commands. Choose an option:
 1. ${YELLOW}Print${NC} useful ${YELLOW}connection info${NC}. (For connecting to other clients).
 2. ${YELLOW}Ping${NC} a server ${CYAN}peer. (Client)${NC}
 3. ${YELLOW}Ping${NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
-4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}s.)
+4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}(s).)
 5. ${YELLOW}Print${NC} a ${GREEN}Wireguard interface configuration file${NC}.
 6. List of ${YELLOW}useful Commands${NC}.
 7. Return to the previous menu.
