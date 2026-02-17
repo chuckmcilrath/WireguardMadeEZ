@@ -1152,8 +1152,8 @@ ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard int
 ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard interface service)
 ${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard interface service)
 ${YELLOW}nano /etc/wireguard/${GREEN}INTERFACE.conf${NC} (Edits the config file)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key (Prints the Public Key of the server)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key (Prints the Private Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public.key (Prints the Public Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private.key (Prints the Private Key of the server)
 
 ${YELLOW}NOTE:${NC} After configuring a Wireguard interface, reload your terminal or run '${YELLOW}source ~/.bashrc${NC}' to load in aliases:
 ${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
