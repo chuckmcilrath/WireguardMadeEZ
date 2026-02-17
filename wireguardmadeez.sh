@@ -869,7 +869,7 @@ sub_3.3_delete() {
 			if check_user_input_y_N "Are you sure you want to delete user '${user_select}'? (y/N): "; then
 				sed -i "/\[Peer\]/ { N; /\n# $user_select/ { N; N; d; } }" "$config_choice_final"
 				sed -i '/^$/N;/^\n$/D' "$config_choice_final"
-				echo -e "${RED}User '$user_select' deleted.${NC}" \
+				echo -e "${GREEN}User '$user_select' successfully deleted. Restarting Wireguard...${NC}" \
 				&& systemctl restart wg-quick@${config_basename}.service
 				return 0
 			else
@@ -1143,6 +1143,8 @@ sub_6.4_wg_command() {
 
 sub_6.6_commands() {
 	commands_text=$(cat <<EOF
+${YELLOW}NOTE:${NC} Replace ${GREEN}INTERFACE${NC} with the Wireguard interface you have configured.
+${YELLOW}Example: systemctl status wg-quick@${GREEN}wg0${NC}
 
 ${YELLOW}wg${NC} (Command for Wireguard to print connections and public key of server)
 ${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC} (Starts the Wireguard interface service)
@@ -1150,10 +1152,12 @@ ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC} (Stops the Wireguard int
 ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC} (Restarts the Wireguard interface service)
 ${YELLOW}systemctl status wg-quick@${GREEN}INTERFACE${NC} (Shows the status of the Wireguard interface service)
 ${YELLOW}nano /etc/wireguard/${GREEN}INTERFACE.conf${NC} (Edits the config file)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key or ${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
-${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key or ${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_public_key (Prints the Public Key of the server)
+${YELLOW}cat /etc/wireguard/${GREEN}INTERFACE${YELLOW}_private_key (Prints the Private Key of the server)
 
-After configuring a wireguard port, run '${YELLOW}source ~/.bashrc${NC}' to load in aliases:
+${YELLOW}NOTE:${NC} After configuring a Wireguard interface, reload your terminal or run '${YELLOW}source ~/.bashrc${NC}' to load in aliases:
+${GREEN}INTERFACE${YELLOW}_public_key${NC} (Prints the Public Key of the server)
+${GREEN}INTERFACE${YELLOW}_private_key${NC} (Prints the Private Key of the server)
 ${GREEN}INTERFACE${YELLOW}start${NC} will execute the same as ${YELLOW}systemctl start wg-quick@${GREEN}INTERFACE${NC}
 ${GREEN}INTERFACE${YELLOW}stop${NC} will execute the same as ${YELLOW}systemctl stop wg-quick@${GREEN}INTERFACE${NC}
 ${GREEN}INTERFACE${YELLOW}restart${NC} will execute the same as ${YELLOW}systemctl restart wg-quick@${GREEN}INTERFACE${NC}
