@@ -1194,6 +1194,8 @@ sub_7.1_rm_single_config() {
 		sed -i "/^alias ${config_basename}stop=/d" ~/.bashrc
 		sed -i "/^alias ${config_basename}status=/d" ~/.bashrc
 		sed -i "/^alias ${config_basename}restart=/d" ~/.bashrc
+		systemctl disable wg-quick@"$config_basename".service &> /dev/null
+		systemctl daemon-reload &> /dev/null
 		modprobe -r wireguard
 		echo -e "${GREEN}Success${NC} Returning to previous menu"
 	else
@@ -1220,6 +1222,8 @@ sub_7.2_rm_wireguard() {
 			sed -i "/^alias ${config_basename}stop=/d" ~/.bashrc
 			sed -i "/^alias ${config_basename}status=/d" ~/.bashrc
 			sed -i "/^alias ${config_basename}restart=/d" ~/.bashrc
+			systemctl disable wg-quick@"$config_basename".service &> /dev/null
+			systemctl daemon-reload &> /dev/null
 		done
 		
 		apt-get remove --purge wireguard wireguard-tools -y \
