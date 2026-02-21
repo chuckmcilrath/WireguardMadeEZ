@@ -838,6 +838,7 @@ sub_3.2.1_change_peer_name() {
 		check_input_validate_space $': ' new_peer_name alphanumeric_check "$alphanumeric_type" || break
 		unique "$new_peer_name" || continue
 		sed -i "/^\[Peer\]/,/# $user_select_3_2/ {s|# $user_select_3_2|# $new_peer_name|}" "$config_choice_final"
+		break
 	done
 }
 
@@ -1294,13 +1295,13 @@ while true; do
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
-									sub_3.2.1_change_peer_name && break
+									sub_3.2.1_change_peer_name && continue
 								;;
 								2)
-									sub_3.2.2_change_public_key && break
+									sub_3.2.2_change_public_key && continue
 								;;
 								3)
-									sub_3.2.3_change_ip && break
+									sub_3.2.3_change_ip && continue
 								;;
 								4)
 									exit_selection && break
