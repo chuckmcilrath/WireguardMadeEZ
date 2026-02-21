@@ -837,8 +837,9 @@ sub_3.2.1_change_peer_name() {
 		echo -e "\nEnter the new ${CYAN}peer name${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_peer_name alphanumeric_check "$alphanumeric_type" || break
 		unique "$new_peer_name" || continue
-		sed -i "/^\[Peer\]/,/# $user_select_3_2/ {s|# $user_select_3_2|# $new_peer_name|}" "$config_choice_final"
-		break
+		sed -i "/^\[Peer\]/,/# $user_select_3_2/ {s|# $user_select_3_2|# $new_peer_name|}" "$config_choice_final" \
+		&& eval "$new_peer_name=\"\$user_select_3_2\"" \
+		&& break
 	done
 }
 
