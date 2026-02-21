@@ -802,6 +802,20 @@ EOF
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
+sub_3.2_user_select() {
+	while true; do
+		echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
+		read -rp $': ' user_select_3_2
+		if grep -qx "# $user_select_3_2" "$config_choice_final"; then
+			return 0
+		elif [[ -z "$user_select_3_2" ]]; then
+			return 1
+		else
+			echo -e "${RED}User not found.${NC}"
+		fi
+	done
+}
+
 sub_3.2_menu() {
 	echo -e "\nYou chose: ${CYAN}${user_select_3_2}${NC}. Here is their connection information:"
 	grep -x -A 2 "# $user_select_3_2" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
@@ -818,27 +832,13 @@ EOF
 	read -rp ": " setting_select_3_2
 }
 
-sub_3.2_user_select() {
-	while true; do
-		echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
-		read -rp $': ' user_select_3_2
-		if grep -qx "# $user_select_3_2" "$config_choice_final"; then
-			return 0
-		elif [[ -z "$user_select_3_2" ]]; then
-			return 1
-		else
-			echo -e "${RED}User not found.${NC}"
-		fi
-	done
-}
-
 sub_3.2.1_change_peer_name() {
 	while true; do
 		echo -e "\nEnter the new ${CYAN}peer name${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_peer_name alphanumeric_check "$alphanumeric_type" || break
 		unique "$new_peer_name" || continue
 		sed -i "/^\[Peer\]/,/# $user_select_3_2/ {s|# $user_select_3_2|# $new_peer_name|}" "$config_choice_final" \
-		&& eval "$new_peer_name=\"\$user_select_3_2\"" \
+		&& user_select_3_2="$new_peer_name" \
 		&& break
 	done
 }
