@@ -802,6 +802,22 @@ EOF
 	&& systemctl restart wg-quick@$config_basename.service
 }
 
+sub_3.2_menu() {
+	echo -e "\nYou chose: ${CYAN}${user_select_3_2}${NC}. Here is their connection information:"
+	grep -x -A 2 "# $user_select_3_2" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
+	echo
+	cat << EOF
+Which setting would you like to edit?
+
+1. Change the ${CYAN}peer's name${NC}.
+2. Change the ${CYAN}PublicKey${NC}.
+3. Change the user's ${CYAN}private IP address${NC} under ${CYAN}AllowedIPs${NC}.
+4. Return to the previous menu.
+EOF
+
+	read -rp ": " setting_select_3_2
+}
+
 sub_3.2_user_select() {
 	while true; do
 		echo -e "\nWhich user would you like to edit?\n${YELLOW}NOTE:${NC} Name only. Case sensitive. Leave blank to return to previous menu."
@@ -816,22 +832,16 @@ sub_3.2_user_select() {
 	done
 }
 
-sub_3.2_menu() {
-	echo -e "\nYou chose: ${CYAN}${user_select_3_2}${NC}. Here is their connection information:"
-	grep -x -A 2 "# $user_select_3_2" "$config_choice_final" | awk "NR > 1" | sed "s/^PublicKey/${CYAN}&${NC}/" | sed "s/^AllowedIPs/${CYAN}&${NC}/"
-	echo
-	cat << EOF
-Which setting would you like to edit?
-
-1. Change the ${CYAN}PublicKey${NC}.
-2. Change the user's ${CYAN}private IP address${NC} under ${CYAN}AllowedIPs${NC}.
-3. Return to the previous menu.
-EOF
-
-	read -rp ": " setting_select_3_2
+sub_3.2.1_change_peer_name() {
+	while true; do
+		echo -e "\nEnter the new ${CYAN}peer name${NC} you would like to use. Leave blank to return to previous menu."
+		check_input_validate_space $': ' new_peer_name alphanumeric_check "$alphanumeric_type" || break
+		unique "$new_peer_name" || continue
+		sed -i "/^\[Peer\]/,/# $user_select_3_2/ {s|# $user_select_3_2|# $new_peer_name|}" "$config_choice_final"
+	done
 }
 
-sub_3.2.1_change_public_key() {
+sub_3.2.2_change_public_key() {
 	while true; do
 		echo -e "\nEnter the new ${CYAN}PublicKey${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_public_key key_check "$ip_type" || break
@@ -843,7 +853,7 @@ sub_3.2.1_change_public_key() {
 	done
 }
 
-sub_3.2.2_change_ip() {
+sub_3.2.3_change_ip() {
 	while true; do
 		echo -e "\nEnter the new ${CYAN}private IP address${NC} you would like to use. Leave blank to return to previous menu."
 		check_input_validate_space $': ' new_ip valid_ip_check "$ip_type" || break
@@ -1284,12 +1294,15 @@ while true; do
 							sub_3.2_menu
 							case "$setting_select_3_2" in
 								1)
-									sub_3.2.1_change_public_key && break
+									sub_3.2.1_change_peer_name && break
 								;;
 								2)
-									sub_3.2.2_change_ip && break
+									sub_3.2.2_change_public_key && break
 								;;
 								3)
+									sub_3.2.3_change_ip && break
+								;;
+								4)
 									exit_selection && break
 								;;
 								*)
