@@ -1088,12 +1088,13 @@ main_6_help_menu() {
 	cat << EOF
 Info and commands. Choose an option:
 1. ${YELLOW}Print${NC} useful ${YELLOW}connection info${NC}. (For connecting to other clients).
-2. ${YELLOW}Ping${NC} a server ${CYAN}peer. (Client)${NC}
-3. ${YELLOW}Ping${NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
-4. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}(s).)
-5. ${YELLOW}Print${NC} a ${GREEN}Wireguard interface configuration file${NC}.
-6. List of ${YELLOW}useful Commands${NC}.
-7. Return to the previous menu.
+2. ${YELLOW}Print${NC} server's ${YELLOW}stale connections${NC}.
+3. ${YELLOW}Print${NC} a ${GREEN}Wireguard interface configuration file${NC}.
+4. ${YELLOW}Print${NC} useful ${YELLOW}Commands${NC}.
+5. ${YELLOW}Ping${NC} a server ${CYAN}peer. (Client)${NC}
+6. ${YELLOW}Ping${NC} any ${CYAN}IP${NC}. (Useful for pinging the ${CYAN}private IP${NC} of servers.)
+7. ${YELLOW}wg${NC} (Command to see ${CYAN}peers${NC} and ${CYAN}PublicKey${NC}(s).)
+8. Return to the previous menu.
 EOF
 	read -rp ": " help_input
 }
@@ -1122,38 +1123,7 @@ sub_6.1_info () {
 	fi
 }
 
-sub_6.2_ping_peer() {
-	local peer_ip=$(grep -x -A 2 "# ${peer_choice_final}" "$config_choice_final" | awk 'NR == 3 {print $3}' | sed 's|/32||')
-	if ping -q -c 1 -w 1 "$peer_ip" &> /dev/null; then
-		echo -e "\nPing to ${CYAN}${peer_choice_final}${NC}: (${peer_ip}) was ${GREEN}successful.${NC}"
-		return 1
-	else
-		echo -e "\n${RED}Ping to ${peer_choice_final} (${peer_ip}) was not successful.${NC}"
-		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
-	fi
-}
-
-sub_6.3_ping_server() {
-	echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
-	check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
-	if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
-		echo -e "\n${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
-		return 1
-	else
-		echo -e "\n${RED}Ping to ${ping_server_ip} was not successful.${NC}"
-		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
-	fi
-}
-
-sub_6.4_wg_command() {
-	if wg show &> /dev/null; then
-    	wg show
-	else
-    	echo -e "\n${RED}ERROR:${NC} wg command failed. No WireGuard interface may be configured or running."
-	fi
-}
-
-sub_6.6_commands() {
+sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 ${YELLOW}NOTE:${NC} Replace ${GREEN}INTERFACE${NC} with the Wireguard interface you have configured.
 ${YELLOW}Example: systemctl status wg-quick@${GREEN}wg0${NC}
@@ -1178,6 +1148,37 @@ EOF
 )
 
 	echo -e "$commands_text"
+}
+
+sub_6.5_ping_peer() {
+	local peer_ip=$(grep -x -A 2 "# ${peer_choice_final}" "$config_choice_final" | awk 'NR == 3 {print $3}' | sed 's|/32||')
+	if ping -q -c 1 -w 1 "$peer_ip" &> /dev/null; then
+		echo -e "\nPing to ${CYAN}${peer_choice_final}${NC}: (${peer_ip}) was ${GREEN}successful.${NC}"
+		return 1
+	else
+		echo -e "\n${RED}Ping to ${peer_choice_final} (${peer_ip}) was not successful.${NC}"
+		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+	fi
+}
+
+sub_6.6_ping_server() {
+	echo -e "\nEnter the server's ${CYAN}private IP or DDNS address.${NC}"
+	check_input_validate_2 ": " ping_server_ip valid_ddns_check valid_ip_check "$multi_type"
+	if ping -q -c 1 -w 1 "$ping_server_ip" &> /dev/null; then
+		echo -e "\n${GREEN}Ping to ${ping_server_ip} was successful.${NC}"
+		return 1
+	else
+		echo -e "\n${RED}Ping to ${ping_server_ip} was not successful.${NC}"
+		echo -e "Check the config file by using option ${CYAN}5. Print a configuration file${NC} and try again."
+	fi
+}
+
+sub_6.7_wg_command() {
+	if wg show &> /dev/null; then
+    	wg show
+	else
+    	echo -e "\n${RED}ERROR:${NC} wg command failed. No WireGuard interface may be configured or running."
+	fi
 }
 
 main_7_delete_menu() {
