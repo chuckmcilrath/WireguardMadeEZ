@@ -1123,6 +1123,161 @@ sub_6.1_info () {
 	fi
 }
 
+sub_6.2_stale_connections() {
+	CONFIG_DIR="/etc/wireguard"
+	STALE_THRESHOLD=300  # 5 minutes in seconds
+
+	# Function to convert handshake time to seconds
+	handshake_to_seconds() {
+    	local handshake="$1"
+    	local total_seconds=0
+    
+    	# Extract days, hours, minutes, seconds
+    	if [[ $handshake =~ ([0-9]+)\ day ]]; then
+        	total_seconds=$((total_seconds + ${BASH_REMATCH[1]} * 86400))
+    	fi
+    	if [[ $handshake =~ ([0-9]+)\ hour ]]; then
+        	total_seconds=$((total_seconds + ${BASH_REMATCH[1]} * 3600))
+    	fi
+    	if [[ $handshake =~ ([0-9]+)\ minute ]]; then
+        	total_seconds=$((total_seconds + ${BASH_REMATCH[1]} * 60))
+    	fi
+    	if [[ $handshake =~ ([0-9]+)\ second ]]; then
+        	total_seconds=$((total_seconds + ${BASH_REMATCH[1]}))
+    	fi
+    
+    	echo "$total_seconds"
+	}
+
+	# Function to get peer name and config file from all configs
+	get_peer_info() {
+    	local pubkey="$1"
+    	local name=""
+    	local in_peer=0
+    	local config_file=""
+    
+    	# Search through all config files
+    	for conf in "$CONFIG_DIR"/*.conf; do
+        	[[ -f "$conf" ]] || continue
+        
+        	in_peer=0
+        	name=""
+        
+        	while IFS= read -r line; do
+            	# Check if we're entering a [Peer] section
+            	if [[ $line =~ ^\[Peer\] ]]; then
+                	in_peer=1
+                	name=""
+                	continue
+            	fi
+            
+	            # If we're in a peer section, look for comment and public key
+	            if [[ $in_peer -eq 1 ]]; then
+	                # Check for comment line
+	                if [[ $line =~ ^#\ *(.+) ]]; then
+	                    name="${BASH_REMATCH[1]}"
+	                fi
+                
+	                # Check if this is the matching public key
+	                if [[ $line =~ ^PublicKey\ *=\ *(.+)$ ]]; then
+	                    if [[ "${BASH_REMATCH[1]}" == "$pubkey" ]]; then
+	                        echo "$name|$(basename "$conf")"
+	                        return
+	                    fi
+	                    in_peer=0
+	                fi
+	            fi
+	        done < "$conf"
+	    done
+	    
+	    echo "Unknown|Unknown"
+	}
+
+	# Main script
+	echo "Checking WireGuard peer connections..."
+	echo "Stale threshold: $((STALE_THRESHOLD / 60)) minutes"
+	echo "=========================================="
+	echo ""
+	
+	# Temporary file to store peer data
+	temp_file=$(mktemp)
+	
+	# Parse wg output and collect all peer data
+	current_peer=""
+	has_handshake=false
+	
+	while IFS= read -r line; do
+	    # Detect peer line
+	    if [[ $line =~ ^peer:\ (.+)$ ]]; then
+	        # Process previous peer if it had no handshake
+	        if [[ -n "$current_peer" ]] && [[ "$has_handshake" == false ]]; then
+	            peer_info=$(get_peer_info "$current_peer")
+	            IFS='|' read -r peer_name config_file <<< "$peer_info"
+	            echo "$config_file|NEVER|$peer_name|$current_peer|" >> "$temp_file"
+	        fi
+	        
+	        current_peer="${BASH_REMATCH[1]}"
+	        has_handshake=false
+	    fi
+	    
+	    # Detect handshake line
+	    if [[ $line =~ latest\ handshake:\ (.+)$ ]]; then
+	        has_handshake=true
+	        current_handshake="${BASH_REMATCH[1]}"
+	        
+	        # Get peer name and config file
+	        peer_info=$(get_peer_info "$current_peer")
+	        IFS='|' read -r peer_name config_file <<< "$peer_info"
+	        
+	        # Convert handshake to seconds
+	        if [[ $current_handshake == *"ago"* ]]; then
+	            seconds=$(handshake_to_seconds "$current_handshake")
+	            
+	            # Check if stale
+	            if [[ $seconds -gt $STALE_THRESHOLD ]]; then
+	                echo "$config_file|STALE|$peer_name|$current_peer|$current_handshake" >> "$temp_file"
+	            fi
+	        fi
+	    fi
+	done < <(wg show)
+	
+	# Process the last peer if it had no handshake
+	if [[ -n "$current_peer" ]] && [[ "$has_handshake" == false ]]; then
+	    peer_info=$(get_peer_info "$current_peer")
+	    IFS='|' read -r peer_name config_file <<< "$peer_info"
+	    echo "$config_file|NEVER|$peer_name|$current_peer|" >> "$temp_file"
+	fi
+	
+	# Sort by config file and display grouped output
+	if [[ -s "$temp_file" ]]; then
+	    current_config=""
+	    while IFS='|' read -r config_file status peer_name pubkey handshake; do
+	        # Print config header only when it changes
+	        if [[ "$config_file" != "$current_config" ]]; then
+	            [[ -n "$current_config" ]] && echo ""  # Add blank line between configs
+	            echo "[$config_file]"
+	            current_config="$config_file"
+	        fi
+	        
+	        if [[ "$status" == "STALE" ]]; then
+	            echo -e "${YELLOW}STALE${NC}: $peer_name"
+	            echo -e "    Public Key: $pubkey"
+	            echo -e "    Last Handshake: $handshake"
+	        else
+	            echo -e "${RED}NEVER CONNECTED${NC}: $peer_name"
+	            echo -e "    Public Key: $pubkey"
+	        fi
+	    done < <(sort -t'|' -k1,1 "$temp_file")
+	    echo ""
+	else
+	    echo -e "${GREEN}All peers are healthy!${NC}"
+	    echo ""
+	fi
+	
+	# Cleanup
+	rm -f "$temp_file"
+}
+
 sub_6.4_commands() {
 	commands_text=$(cat <<EOF
 ${YELLOW}NOTE:${NC} Replace ${GREEN}INTERFACE${NC} with the Wireguard interface you have configured.
@@ -1408,31 +1563,34 @@ while true; do
 			while true; do
 				main_6_help_menu
 				case "$help_input" in
-					1) # Prints useful commands
+					1) # Prints useful connection info.
 						config_file_check || continue
 						choosing_config && sub_6.1_info
 					;;
-					2) # Pings a server's peer. (Client)
+					2) # Prints a server configuration's stale connections
+					
+					;;
+					3) # Prints the config file
+						config_file_check || continue
+						choosing_config && cat "$config_choice_final"
+					;;
+					4) # Prints useful commands
+						sub_6.4_commands
+					;;
+					5) # Pings a server's peer. (Client)
 						config_file_check || break
 						choosing_config || continue
 	   					config_file_check_peer || continue
 						choosing_peer
-						sub_6.2_ping_peer
+						sub_6.5_ping_peer
 					;;
-					3) # Ping a server.
-						sub_6.3_ping_server
+					6) # Ping any server or IP.
+						sub_6.6_ping_server
 					;;
-					4) # Wireguard command to print connections and public key(s).
-						sub_6.4_wg_command
+					7) # Wireguard command to print connections and public key(s).
+						sub_6.7_wg_command
 					;;
-					5) # Prints the config file
-						config_file_check || continue
-						choosing_config && cat "$config_choice_final"
-					;;
-					6) # Prints useful commands
-						sub_6.6_commands
-					;;
-					7) # Exits the menu
+					8) # Exits the menu
 						exit_selection && break
 					;;
 					*)
