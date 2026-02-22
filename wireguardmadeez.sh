@@ -1568,7 +1568,7 @@ while true; do
 						choosing_config && sub_6.1_info
 					;;
 					2) # Prints a server configuration's stale connections
-					
+						sub_6.2_stale_connections
 					;;
 					3) # Prints the config file
 						config_file_check || continue
