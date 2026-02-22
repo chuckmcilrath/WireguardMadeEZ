@@ -1197,7 +1197,7 @@ sub_6.2_stale_connections() {
 	echo ""
 	echo -e "Checking WireGuard ${CYAN}peer${NC} connections..."
 	echo -e "${YELLOW}Stale threshold: $((STALE_THRESHOLD / 60)) minutes${NC}"
-	echo "${YELLO}==========================================${NC}"
+	echo "${YELLOW}==========================================${NC}"
 	echo ""
 	
 	# Temporary file to store peer data
@@ -1260,14 +1260,13 @@ sub_6.2_stale_connections() {
 	            current_config="$config_file"
 	        fi
 	        
-	        if
-				echo -e "${RED}NEVER CONNECTED${NC}: $peer_name"
-	            echo -e "    Public Key: $pubkey"
-	        else
-				[[ "$status" == "STALE" ]]; then
+	        if [[ "$status" == "STALE" ]]; then
 	            echo -e "${YELLOW}STALE${NC}: $peer_name"
 	            echo -e "    Public Key: $pubkey"
 	            echo -e "    Last Handshake: $handshake"
+	        else
+				echo -e "${RED}NEVER CONNECTED${NC}: $peer_name"
+	            echo -e "    Public Key: $pubkey"
 	        fi
 	    done < <(sort -t'|' -k1,1 "$temp_file")
 	    echo ""
